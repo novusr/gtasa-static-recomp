@@ -1,0 +1,38 @@
+# Binaries and game files (Never commit copyright game files)
+*.so
+*.apk
+*.obb
+libGTASA.so
+GTASA-2.10-v34.apk
+inputs/
+signing/
+
+# Build artifacts
+build/
+expected/
+*.o
+*.bin
+*.s
+*.log
+*.sqlite
+*.sqlite3
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+.venv/
+.pytest_cache/
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# decompdecomp / workbench internal state
+.decomp-wtf/
+.wb/

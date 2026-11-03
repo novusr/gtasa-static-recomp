@@ -1,0 +1,35 @@
+{
+  "min_version": "2.0.0",
+  "target_dir": "expected",
+  "base_dir": "build",
+  "build_target": false,
+  "units": [
+    {
+      "name": "CrossProduct",
+      "target_path": "expected/CrossProduct.o",
+      "base_path": "build/CrossProduct.o",
+      "metadata": {
+        "source_path": "src/CrossProduct.cpp",
+        "complete": true
+      }
+    },
+    {
+      "name": "Multiply3x3",
+      "target_path": "expected/Multiply3x3.o",
+      "base_path": "build/Multiply3x3.o",
+      "metadata": {
+        "source_path": "src/Multiply3x3.cpp",
+        "complete": true
+      }
+    },
+    {
+      "name": "Normalise",
+      "target_path": "expected/Normalise.o",
+      "base_path": "build/Normalise.o",
+      "metadata": {
+        "source_path": "src/Normalise.cpp",
+        "complete": true
+      }
+    }
+  ]
+}
