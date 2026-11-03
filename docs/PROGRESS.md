@@ -6,10 +6,10 @@ This log tracks every function in `libGTASA.so` that has been decompiled and con
 
 ## Overall Statistics
 
-* **Total Code Size in Binary**: ~5,087,972 bytes (`.text` section)
-* **Total Functions**: ~24,061
+* **Total Tracked Code Size**: 4,669,292 bytes
+* **Total Tracked Functions in objdiff**: 16,251 functions (across 1,080 units)
 * **Current Matched Functions**: 3
-* **Current Matched Code**: 192 bytes (100.0% match across verified units)
+* **Current Matched Code**: 192 bytes (0.0041% of total code)
 
 ---
 
