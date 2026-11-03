@@ -30,6 +30,4314 @@
         "source_path": "src/Normalise.cpp",
         "complete": true
       }
+    },
+    {
+      "name": "ANDThreadData",
+      "target_path": "expected/units/ANDThreadData.o"
+    },
+    {
+      "name": "APKFile",
+      "target_path": "expected/units/APKFile.o"
+    },
+    {
+      "name": "AndroidFile",
+      "target_path": "expected/units/AndroidFile.o"
+    },
+    {
+      "name": "ArrayState",
+      "target_path": "expected/units/ArrayState.o"
+    },
+    {
+      "name": "AudioScreen",
+      "target_path": "expected/units/AudioScreen.o"
+    },
+    {
+      "name": "BoneNodeManager_c",
+      "target_path": "expected/units/BoneNodeManager_c.o"
+    },
+    {
+      "name": "BoneNode_c",
+      "target_path": "expected/units/BoneNode_c.o"
+    },
+    {
+      "name": "BreakManager_c",
+      "target_path": "expected/units/BreakManager_c.o"
+    },
+    {
+      "name": "BreakObject_c",
+      "target_path": "expected/units/BreakObject_c.o"
+    },
+    {
+      "name": "BriefScreen",
+      "target_path": "expected/units/BriefScreen.o"
+    },
+    {
+      "name": "ButtonContainer",
+      "target_path": "expected/units/ButtonContainer.o"
+    },
+    {
+      "name": "C2dEffect",
+      "target_path": "expected/units/C2dEffect.o"
+    },
+    {
+      "name": "C3dMarker",
+      "target_path": "expected/units/C3dMarker.o"
+    },
+    {
+      "name": "C3dMarkers",
+      "target_path": "expected/units/C3dMarkers.o"
+    },
+    {
+      "name": "CAEAmbienceTrackManager",
+      "target_path": "expected/units/CAEAmbienceTrackManager.o"
+    },
+    {
+      "name": "CAEAudioChannel",
+      "target_path": "expected/units/CAEAudioChannel.o"
+    },
+    {
+      "name": "CAEAudioEntity",
+      "target_path": "expected/units/CAEAudioEntity.o"
+    },
+    {
+      "name": "CAEAudioEnvironment",
+      "target_path": "expected/units/CAEAudioEnvironment.o"
+    },
+    {
+      "name": "CAEAudioHardware",
+      "target_path": "expected/units/CAEAudioHardware.o"
+    },
+    {
+      "name": "CAEAudioUtility",
+      "target_path": "expected/units/CAEAudioUtility.o"
+    },
+    {
+      "name": "CAEBankLoader",
+      "target_path": "expected/units/CAEBankLoader.o"
+    },
+    {
+      "name": "CAECollisionAudioEntity",
+      "target_path": "expected/units/CAECollisionAudioEntity.o"
+    },
+    {
+      "name": "CAECutsceneTrackManager",
+      "target_path": "expected/units/CAECutsceneTrackManager.o"
+    },
+    {
+      "name": "CAEDataStream",
+      "target_path": "expected/units/CAEDataStream.o"
+    },
+    {
+      "name": "CAEDoorAudioEntity",
+      "target_path": "expected/units/CAEDoorAudioEntity.o"
+    },
+    {
+      "name": "CAEExplosionAudioEntity",
+      "target_path": "expected/units/CAEExplosionAudioEntity.o"
+    },
+    {
+      "name": "CAEFireAudioEntity",
+      "target_path": "expected/units/CAEFireAudioEntity.o"
+    },
+    {
+      "name": "CAEFrontendAudioEntity",
+      "target_path": "expected/units/CAEFrontendAudioEntity.o"
+    },
+    {
+      "name": "CAEGlobalWeaponAudioEntity",
+      "target_path": "expected/units/CAEGlobalWeaponAudioEntity.o"
+    },
+    {
+      "name": "CAEMP3BankLoader",
+      "target_path": "expected/units/CAEMP3BankLoader.o"
+    },
+    {
+      "name": "CAEMP3Decoder",
+      "target_path": "expected/units/CAEMP3Decoder.o"
+    },
+    {
+      "name": "CAEMP3TrackLoader",
+      "target_path": "expected/units/CAEMP3TrackLoader.o"
+    },
+    {
+      "name": "CAEPedAudioEntity",
+      "target_path": "expected/units/CAEPedAudioEntity.o"
+    },
+    {
+      "name": "CAEPedSpeechAudioEntity",
+      "target_path": "expected/units/CAEPedSpeechAudioEntity.o"
+    },
+    {
+      "name": "CAEPedWeaponAudioEntity",
+      "target_path": "expected/units/CAEPedWeaponAudioEntity.o"
+    },
+    {
+      "name": "CAEPedlessSpeechAudioEntity",
+      "target_path": "expected/units/CAEPedlessSpeechAudioEntity.o"
+    },
+    {
+      "name": "CAEPoliceScannerAudioEntity",
+      "target_path": "expected/units/CAEPoliceScannerAudioEntity.o"
+    },
+    {
+      "name": "CAERadioTrackManager",
+      "target_path": "expected/units/CAERadioTrackManager.o"
+    },
+    {
+      "name": "CAEScriptAudioEntity",
+      "target_path": "expected/units/CAEScriptAudioEntity.o"
+    },
+    {
+      "name": "CAESmoothFadeThread",
+      "target_path": "expected/units/CAESmoothFadeThread.o"
+    },
+    {
+      "name": "CAESound",
+      "target_path": "expected/units/CAESound.o"
+    },
+    {
+      "name": "CAESoundManager",
+      "target_path": "expected/units/CAESoundManager.o"
+    },
+    {
+      "name": "CAEStaticChannel",
+      "target_path": "expected/units/CAEStaticChannel.o"
+    },
+    {
+      "name": "CAEStreamThread",
+      "target_path": "expected/units/CAEStreamThread.o"
+    },
+    {
+      "name": "CAEStreamTransformer",
+      "target_path": "expected/units/CAEStreamTransformer.o"
+    },
+    {
+      "name": "CAEStreamingChannel",
+      "target_path": "expected/units/CAEStreamingChannel.o"
+    },
+    {
+      "name": "CAEStreamingDecoder",
+      "target_path": "expected/units/CAEStreamingDecoder.o"
+    },
+    {
+      "name": "CAETwinLoopSoundEntity",
+      "target_path": "expected/units/CAETwinLoopSoundEntity.o"
+    },
+    {
+      "name": "CAEVehicleAudioEntity",
+      "target_path": "expected/units/CAEVehicleAudioEntity.o"
+    },
+    {
+      "name": "CAEWaterCannonAudioEntity",
+      "target_path": "expected/units/CAEWaterCannonAudioEntity.o"
+    },
+    {
+      "name": "CAEWaveDecoder",
+      "target_path": "expected/units/CAEWaveDecoder.o"
+    },
+    {
+      "name": "CAEWeaponAudioEntity",
+      "target_path": "expected/units/CAEWeaponAudioEntity.o"
+    },
+    {
+      "name": "CAEWeatherAudioEntity",
+      "target_path": "expected/units/CAEWeatherAudioEntity.o"
+    },
+    {
+      "name": "CAccidentManager",
+      "target_path": "expected/units/CAccidentManager.o"
+    },
+    {
+      "name": "CAcquaintance",
+      "target_path": "expected/units/CAcquaintance.o"
+    },
+    {
+      "name": "CActiveOccluder",
+      "target_path": "expected/units/CActiveOccluder.o"
+    },
+    {
+      "name": "CAdjustableHUD",
+      "target_path": "expected/units/CAdjustableHUD.o"
+    },
+    {
+      "name": "CAnimBlendAssocGroup",
+      "target_path": "expected/units/CAnimBlendAssocGroup.o"
+    },
+    {
+      "name": "CAnimBlendAssociation",
+      "target_path": "expected/units/CAnimBlendAssociation.o"
+    },
+    {
+      "name": "CAnimBlendClumpData",
+      "target_path": "expected/units/CAnimBlendClumpData.o"
+    },
+    {
+      "name": "CAnimBlendHierarchy",
+      "target_path": "expected/units/CAnimBlendHierarchy.o"
+    },
+    {
+      "name": "CAnimBlendNode",
+      "target_path": "expected/units/CAnimBlendNode.o"
+    },
+    {
+      "name": "CAnimBlendSequence",
+      "target_path": "expected/units/CAnimBlendSequence.o"
+    },
+    {
+      "name": "CAnimBlendStaticAssociation",
+      "target_path": "expected/units/CAnimBlendStaticAssociation.o"
+    },
+    {
+      "name": "CAnimManager",
+      "target_path": "expected/units/CAnimManager.o"
+    },
+    {
+      "name": "CAnimatedBuilding",
+      "target_path": "expected/units/CAnimatedBuilding.o"
+    },
+    {
+      "name": "CAtomicModelInfo",
+      "target_path": "expected/units/CAtomicModelInfo.o"
+    },
+    {
+      "name": "CAttractorScanner",
+      "target_path": "expected/units/CAttractorScanner.o"
+    },
+    {
+      "name": "CAudioEngine",
+      "target_path": "expected/units/CAudioEngine.o"
+    },
+    {
+      "name": "CAudioZones",
+      "target_path": "expected/units/CAudioZones.o"
+    },
+    {
+      "name": "CAutoPilot",
+      "target_path": "expected/units/CAutoPilot.o"
+    },
+    {
+      "name": "CAutomobile",
+      "target_path": "expected/units/CAutomobile.o"
+    },
+    {
+      "name": "CBaseModelInfo",
+      "target_path": "expected/units/CBaseModelInfo.o"
+    },
+    {
+      "name": "CBike",
+      "target_path": "expected/units/CBike.o"
+    },
+    {
+      "name": "CBirds",
+      "target_path": "expected/units/CBirds.o"
+    },
+    {
+      "name": "CBmx",
+      "target_path": "expected/units/CBmx.o"
+    },
+    {
+      "name": "CBoat",
+      "target_path": "expected/units/CBoat.o"
+    },
+    {
+      "name": "CBouncingPanel",
+      "target_path": "expected/units/CBouncingPanel.o"
+    },
+    {
+      "name": "CBoundBox",
+      "target_path": "expected/units/CBoundBox.o"
+    },
+    {
+      "name": "CBoundingBox",
+      "target_path": "expected/units/CBoundingBox.o"
+    },
+    {
+      "name": "CBox",
+      "target_path": "expected/units/CBox.o"
+    },
+    {
+      "name": "CBridge",
+      "target_path": "expected/units/CBridge.o"
+    },
+    {
+      "name": "CBrightLights",
+      "target_path": "expected/units/CBrightLights.o"
+    },
+    {
+      "name": "CBug",
+      "target_path": "expected/units/CBug.o"
+    },
+    {
+      "name": "CBugstarInterface",
+      "target_path": "expected/units/CBugstarInterface.o"
+    },
+    {
+      "name": "CBugstarPC",
+      "target_path": "expected/units/CBugstarPC.o"
+    },
+    {
+      "name": "CBuilding",
+      "target_path": "expected/units/CBuilding.o"
+    },
+    {
+      "name": "CBuildingPotentialCollisionScanner",
+      "target_path": "expected/units/CBuildingPotentialCollisionScanner.o"
+    },
+    {
+      "name": "CBulletInfo",
+      "target_path": "expected/units/CBulletInfo.o"
+    },
+    {
+      "name": "CBulletTrace",
+      "target_path": "expected/units/CBulletTrace.o"
+    },
+    {
+      "name": "CBulletTraces",
+      "target_path": "expected/units/CBulletTraces.o"
+    },
+    {
+      "name": "CCam",
+      "target_path": "expected/units/CCam.o"
+    },
+    {
+      "name": "CCamera",
+      "target_path": "expected/units/CCamera.o"
+    },
+    {
+      "name": "CCarAI",
+      "target_path": "expected/units/CCarAI.o"
+    },
+    {
+      "name": "CCarCtrl",
+      "target_path": "expected/units/CCarCtrl.o"
+    },
+    {
+      "name": "CCarEnterExit",
+      "target_path": "expected/units/CCarEnterExit.o"
+    },
+    {
+      "name": "CCarFXRenderer",
+      "target_path": "expected/units/CCarFXRenderer.o"
+    },
+    {
+      "name": "CCarGenerator",
+      "target_path": "expected/units/CCarGenerator.o"
+    },
+    {
+      "name": "CCarPathLink",
+      "target_path": "expected/units/CCarPathLink.o"
+    },
+    {
+      "name": "CCheat",
+      "target_path": "expected/units/CCheat.o"
+    },
+    {
+      "name": "CCheckpoint",
+      "target_path": "expected/units/CCheckpoint.o"
+    },
+    {
+      "name": "CCheckpoints",
+      "target_path": "expected/units/CCheckpoints.o"
+    },
+    {
+      "name": "CCivilianPed",
+      "target_path": "expected/units/CCivilianPed.o"
+    },
+    {
+      "name": "CClock",
+      "target_path": "expected/units/CClock.o"
+    },
+    {
+      "name": "CClothes",
+      "target_path": "expected/units/CClothes.o"
+    },
+    {
+      "name": "CClothesBuilder",
+      "target_path": "expected/units/CClothesBuilder.o"
+    },
+    {
+      "name": "CClouds",
+      "target_path": "expected/units/CClouds.o"
+    },
+    {
+      "name": "CClumpModelInfo",
+      "target_path": "expected/units/CClumpModelInfo.o"
+    },
+    {
+      "name": "CColAccel",
+      "target_path": "expected/units/CColAccel.o"
+    },
+    {
+      "name": "CColBox",
+      "target_path": "expected/units/CColBox.o"
+    },
+    {
+      "name": "CColDisk",
+      "target_path": "expected/units/CColDisk.o"
+    },
+    {
+      "name": "CColLine",
+      "target_path": "expected/units/CColLine.o"
+    },
+    {
+      "name": "CColModel",
+      "target_path": "expected/units/CColModel.o"
+    },
+    {
+      "name": "CColPoint",
+      "target_path": "expected/units/CColPoint.o"
+    },
+    {
+      "name": "CColSphere",
+      "target_path": "expected/units/CColSphere.o"
+    },
+    {
+      "name": "CColStore",
+      "target_path": "expected/units/CColStore.o"
+    },
+    {
+      "name": "CColTrianglePlane",
+      "target_path": "expected/units/CColTrianglePlane.o"
+    },
+    {
+      "name": "CCollision",
+      "target_path": "expected/units/CCollision.o"
+    },
+    {
+      "name": "CCollisionData",
+      "target_path": "expected/units/CCollisionData.o"
+    },
+    {
+      "name": "CCollisionEventScanner",
+      "target_path": "expected/units/CCollisionEventScanner.o"
+    },
+    {
+      "name": "CCollisionPlugin",
+      "target_path": "expected/units/CCollisionPlugin.o"
+    },
+    {
+      "name": "CColourSet",
+      "target_path": "expected/units/CColourSet.o"
+    },
+    {
+      "name": "CCompressedMatrixNotAligned",
+      "target_path": "expected/units/CCompressedMatrixNotAligned.o"
+    },
+    {
+      "name": "CControllerConfigManager",
+      "target_path": "expected/units/CControllerConfigManager.o"
+    },
+    {
+      "name": "CControllerState",
+      "target_path": "expected/units/CControllerState.o"
+    },
+    {
+      "name": "CConversationForPed",
+      "target_path": "expected/units/CConversationForPed.o"
+    },
+    {
+      "name": "CConversationNode",
+      "target_path": "expected/units/CConversationNode.o"
+    },
+    {
+      "name": "CConversations",
+      "target_path": "expected/units/CConversations.o"
+    },
+    {
+      "name": "CCopPed",
+      "target_path": "expected/units/CCopPed.o"
+    },
+    {
+      "name": "CCoronas",
+      "target_path": "expected/units/CCoronas.o"
+    },
+    {
+      "name": "CCover",
+      "target_path": "expected/units/CCover.o"
+    },
+    {
+      "name": "CCoverPoint",
+      "target_path": "expected/units/CCoverPoint.o"
+    },
+    {
+      "name": "CCranes",
+      "target_path": "expected/units/CCranes.o"
+    },
+    {
+      "name": "CCredits",
+      "target_path": "expected/units/CCredits.o"
+    },
+    {
+      "name": "CCreepingFire",
+      "target_path": "expected/units/CCreepingFire.o"
+    },
+    {
+      "name": "CCrime",
+      "target_path": "expected/units/CCrime.o"
+    },
+    {
+      "name": "CCullZones",
+      "target_path": "expected/units/CCullZones.o"
+    },
+    {
+      "name": "CCurrentVehicle",
+      "target_path": "expected/units/CCurrentVehicle.o"
+    },
+    {
+      "name": "CCurves",
+      "target_path": "expected/units/CCurves.o"
+    },
+    {
+      "name": "CCustomBuildingDNPipeline",
+      "target_path": "expected/units/CCustomBuildingDNPipeline.o"
+    },
+    {
+      "name": "CCustomBuildingPipeline",
+      "target_path": "expected/units/CCustomBuildingPipeline.o"
+    },
+    {
+      "name": "CCustomBuildingRenderer",
+      "target_path": "expected/units/CCustomBuildingRenderer.o"
+    },
+    {
+      "name": "CCustomCarEnvMapPipeline",
+      "target_path": "expected/units/CCustomCarEnvMapPipeline.o"
+    },
+    {
+      "name": "CCustomCarPlateMgr",
+      "target_path": "expected/units/CCustomCarPlateMgr.o"
+    },
+    {
+      "name": "CCustomRoadsignMgr",
+      "target_path": "expected/units/CCustomRoadsignMgr.o"
+    },
+    {
+      "name": "CCutsceneMgr",
+      "target_path": "expected/units/CCutsceneMgr.o"
+    },
+    {
+      "name": "CCutsceneObject",
+      "target_path": "expected/units/CCutsceneObject.o"
+    },
+    {
+      "name": "CDamageAtomicModelInfo",
+      "target_path": "expected/units/CDamageAtomicModelInfo.o"
+    },
+    {
+      "name": "CDamageManager",
+      "target_path": "expected/units/CDamageManager.o"
+    },
+    {
+      "name": "CDarkel",
+      "target_path": "expected/units/CDarkel.o"
+    },
+    {
+      "name": "CData",
+      "target_path": "expected/units/CData.o"
+    },
+    {
+      "name": "CDate",
+      "target_path": "expected/units/CDate.o"
+    },
+    {
+      "name": "CDebug",
+      "target_path": "expected/units/CDebug.o"
+    },
+    {
+      "name": "CDecision",
+      "target_path": "expected/units/CDecision.o"
+    },
+    {
+      "name": "CDecisionMaker",
+      "target_path": "expected/units/CDecisionMaker.o"
+    },
+    {
+      "name": "CDecisionMakerTypes",
+      "target_path": "expected/units/CDecisionMakerTypes.o"
+    },
+    {
+      "name": "CDecisionMakerTypesFileLoader",
+      "target_path": "expected/units/CDecisionMakerTypesFileLoader.o"
+    },
+    {
+      "name": "CDecisionSimple",
+      "target_path": "expected/units/CDecisionSimple.o"
+    },
+    {
+      "name": "CDefaultAnimCallback",
+      "target_path": "expected/units/CDefaultAnimCallback.o"
+    },
+    {
+      "name": "CDirectory",
+      "target_path": "expected/units/CDirectory.o"
+    },
+    {
+      "name": "CDoor",
+      "target_path": "expected/units/CDoor.o"
+    },
+    {
+      "name": "CDraw",
+      "target_path": "expected/units/CDraw.o"
+    },
+    {
+      "name": "CDummy",
+      "target_path": "expected/units/CDummy.o"
+    },
+    {
+      "name": "CDummyObject",
+      "target_path": "expected/units/CDummyObject.o"
+    },
+    {
+      "name": "CDummyPed",
+      "target_path": "expected/units/CDummyPed.o"
+    },
+    {
+      "name": "CEmergencyPed",
+      "target_path": "expected/units/CEmergencyPed.o"
+    },
+    {
+      "name": "CEntity",
+      "target_path": "expected/units/CEntity.o"
+    },
+    {
+      "name": "CEntityScanner",
+      "target_path": "expected/units/CEntityScanner.o"
+    },
+    {
+      "name": "CEntryExit",
+      "target_path": "expected/units/CEntryExit.o"
+    },
+    {
+      "name": "CEntryExitManager",
+      "target_path": "expected/units/CEntryExitManager.o"
+    },
+    {
+      "name": "CEntryInfoList",
+      "target_path": "expected/units/CEntryInfoList.o"
+    },
+    {
+      "name": "CEntryInfoNode",
+      "target_path": "expected/units/CEntryInfoNode.o"
+    },
+    {
+      "name": "CEscalator",
+      "target_path": "expected/units/CEscalator.o"
+    },
+    {
+      "name": "CEscalators",
+      "target_path": "expected/units/CEscalators.o"
+    },
+    {
+      "name": "CEvent",
+      "target_path": "expected/units/CEvent.o"
+    },
+    {
+      "name": "CEventAcquaintancePed",
+      "target_path": "expected/units/CEventAcquaintancePed.o"
+    },
+    {
+      "name": "CEventAcquaintancePedDislike",
+      "target_path": "expected/units/CEventAcquaintancePedDislike.o"
+    },
+    {
+      "name": "CEventAcquaintancePedHate",
+      "target_path": "expected/units/CEventAcquaintancePedHate.o"
+    },
+    {
+      "name": "CEventAcquaintancePedHateBadlyLit",
+      "target_path": "expected/units/CEventAcquaintancePedHateBadlyLit.o"
+    },
+    {
+      "name": "CEventAcquaintancePedLike",
+      "target_path": "expected/units/CEventAcquaintancePedLike.o"
+    },
+    {
+      "name": "CEventAcquaintancePedRespect",
+      "target_path": "expected/units/CEventAcquaintancePedRespect.o"
+    },
+    {
+      "name": "CEventAreaCodes",
+      "target_path": "expected/units/CEventAreaCodes.o"
+    },
+    {
+      "name": "CEventAttractor",
+      "target_path": "expected/units/CEventAttractor.o"
+    },
+    {
+      "name": "CEventBuildingCollision",
+      "target_path": "expected/units/CEventBuildingCollision.o"
+    },
+    {
+      "name": "CEventCarUpsideDown",
+      "target_path": "expected/units/CEventCarUpsideDown.o"
+    },
+    {
+      "name": "CEventChatPartner",
+      "target_path": "expected/units/CEventChatPartner.o"
+    },
+    {
+      "name": "CEventCopCarBeingStolen",
+      "target_path": "expected/units/CEventCopCarBeingStolen.o"
+    },
+    {
+      "name": "CEventCreatePartnerTask",
+      "target_path": "expected/units/CEventCreatePartnerTask.o"
+    },
+    {
+      "name": "CEventDamage",
+      "target_path": "expected/units/CEventDamage.o"
+    },
+    {
+      "name": "CEventDanger",
+      "target_path": "expected/units/CEventDanger.o"
+    },
+    {
+      "name": "CEventDeadPed",
+      "target_path": "expected/units/CEventDeadPed.o"
+    },
+    {
+      "name": "CEventDeath",
+      "target_path": "expected/units/CEventDeath.o"
+    },
+    {
+      "name": "CEventDontJoinPlayerGroup",
+      "target_path": "expected/units/CEventDontJoinPlayerGroup.o"
+    },
+    {
+      "name": "CEventDraggedOutCar",
+      "target_path": "expected/units/CEventDraggedOutCar.o"
+    },
+    {
+      "name": "CEventEditableResponse",
+      "target_path": "expected/units/CEventEditableResponse.o"
+    },
+    {
+      "name": "CEventEscalator",
+      "target_path": "expected/units/CEventEscalator.o"
+    },
+    {
+      "name": "CEventFireNearby",
+      "target_path": "expected/units/CEventFireNearby.o"
+    },
+    {
+      "name": "CEventGlobalGroup",
+      "target_path": "expected/units/CEventGlobalGroup.o"
+    },
+    {
+      "name": "CEventGotKnockedOverByCar",
+      "target_path": "expected/units/CEventGotKnockedOverByCar.o"
+    },
+    {
+      "name": "CEventGroup",
+      "target_path": "expected/units/CEventGroup.o"
+    },
+    {
+      "name": "CEventGroupEvent",
+      "target_path": "expected/units/CEventGroupEvent.o"
+    },
+    {
+      "name": "CEventGunAimedAt",
+      "target_path": "expected/units/CEventGunAimedAt.o"
+    },
+    {
+      "name": "CEventGunShot",
+      "target_path": "expected/units/CEventGunShot.o"
+    },
+    {
+      "name": "CEventGunShotWhizzedBy",
+      "target_path": "expected/units/CEventGunShotWhizzedBy.o"
+    },
+    {
+      "name": "CEventHandler",
+      "target_path": "expected/units/CEventHandler.o"
+    },
+    {
+      "name": "CEventHandlerHistory",
+      "target_path": "expected/units/CEventHandlerHistory.o"
+    },
+    {
+      "name": "CEventHealthLow",
+      "target_path": "expected/units/CEventHealthLow.o"
+    },
+    {
+      "name": "CEventHealthReallyLow",
+      "target_path": "expected/units/CEventHealthReallyLow.o"
+    },
+    {
+      "name": "CEventHighAngerAtPlayer",
+      "target_path": "expected/units/CEventHighAngerAtPlayer.o"
+    },
+    {
+      "name": "CEventHitByWaterCannon",
+      "target_path": "expected/units/CEventHitByWaterCannon.o"
+    },
+    {
+      "name": "CEventInAir",
+      "target_path": "expected/units/CEventInAir.o"
+    },
+    {
+      "name": "CEventInWater",
+      "target_path": "expected/units/CEventInWater.o"
+    },
+    {
+      "name": "CEventInteriorUseInfo",
+      "target_path": "expected/units/CEventInteriorUseInfo.o"
+    },
+    {
+      "name": "CEventKnockOffBike",
+      "target_path": "expected/units/CEventKnockOffBike.o"
+    },
+    {
+      "name": "CEventLeaderEnteredCarAsDriver",
+      "target_path": "expected/units/CEventLeaderEnteredCarAsDriver.o"
+    },
+    {
+      "name": "CEventLeaderEntryExit",
+      "target_path": "expected/units/CEventLeaderEntryExit.o"
+    },
+    {
+      "name": "CEventLeaderExitedCarAsDriver",
+      "target_path": "expected/units/CEventLeaderExitedCarAsDriver.o"
+    },
+    {
+      "name": "CEventLeaderQuitEnteringCarAsDriver",
+      "target_path": "expected/units/CEventLeaderQuitEnteringCarAsDriver.o"
+    },
+    {
+      "name": "CEventLeanOnVehicle",
+      "target_path": "expected/units/CEventLeanOnVehicle.o"
+    },
+    {
+      "name": "CEventLowAngerAtPlayer",
+      "target_path": "expected/units/CEventLowAngerAtPlayer.o"
+    },
+    {
+      "name": "CEventNewGangMember",
+      "target_path": "expected/units/CEventNewGangMember.o"
+    },
+    {
+      "name": "CEventObjectCollision",
+      "target_path": "expected/units/CEventObjectCollision.o"
+    },
+    {
+      "name": "CEventOnFire",
+      "target_path": "expected/units/CEventOnFire.o"
+    },
+    {
+      "name": "CEventPassObject",
+      "target_path": "expected/units/CEventPassObject.o"
+    },
+    {
+      "name": "CEventPedCollisionWithPed",
+      "target_path": "expected/units/CEventPedCollisionWithPed.o"
+    },
+    {
+      "name": "CEventPedCollisionWithPlayer",
+      "target_path": "expected/units/CEventPedCollisionWithPlayer.o"
+    },
+    {
+      "name": "CEventPedEnteredMyVehicle",
+      "target_path": "expected/units/CEventPedEnteredMyVehicle.o"
+    },
+    {
+      "name": "CEventPedToChase",
+      "target_path": "expected/units/CEventPedToChase.o"
+    },
+    {
+      "name": "CEventPedToFlee",
+      "target_path": "expected/units/CEventPedToFlee.o"
+    },
+    {
+      "name": "CEventPlayerCollisionWithPed",
+      "target_path": "expected/units/CEventPlayerCollisionWithPed.o"
+    },
+    {
+      "name": "CEventPlayerCommandToGroup",
+      "target_path": "expected/units/CEventPlayerCommandToGroup.o"
+    },
+    {
+      "name": "CEventPlayerCommandToGroupAttack",
+      "target_path": "expected/units/CEventPlayerCommandToGroupAttack.o"
+    },
+    {
+      "name": "CEventPlayerCommandToGroupGather",
+      "target_path": "expected/units/CEventPlayerCommandToGroupGather.o"
+    },
+    {
+      "name": "CEventPotentialGetRunOver",
+      "target_path": "expected/units/CEventPotentialGetRunOver.o"
+    },
+    {
+      "name": "CEventPotentialWalkIntoFire",
+      "target_path": "expected/units/CEventPotentialWalkIntoFire.o"
+    },
+    {
+      "name": "CEventPotentialWalkIntoObject",
+      "target_path": "expected/units/CEventPotentialWalkIntoObject.o"
+    },
+    {
+      "name": "CEventPotentialWalkIntoPed",
+      "target_path": "expected/units/CEventPotentialWalkIntoPed.o"
+    },
+    {
+      "name": "CEventPotentialWalkIntoVehicle",
+      "target_path": "expected/units/CEventPotentialWalkIntoVehicle.o"
+    },
+    {
+      "name": "CEventRevived",
+      "target_path": "expected/units/CEventRevived.o"
+    },
+    {
+      "name": "CEventScanner",
+      "target_path": "expected/units/CEventScanner.o"
+    },
+    {
+      "name": "CEventScriptCommand",
+      "target_path": "expected/units/CEventScriptCommand.o"
+    },
+    {
+      "name": "CEventScriptedAttractor",
+      "target_path": "expected/units/CEventScriptedAttractor.o"
+    },
+    {
+      "name": "CEventSeenCop",
+      "target_path": "expected/units/CEventSeenCop.o"
+    },
+    {
+      "name": "CEventSeenPanickedPed",
+      "target_path": "expected/units/CEventSeenPanickedPed.o"
+    },
+    {
+      "name": "CEventSexyPed",
+      "target_path": "expected/units/CEventSexyPed.o"
+    },
+    {
+      "name": "CEventSexyVehicle",
+      "target_path": "expected/units/CEventSexyVehicle.o"
+    },
+    {
+      "name": "CEventSoundQuiet",
+      "target_path": "expected/units/CEventSoundQuiet.o"
+    },
+    {
+      "name": "CEventSource",
+      "target_path": "expected/units/CEventSource.o"
+    },
+    {
+      "name": "CEventSpecial",
+      "target_path": "expected/units/CEventSpecial.o"
+    },
+    {
+      "name": "CEventStuckInAir",
+      "target_path": "expected/units/CEventStuckInAir.o"
+    },
+    {
+      "name": "CEventVehicleCollision",
+      "target_path": "expected/units/CEventVehicleCollision.o"
+    },
+    {
+      "name": "CEventVehicleDamage",
+      "target_path": "expected/units/CEventVehicleDamage.o"
+    },
+    {
+      "name": "CEventVehicleDamageCollision",
+      "target_path": "expected/units/CEventVehicleDamageCollision.o"
+    },
+    {
+      "name": "CEventVehicleDamageWeapon",
+      "target_path": "expected/units/CEventVehicleDamageWeapon.o"
+    },
+    {
+      "name": "CEventVehicleDied",
+      "target_path": "expected/units/CEventVehicleDied.o"
+    },
+    {
+      "name": "CEventVehicleHitAndRun",
+      "target_path": "expected/units/CEventVehicleHitAndRun.o"
+    },
+    {
+      "name": "CEventVehicleOnFire",
+      "target_path": "expected/units/CEventVehicleOnFire.o"
+    },
+    {
+      "name": "CEventVehicleThreat",
+      "target_path": "expected/units/CEventVehicleThreat.o"
+    },
+    {
+      "name": "CEventVehicleToSteal",
+      "target_path": "expected/units/CEventVehicleToSteal.o"
+    },
+    {
+      "name": "CExplosion",
+      "target_path": "expected/units/CExplosion.o"
+    },
+    {
+      "name": "CFallingGlassPane",
+      "target_path": "expected/units/CFallingGlassPane.o"
+    },
+    {
+      "name": "CFileLoader",
+      "target_path": "expected/units/CFileLoader.o"
+    },
+    {
+      "name": "CFileMgr",
+      "target_path": "expected/units/CFileMgr.o"
+    },
+    {
+      "name": "CFire",
+      "target_path": "expected/units/CFire.o"
+    },
+    {
+      "name": "CFireManager",
+      "target_path": "expected/units/CFireManager.o"
+    },
+    {
+      "name": "CFollowLeaderOffSets",
+      "target_path": "expected/units/CFollowLeaderOffSets.o"
+    },
+    {
+      "name": "CFont",
+      "target_path": "expected/units/CFont.o"
+    },
+    {
+      "name": "CFormation",
+      "target_path": "expected/units/CFormation.o"
+    },
+    {
+      "name": "CGame",
+      "target_path": "expected/units/CGame.o"
+    },
+    {
+      "name": "CGameLogic",
+      "target_path": "expected/units/CGameLogic.o"
+    },
+    {
+      "name": "CGangInfo",
+      "target_path": "expected/units/CGangInfo.o"
+    },
+    {
+      "name": "CGangWars",
+      "target_path": "expected/units/CGangWars.o"
+    },
+    {
+      "name": "CGangWarsSaveStructure",
+      "target_path": "expected/units/CGangWarsSaveStructure.o"
+    },
+    {
+      "name": "CGangs",
+      "target_path": "expected/units/CGangs.o"
+    },
+    {
+      "name": "CGarage",
+      "target_path": "expected/units/CGarage.o"
+    },
+    {
+      "name": "CGarages",
+      "target_path": "expected/units/CGarages.o"
+    },
+    {
+      "name": "CGeneral",
+      "target_path": "expected/units/CGeneral.o"
+    },
+    {
+      "name": "CGenericGameStorage",
+      "target_path": "expected/units/CGenericGameStorage.o"
+    },
+    {
+      "name": "CGlass",
+      "target_path": "expected/units/CGlass.o"
+    },
+    {
+      "name": "CGrassRenderer",
+      "target_path": "expected/units/CGrassRenderer.o"
+    },
+    {
+      "name": "CGridRef",
+      "target_path": "expected/units/CGridRef.o"
+    },
+    {
+      "name": "CGroupEventHandler",
+      "target_path": "expected/units/CGroupEventHandler.o"
+    },
+    {
+      "name": "CHID",
+      "target_path": "expected/units/CHID.o"
+    },
+    {
+      "name": "CHIDJoystick",
+      "target_path": "expected/units/CHIDJoystick.o"
+    },
+    {
+      "name": "CHIDJoystickAmazon",
+      "target_path": "expected/units/CHIDJoystickAmazon.o"
+    },
+    {
+      "name": "CHIDJoystickAndroidTV",
+      "target_path": "expected/units/CHIDJoystickAndroidTV.o"
+    },
+    {
+      "name": "CHIDJoystickIOSExtended",
+      "target_path": "expected/units/CHIDJoystickIOSExtended.o"
+    },
+    {
+      "name": "CHIDJoystickIOSSimple",
+      "target_path": "expected/units/CHIDJoystickIOSSimple.o"
+    },
+    {
+      "name": "CHIDJoystickMogaPocket",
+      "target_path": "expected/units/CHIDJoystickMogaPocket.o"
+    },
+    {
+      "name": "CHIDJoystickMogaPro",
+      "target_path": "expected/units/CHIDJoystickMogaPro.o"
+    },
+    {
+      "name": "CHIDJoystickPS3",
+      "target_path": "expected/units/CHIDJoystickPS3.o"
+    },
+    {
+      "name": "CHIDJoystickXbox360",
+      "target_path": "expected/units/CHIDJoystickXbox360.o"
+    },
+    {
+      "name": "CHIDJoystickXbox360Standard",
+      "target_path": "expected/units/CHIDJoystickXbox360Standard.o"
+    },
+    {
+      "name": "CHIDKeyboard",
+      "target_path": "expected/units/CHIDKeyboard.o"
+    },
+    {
+      "name": "CHIDKeyboardPC",
+      "target_path": "expected/units/CHIDKeyboardPC.o"
+    },
+    {
+      "name": "CHandObject",
+      "target_path": "expected/units/CHandObject.o"
+    },
+    {
+      "name": "CHandShaker",
+      "target_path": "expected/units/CHandShaker.o"
+    },
+    {
+      "name": "CHeli",
+      "target_path": "expected/units/CHeli.o"
+    },
+    {
+      "name": "CHeliCamSettings",
+      "target_path": "expected/units/CHeliCamSettings.o"
+    },
+    {
+      "name": "CHoldEffect",
+      "target_path": "expected/units/CHoldEffect.o"
+    },
+    {
+      "name": "CHud",
+      "target_path": "expected/units/CHud.o"
+    },
+    {
+      "name": "CHudColours",
+      "target_path": "expected/units/CHudColours.o"
+    },
+    {
+      "name": "CIdleCam",
+      "target_path": "expected/units/CIdleCam.o"
+    },
+    {
+      "name": "CInformFriendsEvent",
+      "target_path": "expected/units/CInformFriendsEvent.o"
+    },
+    {
+      "name": "CInformFriendsEventQueue",
+      "target_path": "expected/units/CInformFriendsEventQueue.o"
+    },
+    {
+      "name": "CInformGroupEvent",
+      "target_path": "expected/units/CInformGroupEvent.o"
+    },
+    {
+      "name": "CInformGroupEventQueue",
+      "target_path": "expected/units/CInformGroupEventQueue.o"
+    },
+    {
+      "name": "CIniFile",
+      "target_path": "expected/units/CIniFile.o"
+    },
+    {
+      "name": "CInterestingEvents",
+      "target_path": "expected/units/CInterestingEvents.o"
+    },
+    {
+      "name": "CIplStore",
+      "target_path": "expected/units/CIplStore.o"
+    },
+    {
+      "name": "CJoySticks",
+      "target_path": "expected/units/CJoySticks.o"
+    },
+    {
+      "name": "CKeyArray",
+      "target_path": "expected/units/CKeyArray.o"
+    },
+    {
+      "name": "CKeyGen",
+      "target_path": "expected/units/CKeyGen.o"
+    },
+    {
+      "name": "CKeyboardState",
+      "target_path": "expected/units/CKeyboardState.o"
+    },
+    {
+      "name": "CLines",
+      "target_path": "expected/units/CLines.o"
+    },
+    {
+      "name": "CLoadMonitor",
+      "target_path": "expected/units/CLoadMonitor.o"
+    },
+    {
+      "name": "CLoadedCarGroup",
+      "target_path": "expected/units/CLoadedCarGroup.o"
+    },
+    {
+      "name": "CLoadingScreen",
+      "target_path": "expected/units/CLoadingScreen.o"
+    },
+    {
+      "name": "CLocalisation",
+      "target_path": "expected/units/CLocalisation.o"
+    },
+    {
+      "name": "CLodAtomicModelInfo",
+      "target_path": "expected/units/CLodAtomicModelInfo.o"
+    },
+    {
+      "name": "CLodTimeModelInfo",
+      "target_path": "expected/units/CLodTimeModelInfo.o"
+    },
+    {
+      "name": "CMBlur",
+      "target_path": "expected/units/CMBlur.o"
+    },
+    {
+      "name": "CMaths",
+      "target_path": "expected/units/CMaths.o"
+    },
+    {
+      "name": "CMatrix",
+      "target_path": "expected/units/CMatrix.o"
+    },
+    {
+      "name": "CMatrixLink",
+      "target_path": "expected/units/CMatrixLink.o"
+    },
+    {
+      "name": "CMatrixLinkList",
+      "target_path": "expected/units/CMatrixLinkList.o"
+    },
+    {
+      "name": "CMatrixSerialize",
+      "target_path": "expected/units/CMatrixSerialize.o"
+    },
+    {
+      "name": "CMemoryHeap",
+      "target_path": "expected/units/CMemoryHeap.o"
+    },
+    {
+      "name": "CMemoryMgr",
+      "target_path": "expected/units/CMemoryMgr.o"
+    },
+    {
+      "name": "CMentalState",
+      "target_path": "expected/units/CMentalState.o"
+    },
+    {
+      "name": "CMenuManager",
+      "target_path": "expected/units/CMenuManager.o"
+    },
+    {
+      "name": "CMenuSystem",
+      "target_path": "expected/units/CMenuSystem.o"
+    },
+    {
+      "name": "CMessages",
+      "target_path": "expected/units/CMessages.o"
+    },
+    {
+      "name": "CMirrors",
+      "target_path": "expected/units/CMirrors.o"
+    },
+    {
+      "name": "CMissionCleanup",
+      "target_path": "expected/units/CMissionCleanup.o"
+    },
+    {
+      "name": "CMissionTextOffsets",
+      "target_path": "expected/units/CMissionTextOffsets.o"
+    },
+    {
+      "name": "CModelInfo",
+      "target_path": "expected/units/CModelInfo.o"
+    },
+    {
+      "name": "CModelInfoAccelerator",
+      "target_path": "expected/units/CModelInfoAccelerator.o"
+    },
+    {
+      "name": "CMonsterTruck",
+      "target_path": "expected/units/CMonsterTruck.o"
+    },
+    {
+      "name": "CMotionBlurStreaks",
+      "target_path": "expected/units/CMotionBlurStreaks.o"
+    },
+    {
+      "name": "CMouseControllerState",
+      "target_path": "expected/units/CMouseControllerState.o"
+    },
+    {
+      "name": "CMousePointerStateHelper",
+      "target_path": "expected/units/CMousePointerStateHelper.o"
+    },
+    {
+      "name": "CMoveStateStrings",
+      "target_path": "expected/units/CMoveStateStrings.o"
+    },
+    {
+      "name": "CMovingThings",
+      "target_path": "expected/units/CMovingThings.o"
+    },
+    {
+      "name": "CNearbyFireScanner",
+      "target_path": "expected/units/CNearbyFireScanner.o"
+    },
+    {
+      "name": "CNetworkPC",
+      "target_path": "expected/units/CNetworkPC.o"
+    },
+    {
+      "name": "CNodeRoute",
+      "target_path": "expected/units/CNodeRoute.o"
+    },
+    {
+      "name": "CObject",
+      "target_path": "expected/units/CObject.o"
+    },
+    {
+      "name": "CObjectData",
+      "target_path": "expected/units/CObjectData.o"
+    },
+    {
+      "name": "CObjectPotentialCollisionScanner",
+      "target_path": "expected/units/CObjectPotentialCollisionScanner.o"
+    },
+    {
+      "name": "CObjectSaveStructure",
+      "target_path": "expected/units/CObjectSaveStructure.o"
+    },
+    {
+      "name": "CObjectScanner",
+      "target_path": "expected/units/CObjectScanner.o"
+    },
+    {
+      "name": "COccluder",
+      "target_path": "expected/units/COccluder.o"
+    },
+    {
+      "name": "COcclusion",
+      "target_path": "expected/units/COcclusion.o"
+    },
+    {
+      "name": "COctTree",
+      "target_path": "expected/units/COctTree.o"
+    },
+    {
+      "name": "COctTreeBase",
+      "target_path": "expected/units/COctTreeBase.o"
+    },
+    {
+      "name": "COnscreenCounterEntry",
+      "target_path": "expected/units/COnscreenCounterEntry.o"
+    },
+    {
+      "name": "COnscreenTimer",
+      "target_path": "expected/units/COnscreenTimer.o"
+    },
+    {
+      "name": "COnscreenTimerEntry",
+      "target_path": "expected/units/COnscreenTimerEntry.o"
+    },
+    {
+      "name": "CPCKeyboard",
+      "target_path": "expected/units/CPCKeyboard.o"
+    },
+    {
+      "name": "CPPTriPlantBuffer",
+      "target_path": "expected/units/CPPTriPlantBuffer.o"
+    },
+    {
+      "name": "CPad",
+      "target_path": "expected/units/CPad.o"
+    },
+    {
+      "name": "CPathFind",
+      "target_path": "expected/units/CPathFind.o"
+    },
+    {
+      "name": "CPatrolRoute",
+      "target_path": "expected/units/CPatrolRoute.o"
+    },
+    {
+      "name": "CPed",
+      "target_path": "expected/units/CPed.o"
+    },
+    {
+      "name": "CPedAcquaintanceScanner",
+      "target_path": "expected/units/CPedAcquaintanceScanner.o"
+    },
+    {
+      "name": "CPedAtmAttractor",
+      "target_path": "expected/units/CPedAtmAttractor.o"
+    },
+    {
+      "name": "CPedAttractor",
+      "target_path": "expected/units/CPedAttractor.o"
+    },
+    {
+      "name": "CPedAttractorManager",
+      "target_path": "expected/units/CPedAttractorManager.o"
+    },
+    {
+      "name": "CPedAttractorPedPlacer",
+      "target_path": "expected/units/CPedAttractorPedPlacer.o"
+    },
+    {
+      "name": "CPedClothesDesc",
+      "target_path": "expected/units/CPedClothesDesc.o"
+    },
+    {
+      "name": "CPedDamageResponseCalculator",
+      "target_path": "expected/units/CPedDamageResponseCalculator.o"
+    },
+    {
+      "name": "CPedDebugVisualiser",
+      "target_path": "expected/units/CPedDebugVisualiser.o"
+    },
+    {
+      "name": "CPedGeometryAnalyser",
+      "target_path": "expected/units/CPedGeometryAnalyser.o"
+    },
+    {
+      "name": "CPedGroup",
+      "target_path": "expected/units/CPedGroup.o"
+    },
+    {
+      "name": "CPedGroupDefaultTaskAllocators",
+      "target_path": "expected/units/CPedGroupDefaultTaskAllocators.o"
+    },
+    {
+      "name": "CPedGroupIntelligence",
+      "target_path": "expected/units/CPedGroupIntelligence.o"
+    },
+    {
+      "name": "CPedGroupMembership",
+      "target_path": "expected/units/CPedGroupMembership.o"
+    },
+    {
+      "name": "CPedGroups",
+      "target_path": "expected/units/CPedGroups.o"
+    },
+    {
+      "name": "CPedIK",
+      "target_path": "expected/units/CPedIK.o"
+    },
+    {
+      "name": "CPedIntelligence",
+      "target_path": "expected/units/CPedIntelligence.o"
+    },
+    {
+      "name": "CPedList",
+      "target_path": "expected/units/CPedList.o"
+    },
+    {
+      "name": "CPedLookAtAttractor",
+      "target_path": "expected/units/CPedLookAtAttractor.o"
+    },
+    {
+      "name": "CPedModelInfo",
+      "target_path": "expected/units/CPedModelInfo.o"
+    },
+    {
+      "name": "CPedParkAttractor",
+      "target_path": "expected/units/CPedParkAttractor.o"
+    },
+    {
+      "name": "CPedPath",
+      "target_path": "expected/units/CPedPath.o"
+    },
+    {
+      "name": "CPedPizzaAttractor",
+      "target_path": "expected/units/CPedPizzaAttractor.o"
+    },
+    {
+      "name": "CPedPlacement",
+      "target_path": "expected/units/CPedPlacement.o"
+    },
+    {
+      "name": "CPedSaveStructure",
+      "target_path": "expected/units/CPedSaveStructure.o"
+    },
+    {
+      "name": "CPedScanner",
+      "target_path": "expected/units/CPedScanner.o"
+    },
+    {
+      "name": "CPedScriptedAttractor",
+      "target_path": "expected/units/CPedScriptedAttractor.o"
+    },
+    {
+      "name": "CPedScriptedTaskRecord",
+      "target_path": "expected/units/CPedScriptedTaskRecord.o"
+    },
+    {
+      "name": "CPedScriptedTaskRecordData",
+      "target_path": "expected/units/CPedScriptedTaskRecordData.o"
+    },
+    {
+      "name": "CPedSeatAttractor",
+      "target_path": "expected/units/CPedSeatAttractor.o"
+    },
+    {
+      "name": "CPedShelterAttractor",
+      "target_path": "expected/units/CPedShelterAttractor.o"
+    },
+    {
+      "name": "CPedStats",
+      "target_path": "expected/units/CPedStats.o"
+    },
+    {
+      "name": "CPedStepAttractor",
+      "target_path": "expected/units/CPedStepAttractor.o"
+    },
+    {
+      "name": "CPedStopAttractor",
+      "target_path": "expected/units/CPedStopAttractor.o"
+    },
+    {
+      "name": "CPedStuckChecker",
+      "target_path": "expected/units/CPedStuckChecker.o"
+    },
+    {
+      "name": "CPedTaskPair",
+      "target_path": "expected/units/CPedTaskPair.o"
+    },
+    {
+      "name": "CPedToPlayerConversations",
+      "target_path": "expected/units/CPedToPlayerConversations.o"
+    },
+    {
+      "name": "CPedTriggerScriptAttractor",
+      "target_path": "expected/units/CPedTriggerScriptAttractor.o"
+    },
+    {
+      "name": "CPedType",
+      "target_path": "expected/units/CPedType.o"
+    },
+    {
+      "name": "CPhone",
+      "target_path": "expected/units/CPhone.o"
+    },
+    {
+      "name": "CPhoneInfo",
+      "target_path": "expected/units/CPhoneInfo.o"
+    },
+    {
+      "name": "CPhysical",
+      "target_path": "expected/units/CPhysical.o"
+    },
+    {
+      "name": "CPickup",
+      "target_path": "expected/units/CPickup.o"
+    },
+    {
+      "name": "CPickups",
+      "target_path": "expected/units/CPickups.o"
+    },
+    {
+      "name": "CPlaceName",
+      "target_path": "expected/units/CPlaceName.o"
+    },
+    {
+      "name": "CPlaceable",
+      "target_path": "expected/units/CPlaceable.o"
+    },
+    {
+      "name": "CPlane",
+      "target_path": "expected/units/CPlane.o"
+    },
+    {
+      "name": "CPlaneBanner",
+      "target_path": "expected/units/CPlaneBanner.o"
+    },
+    {
+      "name": "CPlaneBanners",
+      "target_path": "expected/units/CPlaneBanners.o"
+    },
+    {
+      "name": "CPlaneTrail",
+      "target_path": "expected/units/CPlaneTrail.o"
+    },
+    {
+      "name": "CPlaneTrails",
+      "target_path": "expected/units/CPlaneTrails.o"
+    },
+    {
+      "name": "CPlantColEntEntry",
+      "target_path": "expected/units/CPlantColEntEntry.o"
+    },
+    {
+      "name": "CPlantLocTri",
+      "target_path": "expected/units/CPlantLocTri.o"
+    },
+    {
+      "name": "CPlantMgr",
+      "target_path": "expected/units/CPlantMgr.o"
+    },
+    {
+      "name": "CPlantSurfPropMgr",
+      "target_path": "expected/units/CPlantSurfPropMgr.o"
+    },
+    {
+      "name": "CPlayerCrossHair",
+      "target_path": "expected/units/CPlayerCrossHair.o"
+    },
+    {
+      "name": "CPlayerInfo",
+      "target_path": "expected/units/CPlayerInfo.o"
+    },
+    {
+      "name": "CPlayerInfoSaveStructure",
+      "target_path": "expected/units/CPlayerInfoSaveStructure.o"
+    },
+    {
+      "name": "CPlayerPed",
+      "target_path": "expected/units/CPlayerPed.o"
+    },
+    {
+      "name": "CPlayerPedData",
+      "target_path": "expected/units/CPlayerPedData.o"
+    },
+    {
+      "name": "CPlayerPedDataSaveStructure",
+      "target_path": "expected/units/CPlayerPedDataSaveStructure.o"
+    },
+    {
+      "name": "CPlayerRelationshipRecorder",
+      "target_path": "expected/units/CPlayerRelationshipRecorder.o"
+    },
+    {
+      "name": "CPlayerSkin",
+      "target_path": "expected/units/CPlayerSkin.o"
+    },
+    {
+      "name": "CPointLights",
+      "target_path": "expected/units/CPointLights.o"
+    },
+    {
+      "name": "CPointList",
+      "target_path": "expected/units/CPointList.o"
+    },
+    {
+      "name": "CPointRoute",
+      "target_path": "expected/units/CPointRoute.o"
+    },
+    {
+      "name": "CPool",
+      "target_path": "expected/units/CPool.o"
+    },
+    {
+      "name": "CPools",
+      "target_path": "expected/units/CPools.o"
+    },
+    {
+      "name": "CPopCycle",
+      "target_path": "expected/units/CPopCycle.o"
+    },
+    {
+      "name": "CPopulation",
+      "target_path": "expected/units/CPopulation.o"
+    },
+    {
+      "name": "CPostEffects",
+      "target_path": "expected/units/CPostEffects.o"
+    },
+    {
+      "name": "CPostEffectsSaveStructure",
+      "target_path": "expected/units/CPostEffectsSaveStructure.o"
+    },
+    {
+      "name": "CProfile",
+      "target_path": "expected/units/CProfile.o"
+    },
+    {
+      "name": "CProjectile",
+      "target_path": "expected/units/CProjectile.o"
+    },
+    {
+      "name": "CProjectileInfo",
+      "target_path": "expected/units/CProjectileInfo.o"
+    },
+    {
+      "name": "CPtrList",
+      "target_path": "expected/units/CPtrList.o"
+    },
+    {
+      "name": "CPtrListDoubleLink",
+      "target_path": "expected/units/CPtrListDoubleLink.o"
+    },
+    {
+      "name": "CPtrListSingleLink",
+      "target_path": "expected/units/CPtrListSingleLink.o"
+    },
+    {
+      "name": "CPtrNodeDoubleLink",
+      "target_path": "expected/units/CPtrNodeDoubleLink.o"
+    },
+    {
+      "name": "CPtrNodeSingleLink",
+      "target_path": "expected/units/CPtrNodeSingleLink.o"
+    },
+    {
+      "name": "CQuadBike",
+      "target_path": "expected/units/CQuadBike.o"
+    },
+    {
+      "name": "CQuadTreeNode",
+      "target_path": "expected/units/CQuadTreeNode.o"
+    },
+    {
+      "name": "CQuaternion",
+      "target_path": "expected/units/CQuaternion.o"
+    },
+    {
+      "name": "CRGBA",
+      "target_path": "expected/units/CRGBA.o"
+    },
+    {
+      "name": "CRadar",
+      "target_path": "expected/units/CRadar.o"
+    },
+    {
+      "name": "CRange2D",
+      "target_path": "expected/units/CRange2D.o"
+    },
+    {
+      "name": "CRange3D",
+      "target_path": "expected/units/CRange3D.o"
+    },
+    {
+      "name": "CRealTimeShadow",
+      "target_path": "expected/units/CRealTimeShadow.o"
+    },
+    {
+      "name": "CRealTimeShadowManager",
+      "target_path": "expected/units/CRealTimeShadowManager.o"
+    },
+    {
+      "name": "CReferences",
+      "target_path": "expected/units/CReferences.o"
+    },
+    {
+      "name": "CRegisteredCorona",
+      "target_path": "expected/units/CRegisteredCorona.o"
+    },
+    {
+      "name": "CRegisteredMotionBlurStreak",
+      "target_path": "expected/units/CRegisteredMotionBlurStreak.o"
+    },
+    {
+      "name": "CRemote",
+      "target_path": "expected/units/CRemote.o"
+    },
+    {
+      "name": "CRenderer",
+      "target_path": "expected/units/CRenderer.o"
+    },
+    {
+      "name": "CRestart",
+      "target_path": "expected/units/CRestart.o"
+    },
+    {
+      "name": "CRideAnimData",
+      "target_path": "expected/units/CRideAnimData.o"
+    },
+    {
+      "name": "CRoadBlocks",
+      "target_path": "expected/units/CRoadBlocks.o"
+    },
+    {
+      "name": "CRope",
+      "target_path": "expected/units/CRope.o"
+    },
+    {
+      "name": "CRopes",
+      "target_path": "expected/units/CRopes.o"
+    },
+    {
+      "name": "CRubbish",
+      "target_path": "expected/units/CRubbish.o"
+    },
+    {
+      "name": "CRunningScript",
+      "target_path": "expected/units/CRunningScript.o"
+    },
+    {
+      "name": "CSaveGarage",
+      "target_path": "expected/units/CSaveGarage.o"
+    },
+    {
+      "name": "CScriptResourceManager",
+      "target_path": "expected/units/CScriptResourceManager.o"
+    },
+    {
+      "name": "CScripted2dEffects",
+      "target_path": "expected/units/CScripted2dEffects.o"
+    },
+    {
+      "name": "CScriptedBrainTaskStore",
+      "target_path": "expected/units/CScriptedBrainTaskStore.o"
+    },
+    {
+      "name": "CScriptedEffectPair",
+      "target_path": "expected/units/CScriptedEffectPair.o"
+    },
+    {
+      "name": "CScriptedEffectPairs",
+      "target_path": "expected/units/CScriptedEffectPairs.o"
+    },
+    {
+      "name": "CScriptsForBrains",
+      "target_path": "expected/units/CScriptsForBrains.o"
+    },
+    {
+      "name": "CSerializedColTriangle",
+      "target_path": "expected/units/CSerializedColTriangle.o"
+    },
+    {
+      "name": "CSerializedColTrianglePlane",
+      "target_path": "expected/units/CSerializedColTrianglePlane.o"
+    },
+    {
+      "name": "CSetPiece",
+      "target_path": "expected/units/CSetPiece.o"
+    },
+    {
+      "name": "CSetPieces",
+      "target_path": "expected/units/CSetPieces.o"
+    },
+    {
+      "name": "CSexyPedScanner",
+      "target_path": "expected/units/CSexyPedScanner.o"
+    },
+    {
+      "name": "CShadowCamera",
+      "target_path": "expected/units/CShadowCamera.o"
+    },
+    {
+      "name": "CShadows",
+      "target_path": "expected/units/CShadows.o"
+    },
+    {
+      "name": "CShinyTexts",
+      "target_path": "expected/units/CShinyTexts.o"
+    },
+    {
+      "name": "CShopping",
+      "target_path": "expected/units/CShopping.o"
+    },
+    {
+      "name": "CShotInfo",
+      "target_path": "expected/units/CShotInfo.o"
+    },
+    {
+      "name": "CSimpleTransform",
+      "target_path": "expected/units/CSimpleTransform.o"
+    },
+    {
+      "name": "CSimpleVariablesSaveStructure",
+      "target_path": "expected/units/CSimpleVariablesSaveStructure.o"
+    },
+    {
+      "name": "CSkidmarks",
+      "target_path": "expected/units/CSkidmarks.o"
+    },
+    {
+      "name": "CSpecialFX",
+      "target_path": "expected/units/CSpecialFX.o"
+    },
+    {
+      "name": "CSpecialPlateHandler",
+      "target_path": "expected/units/CSpecialPlateHandler.o"
+    },
+    {
+      "name": "CSphere",
+      "target_path": "expected/units/CSphere.o"
+    },
+    {
+      "name": "CSprite",
+      "target_path": "expected/units/CSprite.o"
+    },
+    {
+      "name": "CSprite2d",
+      "target_path": "expected/units/CSprite2d.o"
+    },
+    {
+      "name": "CStaticShadow",
+      "target_path": "expected/units/CStaticShadow.o"
+    },
+    {
+      "name": "CStats",
+      "target_path": "expected/units/CStats.o"
+    },
+    {
+      "name": "CStore",
+      "target_path": "expected/units/CStore.o"
+    },
+    {
+      "name": "CStoredCar",
+      "target_path": "expected/units/CStoredCar.o"
+    },
+    {
+      "name": "CStreamedScripts",
+      "target_path": "expected/units/CStreamedScripts.o"
+    },
+    {
+      "name": "CStreaming",
+      "target_path": "expected/units/CStreaming.o"
+    },
+    {
+      "name": "CStreamingInfo",
+      "target_path": "expected/units/CStreamingInfo.o"
+    },
+    {
+      "name": "CStuckCarCheck",
+      "target_path": "expected/units/CStuckCarCheck.o"
+    },
+    {
+      "name": "CStuntJumpManager",
+      "target_path": "expected/units/CStuntJumpManager.o"
+    },
+    {
+      "name": "CTagManager",
+      "target_path": "expected/units/CTagManager.o"
+    },
+    {
+      "name": "CTapEffect",
+      "target_path": "expected/units/CTapEffect.o"
+    },
+    {
+      "name": "CTask",
+      "target_path": "expected/units/CTask.o"
+    },
+    {
+      "name": "CTaskAllocator",
+      "target_path": "expected/units/CTaskAllocator.o"
+    },
+    {
+      "name": "CTaskAllocatorAttack",
+      "target_path": "expected/units/CTaskAllocatorAttack.o"
+    },
+    {
+      "name": "CTaskAllocatorKillOnFoot",
+      "target_path": "expected/units/CTaskAllocatorKillOnFoot.o"
+    },
+    {
+      "name": "CTaskAllocatorKillThreatsBasic",
+      "target_path": "expected/units/CTaskAllocatorKillThreatsBasic.o"
+    },
+    {
+      "name": "CTaskAllocatorKillThreatsBasicRandomGroup",
+      "target_path": "expected/units/CTaskAllocatorKillThreatsBasicRandomGroup.o"
+    },
+    {
+      "name": "CTaskAllocatorKillThreatsDriveby",
+      "target_path": "expected/units/CTaskAllocatorKillThreatsDriveby.o"
+    },
+    {
+      "name": "CTaskAllocatorPlayerCommandAttack",
+      "target_path": "expected/units/CTaskAllocatorPlayerCommandAttack.o"
+    },
+    {
+      "name": "CTaskAllocatorPlayerCommandRetreat",
+      "target_path": "expected/units/CTaskAllocatorPlayerCommandRetreat.o"
+    },
+    {
+      "name": "CTaskAllocatorRetreat",
+      "target_path": "expected/units/CTaskAllocatorRetreat.o"
+    },
+    {
+      "name": "CTaskCategories",
+      "target_path": "expected/units/CTaskCategories.o"
+    },
+    {
+      "name": "CTaskComplex",
+      "target_path": "expected/units/CTaskComplex.o"
+    },
+    {
+      "name": "CTaskComplexArrestPed",
+      "target_path": "expected/units/CTaskComplexArrestPed.o"
+    },
+    {
+      "name": "CTaskComplexAttractorPartnerWait",
+      "target_path": "expected/units/CTaskComplexAttractorPartnerWait.o"
+    },
+    {
+      "name": "CTaskComplexAvoidEntity",
+      "target_path": "expected/units/CTaskComplexAvoidEntity.o"
+    },
+    {
+      "name": "CTaskComplexAvoidOtherPedWhileWandering",
+      "target_path": "expected/units/CTaskComplexAvoidOtherPedWhileWandering.o"
+    },
+    {
+      "name": "CTaskComplexBeCop",
+      "target_path": "expected/units/CTaskComplexBeCop.o"
+    },
+    {
+      "name": "CTaskComplexBeInCouple",
+      "target_path": "expected/units/CTaskComplexBeInCouple.o"
+    },
+    {
+      "name": "CTaskComplexBeInGroup",
+      "target_path": "expected/units/CTaskComplexBeInGroup.o"
+    },
+    {
+      "name": "CTaskComplexBeStill",
+      "target_path": "expected/units/CTaskComplexBeStill.o"
+    },
+    {
+      "name": "CTaskComplexCarDrive",
+      "target_path": "expected/units/CTaskComplexCarDrive.o"
+    },
+    {
+      "name": "CTaskComplexCarDriveMission",
+      "target_path": "expected/units/CTaskComplexCarDriveMission.o"
+    },
+    {
+      "name": "CTaskComplexCarDriveMissionFleeScene",
+      "target_path": "expected/units/CTaskComplexCarDriveMissionFleeScene.o"
+    },
+    {
+      "name": "CTaskComplexCarDriveMissionKillPed",
+      "target_path": "expected/units/CTaskComplexCarDriveMissionKillPed.o"
+    },
+    {
+      "name": "CTaskComplexCarDriveWander",
+      "target_path": "expected/units/CTaskComplexCarDriveWander.o"
+    },
+    {
+      "name": "CTaskComplexCarSlowBeDraggedOut",
+      "target_path": "expected/units/CTaskComplexCarSlowBeDraggedOut.o"
+    },
+    {
+      "name": "CTaskComplexCarSlowBeDraggedOutAndStandUp",
+      "target_path": "expected/units/CTaskComplexCarSlowBeDraggedOutAndStandUp.o"
+    },
+    {
+      "name": "CTaskComplexChat",
+      "target_path": "expected/units/CTaskComplexChat.o"
+    },
+    {
+      "name": "CTaskComplexClimb",
+      "target_path": "expected/units/CTaskComplexClimb.o"
+    },
+    {
+      "name": "CTaskComplexCopInCar",
+      "target_path": "expected/units/CTaskComplexCopInCar.o"
+    },
+    {
+      "name": "CTaskComplexCrossRoadLookAndAchieveHeading",
+      "target_path": "expected/units/CTaskComplexCrossRoadLookAndAchieveHeading.o"
+    },
+    {
+      "name": "CTaskComplexDestroyCar",
+      "target_path": "expected/units/CTaskComplexDestroyCar.o"
+    },
+    {
+      "name": "CTaskComplexDestroyCarArmed",
+      "target_path": "expected/units/CTaskComplexDestroyCarArmed.o"
+    },
+    {
+      "name": "CTaskComplexDestroyCarMelee",
+      "target_path": "expected/units/CTaskComplexDestroyCarMelee.o"
+    },
+    {
+      "name": "CTaskComplexDie",
+      "target_path": "expected/units/CTaskComplexDie.o"
+    },
+    {
+      "name": "CTaskComplexDieInCar",
+      "target_path": "expected/units/CTaskComplexDieInCar.o"
+    },
+    {
+      "name": "CTaskComplexDiveFromAttachedEntityAndGetUp",
+      "target_path": "expected/units/CTaskComplexDiveFromAttachedEntityAndGetUp.o"
+    },
+    {
+      "name": "CTaskComplexDragPedFromCar",
+      "target_path": "expected/units/CTaskComplexDragPedFromCar.o"
+    },
+    {
+      "name": "CTaskComplexDriveFireTruck",
+      "target_path": "expected/units/CTaskComplexDriveFireTruck.o"
+    },
+    {
+      "name": "CTaskComplexDrivePointRoute",
+      "target_path": "expected/units/CTaskComplexDrivePointRoute.o"
+    },
+    {
+      "name": "CTaskComplexDriveToPoint",
+      "target_path": "expected/units/CTaskComplexDriveToPoint.o"
+    },
+    {
+      "name": "CTaskComplexEnterAnyCarAsDriver",
+      "target_path": "expected/units/CTaskComplexEnterAnyCarAsDriver.o"
+    },
+    {
+      "name": "CTaskComplexEnterBoatAsDriver",
+      "target_path": "expected/units/CTaskComplexEnterBoatAsDriver.o"
+    },
+    {
+      "name": "CTaskComplexEnterCar",
+      "target_path": "expected/units/CTaskComplexEnterCar.o"
+    },
+    {
+      "name": "CTaskComplexEnterCarAsDriver",
+      "target_path": "expected/units/CTaskComplexEnterCarAsDriver.o"
+    },
+    {
+      "name": "CTaskComplexEnterCarAsDriverTimed",
+      "target_path": "expected/units/CTaskComplexEnterCarAsDriverTimed.o"
+    },
+    {
+      "name": "CTaskComplexEnterCarAsPassenger",
+      "target_path": "expected/units/CTaskComplexEnterCarAsPassenger.o"
+    },
+    {
+      "name": "CTaskComplexEnterCarAsPassengerTimed",
+      "target_path": "expected/units/CTaskComplexEnterCarAsPassengerTimed.o"
+    },
+    {
+      "name": "CTaskComplexEnterCarAsPassengerWait",
+      "target_path": "expected/units/CTaskComplexEnterCarAsPassengerWait.o"
+    },
+    {
+      "name": "CTaskComplexEvasiveCower",
+      "target_path": "expected/units/CTaskComplexEvasiveCower.o"
+    },
+    {
+      "name": "CTaskComplexEvasiveDiveAndGetUp",
+      "target_path": "expected/units/CTaskComplexEvasiveDiveAndGetUp.o"
+    },
+    {
+      "name": "CTaskComplexEvasiveStep",
+      "target_path": "expected/units/CTaskComplexEvasiveStep.o"
+    },
+    {
+      "name": "CTaskComplexExtinguishFireOnFoot",
+      "target_path": "expected/units/CTaskComplexExtinguishFireOnFoot.o"
+    },
+    {
+      "name": "CTaskComplexExtinguishFires",
+      "target_path": "expected/units/CTaskComplexExtinguishFires.o"
+    },
+    {
+      "name": "CTaskComplexFacial",
+      "target_path": "expected/units/CTaskComplexFacial.o"
+    },
+    {
+      "name": "CTaskComplexFallAndGetUp",
+      "target_path": "expected/units/CTaskComplexFallAndGetUp.o"
+    },
+    {
+      "name": "CTaskComplexFallAndStayDown",
+      "target_path": "expected/units/CTaskComplexFallAndStayDown.o"
+    },
+    {
+      "name": "CTaskComplexFallToDeath",
+      "target_path": "expected/units/CTaskComplexFallToDeath.o"
+    },
+    {
+      "name": "CTaskComplexFleeAnyMeans",
+      "target_path": "expected/units/CTaskComplexFleeAnyMeans.o"
+    },
+    {
+      "name": "CTaskComplexFleeEntity",
+      "target_path": "expected/units/CTaskComplexFleeEntity.o"
+    },
+    {
+      "name": "CTaskComplexFleePoint",
+      "target_path": "expected/units/CTaskComplexFleePoint.o"
+    },
+    {
+      "name": "CTaskComplexFleeShooting",
+      "target_path": "expected/units/CTaskComplexFleeShooting.o"
+    },
+    {
+      "name": "CTaskComplexFollowLeaderAnyMeans",
+      "target_path": "expected/units/CTaskComplexFollowLeaderAnyMeans.o"
+    },
+    {
+      "name": "CTaskComplexFollowLeaderInFormation",
+      "target_path": "expected/units/CTaskComplexFollowLeaderInFormation.o"
+    },
+    {
+      "name": "CTaskComplexFollowNodeRoute",
+      "target_path": "expected/units/CTaskComplexFollowNodeRoute.o"
+    },
+    {
+      "name": "CTaskComplexFollowNodeRouteShooting",
+      "target_path": "expected/units/CTaskComplexFollowNodeRouteShooting.o"
+    },
+    {
+      "name": "CTaskComplexFollowPatrolRoute",
+      "target_path": "expected/units/CTaskComplexFollowPatrolRoute.o"
+    },
+    {
+      "name": "CTaskComplexFollowPedFootsteps",
+      "target_path": "expected/units/CTaskComplexFollowPedFootsteps.o"
+    },
+    {
+      "name": "CTaskComplexFollowPointRoute",
+      "target_path": "expected/units/CTaskComplexFollowPointRoute.o"
+    },
+    {
+      "name": "CTaskComplexGangFollower",
+      "target_path": "expected/units/CTaskComplexGangFollower.o"
+    },
+    {
+      "name": "CTaskComplexGangJoinRespond",
+      "target_path": "expected/units/CTaskComplexGangJoinRespond.o"
+    },
+    {
+      "name": "CTaskComplexGangLeader",
+      "target_path": "expected/units/CTaskComplexGangLeader.o"
+    },
+    {
+      "name": "CTaskComplexGetOnBoatSeat",
+      "target_path": "expected/units/CTaskComplexGetOnBoatSeat.o"
+    },
+    {
+      "name": "CTaskComplexGetUpAndStandStill",
+      "target_path": "expected/units/CTaskComplexGetUpAndStandStill.o"
+    },
+    {
+      "name": "CTaskComplexGoPickUpEntity",
+      "target_path": "expected/units/CTaskComplexGoPickUpEntity.o"
+    },
+    {
+      "name": "CTaskComplexGoToAttractor",
+      "target_path": "expected/units/CTaskComplexGoToAttractor.o"
+    },
+    {
+      "name": "CTaskComplexGoToBoatSteeringWheel",
+      "target_path": "expected/units/CTaskComplexGoToBoatSteeringWheel.o"
+    },
+    {
+      "name": "CTaskComplexGoToCarDoorAndStandStill",
+      "target_path": "expected/units/CTaskComplexGoToCarDoorAndStandStill.o"
+    },
+    {
+      "name": "CTaskComplexGoToPointAiming",
+      "target_path": "expected/units/CTaskComplexGoToPointAiming.o"
+    },
+    {
+      "name": "CTaskComplexGoToPointAndStandStill",
+      "target_path": "expected/units/CTaskComplexGoToPointAndStandStill.o"
+    },
+    {
+      "name": "CTaskComplexGoToPointAndStandStillAndAchieveHeading",
+      "target_path": "expected/units/CTaskComplexGoToPointAndStandStillAndAchieveHeading.o"
+    },
+    {
+      "name": "CTaskComplexGoToPointAndStandStillTimed",
+      "target_path": "expected/units/CTaskComplexGoToPointAndStandStillTimed.o"
+    },
+    {
+      "name": "CTaskComplexGoToPointAnyMeans",
+      "target_path": "expected/units/CTaskComplexGoToPointAnyMeans.o"
+    },
+    {
+      "name": "CTaskComplexGoToPointShooting",
+      "target_path": "expected/units/CTaskComplexGoToPointShooting.o"
+    },
+    {
+      "name": "CTaskComplexGoToPointUntilCollisionAndStandStill",
+      "target_path": "expected/units/CTaskComplexGoToPointUntilCollisionAndStandStill.o"
+    },
+    {
+      "name": "CTaskComplexGotoDoorAndOpen",
+      "target_path": "expected/units/CTaskComplexGotoDoorAndOpen.o"
+    },
+    {
+      "name": "CTaskComplexHitByGunResponse",
+      "target_path": "expected/units/CTaskComplexHitByGunResponse.o"
+    },
+    {
+      "name": "CTaskComplexHitPedWithCar",
+      "target_path": "expected/units/CTaskComplexHitPedWithCar.o"
+    },
+    {
+      "name": "CTaskComplexHitResponse",
+      "target_path": "expected/units/CTaskComplexHitResponse.o"
+    },
+    {
+      "name": "CTaskComplexInAirAndLand",
+      "target_path": "expected/units/CTaskComplexInAirAndLand.o"
+    },
+    {
+      "name": "CTaskComplexInWater",
+      "target_path": "expected/units/CTaskComplexInWater.o"
+    },
+    {
+      "name": "CTaskComplexInvestigateDeadPed",
+      "target_path": "expected/units/CTaskComplexInvestigateDeadPed.o"
+    },
+    {
+      "name": "CTaskComplexInvestigateDisturbance",
+      "target_path": "expected/units/CTaskComplexInvestigateDisturbance.o"
+    },
+    {
+      "name": "CTaskComplexJump",
+      "target_path": "expected/units/CTaskComplexJump.o"
+    },
+    {
+      "name": "CTaskComplexKillAllThreats",
+      "target_path": "expected/units/CTaskComplexKillAllThreats.o"
+    },
+    {
+      "name": "CTaskComplexKillCriminal",
+      "target_path": "expected/units/CTaskComplexKillCriminal.o"
+    },
+    {
+      "name": "CTaskComplexKillPedFromBoat",
+      "target_path": "expected/units/CTaskComplexKillPedFromBoat.o"
+    },
+    {
+      "name": "CTaskComplexKillPedGroupOnFoot",
+      "target_path": "expected/units/CTaskComplexKillPedGroupOnFoot.o"
+    },
+    {
+      "name": "CTaskComplexKillPedOnFoot",
+      "target_path": "expected/units/CTaskComplexKillPedOnFoot.o"
+    },
+    {
+      "name": "CTaskComplexKillPedOnFootArmed",
+      "target_path": "expected/units/CTaskComplexKillPedOnFootArmed.o"
+    },
+    {
+      "name": "CTaskComplexKillPedOnFootMelee",
+      "target_path": "expected/units/CTaskComplexKillPedOnFootMelee.o"
+    },
+    {
+      "name": "CTaskComplexKillPedOnFootStealth",
+      "target_path": "expected/units/CTaskComplexKillPedOnFootStealth.o"
+    },
+    {
+      "name": "CTaskComplexLeaveAnyCar",
+      "target_path": "expected/units/CTaskComplexLeaveAnyCar.o"
+    },
+    {
+      "name": "CTaskComplexLeaveBoat",
+      "target_path": "expected/units/CTaskComplexLeaveBoat.o"
+    },
+    {
+      "name": "CTaskComplexLeaveCar",
+      "target_path": "expected/units/CTaskComplexLeaveCar.o"
+    },
+    {
+      "name": "CTaskComplexLeaveCarAndDie",
+      "target_path": "expected/units/CTaskComplexLeaveCarAndDie.o"
+    },
+    {
+      "name": "CTaskComplexLeaveCarAndFlee",
+      "target_path": "expected/units/CTaskComplexLeaveCarAndFlee.o"
+    },
+    {
+      "name": "CTaskComplexLeaveCarAndWander",
+      "target_path": "expected/units/CTaskComplexLeaveCarAndWander.o"
+    },
+    {
+      "name": "CTaskComplexLeaveCarAsPassengerWait",
+      "target_path": "expected/units/CTaskComplexLeaveCarAsPassengerWait.o"
+    },
+    {
+      "name": "CTaskComplexMedicTreatInjuredPed",
+      "target_path": "expected/units/CTaskComplexMedicTreatInjuredPed.o"
+    },
+    {
+      "name": "CTaskComplexMoveBackAndJump",
+      "target_path": "expected/units/CTaskComplexMoveBackAndJump.o"
+    },
+    {
+      "name": "CTaskComplexObserveTrafficLights",
+      "target_path": "expected/units/CTaskComplexObserveTrafficLights.o"
+    },
+    {
+      "name": "CTaskComplexObserveTrafficLightsAndAchieveHeading",
+      "target_path": "expected/units/CTaskComplexObserveTrafficLightsAndAchieveHeading.o"
+    },
+    {
+      "name": "CTaskComplexOnFire",
+      "target_path": "expected/units/CTaskComplexOnFire.o"
+    },
+    {
+      "name": "CTaskComplexOpenDriverDoor",
+      "target_path": "expected/units/CTaskComplexOpenDriverDoor.o"
+    },
+    {
+      "name": "CTaskComplexOpenPassengerDoor",
+      "target_path": "expected/units/CTaskComplexOpenPassengerDoor.o"
+    },
+    {
+      "name": "CTaskComplexPartner",
+      "target_path": "expected/units/CTaskComplexPartner.o"
+    },
+    {
+      "name": "CTaskComplexPartnerChat",
+      "target_path": "expected/units/CTaskComplexPartnerChat.o"
+    },
+    {
+      "name": "CTaskComplexPartnerDeal",
+      "target_path": "expected/units/CTaskComplexPartnerDeal.o"
+    },
+    {
+      "name": "CTaskComplexPartnerGreet",
+      "target_path": "expected/units/CTaskComplexPartnerGreet.o"
+    },
+    {
+      "name": "CTaskComplexPartnerShove",
+      "target_path": "expected/units/CTaskComplexPartnerShove.o"
+    },
+    {
+      "name": "CTaskComplexPassObject",
+      "target_path": "expected/units/CTaskComplexPassObject.o"
+    },
+    {
+      "name": "CTaskComplexPlayHandSignalAnim",
+      "target_path": "expected/units/CTaskComplexPlayHandSignalAnim.o"
+    },
+    {
+      "name": "CTaskComplexPolicePursuit",
+      "target_path": "expected/units/CTaskComplexPolicePursuit.o"
+    },
+    {
+      "name": "CTaskComplexPresentIDToCop",
+      "target_path": "expected/units/CTaskComplexPresentIDToCop.o"
+    },
+    {
+      "name": "CTaskComplexProstituteSolicit",
+      "target_path": "expected/units/CTaskComplexProstituteSolicit.o"
+    },
+    {
+      "name": "CTaskComplexReactToAttack",
+      "target_path": "expected/units/CTaskComplexReactToAttack.o"
+    },
+    {
+      "name": "CTaskComplexReactToGunAimedAt",
+      "target_path": "expected/units/CTaskComplexReactToGunAimedAt.o"
+    },
+    {
+      "name": "CTaskComplexRoadRage",
+      "target_path": "expected/units/CTaskComplexRoadRage.o"
+    },
+    {
+      "name": "CTaskComplexScreamInCarThenLeave",
+      "target_path": "expected/units/CTaskComplexScreamInCarThenLeave.o"
+    },
+    {
+      "name": "CTaskComplexSeekCoverUntilTargetDead",
+      "target_path": "expected/units/CTaskComplexSeekCoverUntilTargetDead.o"
+    },
+    {
+      "name": "CTaskComplexSeekEntity",
+      "target_path": "expected/units/CTaskComplexSeekEntity.o"
+    },
+    {
+      "name": "CTaskComplexSeekEntityAiming",
+      "target_path": "expected/units/CTaskComplexSeekEntityAiming.o"
+    },
+    {
+      "name": "CTaskComplexSeekEntityAnyMeans",
+      "target_path": "expected/units/CTaskComplexSeekEntityAnyMeans.o"
+    },
+    {
+      "name": "CTaskComplexSequence",
+      "target_path": "expected/units/CTaskComplexSequence.o"
+    },
+    {
+      "name": "CTaskComplexShuffleSeats",
+      "target_path": "expected/units/CTaskComplexShuffleSeats.o"
+    },
+    {
+      "name": "CTaskComplexSignalAtPed",
+      "target_path": "expected/units/CTaskComplexSignalAtPed.o"
+    },
+    {
+      "name": "CTaskComplexSitDownThenIdleThenStandUp",
+      "target_path": "expected/units/CTaskComplexSitDownThenIdleThenStandUp.o"
+    },
+    {
+      "name": "CTaskComplexSmartFleeEntity",
+      "target_path": "expected/units/CTaskComplexSmartFleeEntity.o"
+    },
+    {
+      "name": "CTaskComplexSmartFleePoint",
+      "target_path": "expected/units/CTaskComplexSmartFleePoint.o"
+    },
+    {
+      "name": "CTaskComplexStareAtPed",
+      "target_path": "expected/units/CTaskComplexStareAtPed.o"
+    },
+    {
+      "name": "CTaskComplexStealCar",
+      "target_path": "expected/units/CTaskComplexStealCar.o"
+    },
+    {
+      "name": "CTaskComplexStuckInAir",
+      "target_path": "expected/units/CTaskComplexStuckInAir.o"
+    },
+    {
+      "name": "CTaskComplexSunbathe",
+      "target_path": "expected/units/CTaskComplexSunbathe.o"
+    },
+    {
+      "name": "CTaskComplexTrackEntity",
+      "target_path": "expected/units/CTaskComplexTrackEntity.o"
+    },
+    {
+      "name": "CTaskComplexTreatAccident",
+      "target_path": "expected/units/CTaskComplexTreatAccident.o"
+    },
+    {
+      "name": "CTaskComplexTurnToFaceEntityOrCoord",
+      "target_path": "expected/units/CTaskComplexTurnToFaceEntityOrCoord.o"
+    },
+    {
+      "name": "CTaskComplexUseAttractor",
+      "target_path": "expected/units/CTaskComplexUseAttractor.o"
+    },
+    {
+      "name": "CTaskComplexUseAttractorPartner",
+      "target_path": "expected/units/CTaskComplexUseAttractorPartner.o"
+    },
+    {
+      "name": "CTaskComplexUseClosestFreeScriptedAttractor",
+      "target_path": "expected/units/CTaskComplexUseClosestFreeScriptedAttractor.o"
+    },
+    {
+      "name": "CTaskComplexUseClosestFreeScriptedAttractorRun",
+      "target_path": "expected/units/CTaskComplexUseClosestFreeScriptedAttractorRun.o"
+    },
+    {
+      "name": "CTaskComplexUseClosestFreeScriptedAttractorSprint",
+      "target_path": "expected/units/CTaskComplexUseClosestFreeScriptedAttractorSprint.o"
+    },
+    {
+      "name": "CTaskComplexUseEffect",
+      "target_path": "expected/units/CTaskComplexUseEffect.o"
+    },
+    {
+      "name": "CTaskComplexUseEffectRunning",
+      "target_path": "expected/units/CTaskComplexUseEffectRunning.o"
+    },
+    {
+      "name": "CTaskComplexUseEffectSprinting",
+      "target_path": "expected/units/CTaskComplexUseEffectSprinting.o"
+    },
+    {
+      "name": "CTaskComplexUseEntryExit",
+      "target_path": "expected/units/CTaskComplexUseEntryExit.o"
+    },
+    {
+      "name": "CTaskComplexUseGoggles",
+      "target_path": "expected/units/CTaskComplexUseGoggles.o"
+    },
+    {
+      "name": "CTaskComplexUseMobilePhone",
+      "target_path": "expected/units/CTaskComplexUseMobilePhone.o"
+    },
+    {
+      "name": "CTaskComplexUsePairedAttractor",
+      "target_path": "expected/units/CTaskComplexUsePairedAttractor.o"
+    },
+    {
+      "name": "CTaskComplexUseScriptedAttractor",
+      "target_path": "expected/units/CTaskComplexUseScriptedAttractor.o"
+    },
+    {
+      "name": "CTaskComplexUseScriptedBrain",
+      "target_path": "expected/units/CTaskComplexUseScriptedBrain.o"
+    },
+    {
+      "name": "CTaskComplexUseSequence",
+      "target_path": "expected/units/CTaskComplexUseSequence.o"
+    },
+    {
+      "name": "CTaskComplexUseSwatRope",
+      "target_path": "expected/units/CTaskComplexUseSwatRope.o"
+    },
+    {
+      "name": "CTaskComplexUseWaterCannon",
+      "target_path": "expected/units/CTaskComplexUseWaterCannon.o"
+    },
+    {
+      "name": "CTaskComplexWaitAtAttractor",
+      "target_path": "expected/units/CTaskComplexWaitAtAttractor.o"
+    },
+    {
+      "name": "CTaskComplexWaitForBackup",
+      "target_path": "expected/units/CTaskComplexWaitForBackup.o"
+    },
+    {
+      "name": "CTaskComplexWaitForBus",
+      "target_path": "expected/units/CTaskComplexWaitForBus.o"
+    },
+    {
+      "name": "CTaskComplexWaitForDryWeather",
+      "target_path": "expected/units/CTaskComplexWaitForDryWeather.o"
+    },
+    {
+      "name": "CTaskComplexWaitForPed",
+      "target_path": "expected/units/CTaskComplexWaitForPed.o"
+    },
+    {
+      "name": "CTaskComplexWalkAlongsidePed",
+      "target_path": "expected/units/CTaskComplexWalkAlongsidePed.o"
+    },
+    {
+      "name": "CTaskComplexWalkRoundBuildingAttempt",
+      "target_path": "expected/units/CTaskComplexWalkRoundBuildingAttempt.o"
+    },
+    {
+      "name": "CTaskComplexWalkRoundCar",
+      "target_path": "expected/units/CTaskComplexWalkRoundCar.o"
+    },
+    {
+      "name": "CTaskComplexWalkRoundFire",
+      "target_path": "expected/units/CTaskComplexWalkRoundFire.o"
+    },
+    {
+      "name": "CTaskComplexWalkRoundObject",
+      "target_path": "expected/units/CTaskComplexWalkRoundObject.o"
+    },
+    {
+      "name": "CTaskComplexWander",
+      "target_path": "expected/units/CTaskComplexWander.o"
+    },
+    {
+      "name": "CTaskComplexWanderCop",
+      "target_path": "expected/units/CTaskComplexWanderCop.o"
+    },
+    {
+      "name": "CTaskComplexWanderCriminal",
+      "target_path": "expected/units/CTaskComplexWanderCriminal.o"
+    },
+    {
+      "name": "CTaskComplexWanderFlee",
+      "target_path": "expected/units/CTaskComplexWanderFlee.o"
+    },
+    {
+      "name": "CTaskComplexWanderGang",
+      "target_path": "expected/units/CTaskComplexWanderGang.o"
+    },
+    {
+      "name": "CTaskComplexWanderMedic",
+      "target_path": "expected/units/CTaskComplexWanderMedic.o"
+    },
+    {
+      "name": "CTaskComplexWanderProstitute",
+      "target_path": "expected/units/CTaskComplexWanderProstitute.o"
+    },
+    {
+      "name": "CTaskComplexWanderStandard",
+      "target_path": "expected/units/CTaskComplexWanderStandard.o"
+    },
+    {
+      "name": "CTaskGangHasslePed",
+      "target_path": "expected/units/CTaskGangHasslePed.o"
+    },
+    {
+      "name": "CTaskGangHassleVehicle",
+      "target_path": "expected/units/CTaskGangHassleVehicle.o"
+    },
+    {
+      "name": "CTaskGoToVehicleAndLean",
+      "target_path": "expected/units/CTaskGoToVehicleAndLean.o"
+    },
+    {
+      "name": "CTaskInteriorBeInHouse",
+      "target_path": "expected/units/CTaskInteriorBeInHouse.o"
+    },
+    {
+      "name": "CTaskInteriorBeInOffice",
+      "target_path": "expected/units/CTaskInteriorBeInOffice.o"
+    },
+    {
+      "name": "CTaskInteriorBeInShop",
+      "target_path": "expected/units/CTaskInteriorBeInShop.o"
+    },
+    {
+      "name": "CTaskInteriorGoToInfo",
+      "target_path": "expected/units/CTaskInteriorGoToInfo.o"
+    },
+    {
+      "name": "CTaskInteriorLieInBed",
+      "target_path": "expected/units/CTaskInteriorLieInBed.o"
+    },
+    {
+      "name": "CTaskInteriorShopKeeper",
+      "target_path": "expected/units/CTaskInteriorShopKeeper.o"
+    },
+    {
+      "name": "CTaskInteriorSitAtDesk",
+      "target_path": "expected/units/CTaskInteriorSitAtDesk.o"
+    },
+    {
+      "name": "CTaskInteriorSitInChair",
+      "target_path": "expected/units/CTaskInteriorSitInChair.o"
+    },
+    {
+      "name": "CTaskInteriorUseInfo",
+      "target_path": "expected/units/CTaskInteriorUseInfo.o"
+    },
+    {
+      "name": "CTaskLeanOnVehicle",
+      "target_path": "expected/units/CTaskLeanOnVehicle.o"
+    },
+    {
+      "name": "CTaskManager",
+      "target_path": "expected/units/CTaskManager.o"
+    },
+    {
+      "name": "CTaskSequences",
+      "target_path": "expected/units/CTaskSequences.o"
+    },
+    {
+      "name": "CTaskSimple",
+      "target_path": "expected/units/CTaskSimple.o"
+    },
+    {
+      "name": "CTaskSimpleAbseil",
+      "target_path": "expected/units/CTaskSimpleAbseil.o"
+    },
+    {
+      "name": "CTaskSimpleAchieveHeading",
+      "target_path": "expected/units/CTaskSimpleAchieveHeading.o"
+    },
+    {
+      "name": "CTaskSimpleAffectSecondaryBehaviour",
+      "target_path": "expected/units/CTaskSimpleAffectSecondaryBehaviour.o"
+    },
+    {
+      "name": "CTaskSimpleAnim",
+      "target_path": "expected/units/CTaskSimpleAnim.o"
+    },
+    {
+      "name": "CTaskSimpleArrestPed",
+      "target_path": "expected/units/CTaskSimpleArrestPed.o"
+    },
+    {
+      "name": "CTaskSimpleBeHit",
+      "target_path": "expected/units/CTaskSimpleBeHit.o"
+    },
+    {
+      "name": "CTaskSimpleBeHitWhileMoving",
+      "target_path": "expected/units/CTaskSimpleBeHitWhileMoving.o"
+    },
+    {
+      "name": "CTaskSimpleBeKickedOnGround",
+      "target_path": "expected/units/CTaskSimpleBeKickedOnGround.o"
+    },
+    {
+      "name": "CTaskSimpleBikeJacked",
+      "target_path": "expected/units/CTaskSimpleBikeJacked.o"
+    },
+    {
+      "name": "CTaskSimpleCarAlign",
+      "target_path": "expected/units/CTaskSimpleCarAlign.o"
+    },
+    {
+      "name": "CTaskSimpleCarCloseDoorFromInside",
+      "target_path": "expected/units/CTaskSimpleCarCloseDoorFromInside.o"
+    },
+    {
+      "name": "CTaskSimpleCarCloseDoorFromOutside",
+      "target_path": "expected/units/CTaskSimpleCarCloseDoorFromOutside.o"
+    },
+    {
+      "name": "CTaskSimpleCarDrive",
+      "target_path": "expected/units/CTaskSimpleCarDrive.o"
+    },
+    {
+      "name": "CTaskSimpleCarDriveTimed",
+      "target_path": "expected/units/CTaskSimpleCarDriveTimed.o"
+    },
+    {
+      "name": "CTaskSimpleCarFallOut",
+      "target_path": "expected/units/CTaskSimpleCarFallOut.o"
+    },
+    {
+      "name": "CTaskSimpleCarForcePedOut",
+      "target_path": "expected/units/CTaskSimpleCarForcePedOut.o"
+    },
+    {
+      "name": "CTaskSimpleCarGetIn",
+      "target_path": "expected/units/CTaskSimpleCarGetIn.o"
+    },
+    {
+      "name": "CTaskSimpleCarGetOut",
+      "target_path": "expected/units/CTaskSimpleCarGetOut.o"
+    },
+    {
+      "name": "CTaskSimpleCarGoToPointNearDoorUntilDoorNotInUse",
+      "target_path": "expected/units/CTaskSimpleCarGoToPointNearDoorUntilDoorNotInUse.o"
+    },
+    {
+      "name": "CTaskSimpleCarJumpOut",
+      "target_path": "expected/units/CTaskSimpleCarJumpOut.o"
+    },
+    {
+      "name": "CTaskSimpleCarOpenDoorFromOutside",
+      "target_path": "expected/units/CTaskSimpleCarOpenDoorFromOutside.o"
+    },
+    {
+      "name": "CTaskSimpleCarOpenLockedDoorFromOutside",
+      "target_path": "expected/units/CTaskSimpleCarOpenLockedDoorFromOutside.o"
+    },
+    {
+      "name": "CTaskSimpleCarSetPedInAsDriver",
+      "target_path": "expected/units/CTaskSimpleCarSetPedInAsDriver.o"
+    },
+    {
+      "name": "CTaskSimpleCarSetPedInAsPassenger",
+      "target_path": "expected/units/CTaskSimpleCarSetPedInAsPassenger.o"
+    },
+    {
+      "name": "CTaskSimpleCarSetPedOut",
+      "target_path": "expected/units/CTaskSimpleCarSetPedOut.o"
+    },
+    {
+      "name": "CTaskSimpleCarSetPedSlowDraggedOut",
+      "target_path": "expected/units/CTaskSimpleCarSetPedSlowDraggedOut.o"
+    },
+    {
+      "name": "CTaskSimpleCarSetTempAction",
+      "target_path": "expected/units/CTaskSimpleCarSetTempAction.o"
+    },
+    {
+      "name": "CTaskSimpleCarShuffle",
+      "target_path": "expected/units/CTaskSimpleCarShuffle.o"
+    },
+    {
+      "name": "CTaskSimpleCarSlowBeDraggedOut",
+      "target_path": "expected/units/CTaskSimpleCarSlowBeDraggedOut.o"
+    },
+    {
+      "name": "CTaskSimpleCarSlowDragPedOut",
+      "target_path": "expected/units/CTaskSimpleCarSlowDragPedOut.o"
+    },
+    {
+      "name": "CTaskSimpleCarWaitForDoorNotToBeInUse",
+      "target_path": "expected/units/CTaskSimpleCarWaitForDoorNotToBeInUse.o"
+    },
+    {
+      "name": "CTaskSimpleCarWaitToSlowDown",
+      "target_path": "expected/units/CTaskSimpleCarWaitToSlowDown.o"
+    },
+    {
+      "name": "CTaskSimpleChat",
+      "target_path": "expected/units/CTaskSimpleChat.o"
+    },
+    {
+      "name": "CTaskSimpleChoking",
+      "target_path": "expected/units/CTaskSimpleChoking.o"
+    },
+    {
+      "name": "CTaskSimpleClearLookAt",
+      "target_path": "expected/units/CTaskSimpleClearLookAt.o"
+    },
+    {
+      "name": "CTaskSimpleClimb",
+      "target_path": "expected/units/CTaskSimpleClimb.o"
+    },
+    {
+      "name": "CTaskSimpleCower",
+      "target_path": "expected/units/CTaskSimpleCower.o"
+    },
+    {
+      "name": "CTaskSimpleCreateCarAndGetIn",
+      "target_path": "expected/units/CTaskSimpleCreateCarAndGetIn.o"
+    },
+    {
+      "name": "CTaskSimpleDead",
+      "target_path": "expected/units/CTaskSimpleDead.o"
+    },
+    {
+      "name": "CTaskSimpleDetonate",
+      "target_path": "expected/units/CTaskSimpleDetonate.o"
+    },
+    {
+      "name": "CTaskSimpleDie",
+      "target_path": "expected/units/CTaskSimpleDie.o"
+    },
+    {
+      "name": "CTaskSimpleDieInCar",
+      "target_path": "expected/units/CTaskSimpleDieInCar.o"
+    },
+    {
+      "name": "CTaskSimpleDoHandSignal",
+      "target_path": "expected/units/CTaskSimpleDoHandSignal.o"
+    },
+    {
+      "name": "CTaskSimpleDrown",
+      "target_path": "expected/units/CTaskSimpleDrown.o"
+    },
+    {
+      "name": "CTaskSimpleDrownInCar",
+      "target_path": "expected/units/CTaskSimpleDrownInCar.o"
+    },
+    {
+      "name": "CTaskSimpleDuck",
+      "target_path": "expected/units/CTaskSimpleDuck.o"
+    },
+    {
+      "name": "CTaskSimpleDuckToggle",
+      "target_path": "expected/units/CTaskSimpleDuckToggle.o"
+    },
+    {
+      "name": "CTaskSimpleDuckWhileShotsWhizzing",
+      "target_path": "expected/units/CTaskSimpleDuckWhileShotsWhizzing.o"
+    },
+    {
+      "name": "CTaskSimpleEvasiveDive",
+      "target_path": "expected/units/CTaskSimpleEvasiveDive.o"
+    },
+    {
+      "name": "CTaskSimpleEvasiveStep",
+      "target_path": "expected/units/CTaskSimpleEvasiveStep.o"
+    },
+    {
+      "name": "CTaskSimpleFacial",
+      "target_path": "expected/units/CTaskSimpleFacial.o"
+    },
+    {
+      "name": "CTaskSimpleFall",
+      "target_path": "expected/units/CTaskSimpleFall.o"
+    },
+    {
+      "name": "CTaskSimpleFight",
+      "target_path": "expected/units/CTaskSimpleFight.o"
+    },
+    {
+      "name": "CTaskSimpleFightingControl",
+      "target_path": "expected/units/CTaskSimpleFightingControl.o"
+    },
+    {
+      "name": "CTaskSimpleFinishBrain",
+      "target_path": "expected/units/CTaskSimpleFinishBrain.o"
+    },
+    {
+      "name": "CTaskSimpleGangDriveBy",
+      "target_path": "expected/units/CTaskSimpleGangDriveBy.o"
+    },
+    {
+      "name": "CTaskSimpleGetUp",
+      "target_path": "expected/units/CTaskSimpleGetUp.o"
+    },
+    {
+      "name": "CTaskSimpleGiveCPR",
+      "target_path": "expected/units/CTaskSimpleGiveCPR.o"
+    },
+    {
+      "name": "CTaskSimpleGoTo",
+      "target_path": "expected/units/CTaskSimpleGoTo.o"
+    },
+    {
+      "name": "CTaskSimpleGoToPoint",
+      "target_path": "expected/units/CTaskSimpleGoToPoint.o"
+    },
+    {
+      "name": "CTaskSimpleGoToPointFine",
+      "target_path": "expected/units/CTaskSimpleGoToPointFine.o"
+    },
+    {
+      "name": "CTaskSimpleGunControl",
+      "target_path": "expected/units/CTaskSimpleGunControl.o"
+    },
+    {
+      "name": "CTaskSimpleHailTaxi",
+      "target_path": "expected/units/CTaskSimpleHailTaxi.o"
+    },
+    {
+      "name": "CTaskSimpleHailTaxiAndPause",
+      "target_path": "expected/units/CTaskSimpleHailTaxiAndPause.o"
+    },
+    {
+      "name": "CTaskSimpleHandsUp",
+      "target_path": "expected/units/CTaskSimpleHandsUp.o"
+    },
+    {
+      "name": "CTaskSimpleHitByGunFromFront",
+      "target_path": "expected/units/CTaskSimpleHitByGunFromFront.o"
+    },
+    {
+      "name": "CTaskSimpleHitByGunFromLeft",
+      "target_path": "expected/units/CTaskSimpleHitByGunFromLeft.o"
+    },
+    {
+      "name": "CTaskSimpleHitByGunFromRear",
+      "target_path": "expected/units/CTaskSimpleHitByGunFromRear.o"
+    },
+    {
+      "name": "CTaskSimpleHitByGunFromRight",
+      "target_path": "expected/units/CTaskSimpleHitByGunFromRight.o"
+    },
+    {
+      "name": "CTaskSimpleHitFromBack",
+      "target_path": "expected/units/CTaskSimpleHitFromBack.o"
+    },
+    {
+      "name": "CTaskSimpleHitFromBehind",
+      "target_path": "expected/units/CTaskSimpleHitFromBehind.o"
+    },
+    {
+      "name": "CTaskSimpleHitFromFront",
+      "target_path": "expected/units/CTaskSimpleHitFromFront.o"
+    },
+    {
+      "name": "CTaskSimpleHitFromLeft",
+      "target_path": "expected/units/CTaskSimpleHitFromLeft.o"
+    },
+    {
+      "name": "CTaskSimpleHitFromRight",
+      "target_path": "expected/units/CTaskSimpleHitFromRight.o"
+    },
+    {
+      "name": "CTaskSimpleHitHead",
+      "target_path": "expected/units/CTaskSimpleHitHead.o"
+    },
+    {
+      "name": "CTaskSimpleHitWall",
+      "target_path": "expected/units/CTaskSimpleHitWall.o"
+    },
+    {
+      "name": "CTaskSimpleHoldEntity",
+      "target_path": "expected/units/CTaskSimpleHoldEntity.o"
+    },
+    {
+      "name": "CTaskSimpleHurtPedWithCar",
+      "target_path": "expected/units/CTaskSimpleHurtPedWithCar.o"
+    },
+    {
+      "name": "CTaskSimpleIKChain",
+      "target_path": "expected/units/CTaskSimpleIKChain.o"
+    },
+    {
+      "name": "CTaskSimpleIKLookAt",
+      "target_path": "expected/units/CTaskSimpleIKLookAt.o"
+    },
+    {
+      "name": "CTaskSimpleIKManager",
+      "target_path": "expected/units/CTaskSimpleIKManager.o"
+    },
+    {
+      "name": "CTaskSimpleIKPointArm",
+      "target_path": "expected/units/CTaskSimpleIKPointArm.o"
+    },
+    {
+      "name": "CTaskSimpleInAir",
+      "target_path": "expected/units/CTaskSimpleInAir.o"
+    },
+    {
+      "name": "CTaskSimpleJetPack",
+      "target_path": "expected/units/CTaskSimpleJetPack.o"
+    },
+    {
+      "name": "CTaskSimpleJump",
+      "target_path": "expected/units/CTaskSimpleJump.o"
+    },
+    {
+      "name": "CTaskSimpleKillPedWithCar",
+      "target_path": "expected/units/CTaskSimpleKillPedWithCar.o"
+    },
+    {
+      "name": "CTaskSimpleLand",
+      "target_path": "expected/units/CTaskSimpleLand.o"
+    },
+    {
+      "name": "CTaskSimpleLookAbout",
+      "target_path": "expected/units/CTaskSimpleLookAbout.o"
+    },
+    {
+      "name": "CTaskSimpleNone",
+      "target_path": "expected/units/CTaskSimpleNone.o"
+    },
+    {
+      "name": "CTaskSimpleOnEscalator",
+      "target_path": "expected/units/CTaskSimpleOnEscalator.o"
+    },
+    {
+      "name": "CTaskSimplePause",
+      "target_path": "expected/units/CTaskSimplePause.o"
+    },
+    {
+      "name": "CTaskSimplePickUpBike",
+      "target_path": "expected/units/CTaskSimplePickUpBike.o"
+    },
+    {
+      "name": "CTaskSimplePickUpEntity",
+      "target_path": "expected/units/CTaskSimplePickUpEntity.o"
+    },
+    {
+      "name": "CTaskSimplePlayHandSignalAnim",
+      "target_path": "expected/units/CTaskSimplePlayHandSignalAnim.o"
+    },
+    {
+      "name": "CTaskSimplePlayerOnFire",
+      "target_path": "expected/units/CTaskSimplePlayerOnFire.o"
+    },
+    {
+      "name": "CTaskSimplePlayerOnFoot",
+      "target_path": "expected/units/CTaskSimplePlayerOnFoot.o"
+    },
+    {
+      "name": "CTaskSimplePutDownEntity",
+      "target_path": "expected/units/CTaskSimplePutDownEntity.o"
+    },
+    {
+      "name": "CTaskSimpleRunAnim",
+      "target_path": "expected/units/CTaskSimpleRunAnim.o"
+    },
+    {
+      "name": "CTaskSimpleRunAnimLoopedMiddle",
+      "target_path": "expected/units/CTaskSimpleRunAnimLoopedMiddle.o"
+    },
+    {
+      "name": "CTaskSimpleRunNamedAnim",
+      "target_path": "expected/units/CTaskSimpleRunNamedAnim.o"
+    },
+    {
+      "name": "CTaskSimpleRunTimedAnim",
+      "target_path": "expected/units/CTaskSimpleRunTimedAnim.o"
+    },
+    {
+      "name": "CTaskSimpleSay",
+      "target_path": "expected/units/CTaskSimpleSay.o"
+    },
+    {
+      "name": "CTaskSimpleScratchHead",
+      "target_path": "expected/units/CTaskSimpleScratchHead.o"
+    },
+    {
+      "name": "CTaskSimpleSetCharDecisionMaker",
+      "target_path": "expected/units/CTaskSimpleSetCharDecisionMaker.o"
+    },
+    {
+      "name": "CTaskSimpleSetCharIgnoreWeaponRangeFlag",
+      "target_path": "expected/units/CTaskSimpleSetCharIgnoreWeaponRangeFlag.o"
+    },
+    {
+      "name": "CTaskSimpleSetKindaStayInSamePlace",
+      "target_path": "expected/units/CTaskSimpleSetKindaStayInSamePlace.o"
+    },
+    {
+      "name": "CTaskSimpleSetPedAsAutoDriver",
+      "target_path": "expected/units/CTaskSimpleSetPedAsAutoDriver.o"
+    },
+    {
+      "name": "CTaskSimpleSetStayInSamePlace",
+      "target_path": "expected/units/CTaskSimpleSetStayInSamePlace.o"
+    },
+    {
+      "name": "CTaskSimpleShakeFist",
+      "target_path": "expected/units/CTaskSimpleShakeFist.o"
+    },
+    {
+      "name": "CTaskSimpleSitDown",
+      "target_path": "expected/units/CTaskSimpleSitDown.o"
+    },
+    {
+      "name": "CTaskSimpleSitIdle",
+      "target_path": "expected/units/CTaskSimpleSitIdle.o"
+    },
+    {
+      "name": "CTaskSimpleSlideToCoord",
+      "target_path": "expected/units/CTaskSimpleSlideToCoord.o"
+    },
+    {
+      "name": "CTaskSimpleStandStill",
+      "target_path": "expected/units/CTaskSimpleStandStill.o"
+    },
+    {
+      "name": "CTaskSimpleStandUp",
+      "target_path": "expected/units/CTaskSimpleStandUp.o"
+    },
+    {
+      "name": "CTaskSimpleStealthKill",
+      "target_path": "expected/units/CTaskSimpleStealthKill.o"
+    },
+    {
+      "name": "CTaskSimpleSwim",
+      "target_path": "expected/units/CTaskSimpleSwim.o"
+    },
+    {
+      "name": "CTaskSimpleThrowControl",
+      "target_path": "expected/units/CTaskSimpleThrowControl.o"
+    },
+    {
+      "name": "CTaskSimpleThrowProjectile",
+      "target_path": "expected/units/CTaskSimpleThrowProjectile.o"
+    },
+    {
+      "name": "CTaskSimpleTired",
+      "target_path": "expected/units/CTaskSimpleTired.o"
+    },
+    {
+      "name": "CTaskSimpleTogglePedThreatScanner",
+      "target_path": "expected/units/CTaskSimpleTogglePedThreatScanner.o"
+    },
+    {
+      "name": "CTaskSimpleTriggerEvent",
+      "target_path": "expected/units/CTaskSimpleTriggerEvent.o"
+    },
+    {
+      "name": "CTaskSimpleTriggerLookAt",
+      "target_path": "expected/units/CTaskSimpleTriggerLookAt.o"
+    },
+    {
+      "name": "CTaskSimpleTurn180",
+      "target_path": "expected/units/CTaskSimpleTurn180.o"
+    },
+    {
+      "name": "CTaskSimpleUninterruptable",
+      "target_path": "expected/units/CTaskSimpleUninterruptable.o"
+    },
+    {
+      "name": "CTaskSimpleUseAtm",
+      "target_path": "expected/units/CTaskSimpleUseAtm.o"
+    },
+    {
+      "name": "CTaskSimpleUseGun",
+      "target_path": "expected/units/CTaskSimpleUseGun.o"
+    },
+    {
+      "name": "CTaskSimpleWaitForBus",
+      "target_path": "expected/units/CTaskSimpleWaitForBus.o"
+    },
+    {
+      "name": "CTaskSimpleWaitForPizza",
+      "target_path": "expected/units/CTaskSimpleWaitForPizza.o"
+    },
+    {
+      "name": "CTaskSimpleWaitUntilAreaCodesMatch",
+      "target_path": "expected/units/CTaskSimpleWaitUntilAreaCodesMatch.o"
+    },
+    {
+      "name": "CTaskSimpleWaitUntilLeaderAreaCodesMatch",
+      "target_path": "expected/units/CTaskSimpleWaitUntilLeaderAreaCodesMatch.o"
+    },
+    {
+      "name": "CTaskSimpleWaitUntilPedIsInCar",
+      "target_path": "expected/units/CTaskSimpleWaitUntilPedIsInCar.o"
+    },
+    {
+      "name": "CTaskSimpleWaitUntilPedIsOutCar",
+      "target_path": "expected/units/CTaskSimpleWaitUntilPedIsOutCar.o"
+    },
+    {
+      "name": "CTaskUtilityLineUpPedWithCar",
+      "target_path": "expected/units/CTaskUtilityLineUpPedWithCar.o"
+    },
+    {
+      "name": "CTempColModels",
+      "target_path": "expected/units/CTempColModels.o"
+    },
+    {
+      "name": "CText",
+      "target_path": "expected/units/CText.o"
+    },
+    {
+      "name": "CTheCarGenerators",
+      "target_path": "expected/units/CTheCarGenerators.o"
+    },
+    {
+      "name": "CTheScripts",
+      "target_path": "expected/units/CTheScripts.o"
+    },
+    {
+      "name": "CTheZones",
+      "target_path": "expected/units/CTheZones.o"
+    },
+    {
+      "name": "CTimeCycle",
+      "target_path": "expected/units/CTimeCycle.o"
+    },
+    {
+      "name": "CTimeInfo",
+      "target_path": "expected/units/CTimeInfo.o"
+    },
+    {
+      "name": "CTimeModelInfo",
+      "target_path": "expected/units/CTimeModelInfo.o"
+    },
+    {
+      "name": "CTimer",
+      "target_path": "expected/units/CTimer.o"
+    },
+    {
+      "name": "CTouchInterface",
+      "target_path": "expected/units/CTouchInterface.o"
+    },
+    {
+      "name": "CTrafficLights",
+      "target_path": "expected/units/CTrafficLights.o"
+    },
+    {
+      "name": "CTrailer",
+      "target_path": "expected/units/CTrailer.o"
+    },
+    {
+      "name": "CTrain",
+      "target_path": "expected/units/CTrain.o"
+    },
+    {
+      "name": "CTrainDoor",
+      "target_path": "expected/units/CTrainDoor.o"
+    },
+    {
+      "name": "CTrainNode",
+      "target_path": "expected/units/CTrainNode.o"
+    },
+    {
+      "name": "CTxdStore",
+      "target_path": "expected/units/CTxdStore.o"
+    },
+    {
+      "name": "CUpsideDownCarCheck",
+      "target_path": "expected/units/CUpsideDownCarCheck.o"
+    },
+    {
+      "name": "CUserDisplay",
+      "target_path": "expected/units/CUserDisplay.o"
+    },
+    {
+      "name": "CVector",
+      "target_path": "expected/units/CVector.o"
+    },
+    {
+      "name": "CVehicle",
+      "target_path": "expected/units/CVehicle.o"
+    },
+    {
+      "name": "CVehicleAnimGroup",
+      "target_path": "expected/units/CVehicleAnimGroup.o"
+    },
+    {
+      "name": "CVehicleModelInfo",
+      "target_path": "expected/units/CVehicleModelInfo.o"
+    },
+    {
+      "name": "CVehiclePotentialCollisionScanner",
+      "target_path": "expected/units/CVehiclePotentialCollisionScanner.o"
+    },
+    {
+      "name": "CVehicleRecording",
+      "target_path": "expected/units/CVehicleRecording.o"
+    },
+    {
+      "name": "CVehicleSaveStructure",
+      "target_path": "expected/units/CVehicleSaveStructure.o"
+    },
+    {
+      "name": "CVehicleScanner",
+      "target_path": "expected/units/CVehicleScanner.o"
+    },
+    {
+      "name": "CVisibilityPlugins",
+      "target_path": "expected/units/CVisibilityPlugins.o"
+    },
+    {
+      "name": "CWanted",
+      "target_path": "expected/units/CWanted.o"
+    },
+    {
+      "name": "CWaterCannon",
+      "target_path": "expected/units/CWaterCannon.o"
+    },
+    {
+      "name": "CWaterCannons",
+      "target_path": "expected/units/CWaterCannons.o"
+    },
+    {
+      "name": "CWaterLevel",
+      "target_path": "expected/units/CWaterLevel.o"
+    },
+    {
+      "name": "CWeapon",
+      "target_path": "expected/units/CWeapon.o"
+    },
+    {
+      "name": "CWeaponEffects",
+      "target_path": "expected/units/CWeaponEffects.o"
+    },
+    {
+      "name": "CWeaponInfo",
+      "target_path": "expected/units/CWeaponInfo.o"
+    },
+    {
+      "name": "CWeaponModelInfo",
+      "target_path": "expected/units/CWeaponModelInfo.o"
+    },
+    {
+      "name": "CWeather",
+      "target_path": "expected/units/CWeather.o"
+    },
+    {
+      "name": "CWidget",
+      "target_path": "expected/units/CWidget.o"
+    },
+    {
+      "name": "CWidgetButton",
+      "target_path": "expected/units/CWidgetButton.o"
+    },
+    {
+      "name": "CWidgetButtonAnimated",
+      "target_path": "expected/units/CWidgetButtonAnimated.o"
+    },
+    {
+      "name": "CWidgetButtonAnimatedArcade",
+      "target_path": "expected/units/CWidgetButtonAnimatedArcade.o"
+    },
+    {
+      "name": "CWidgetButtonAttack",
+      "target_path": "expected/units/CWidgetButtonAttack.o"
+    },
+    {
+      "name": "CWidgetButtonAutoHydraulics",
+      "target_path": "expected/units/CWidgetButtonAutoHydraulics.o"
+    },
+    {
+      "name": "CWidgetButtonBasketballShoot",
+      "target_path": "expected/units/CWidgetButtonBasketballShoot.o"
+    },
+    {
+      "name": "CWidgetButtonDrop",
+      "target_path": "expected/units/CWidgetButtonDrop.o"
+    },
+    {
+      "name": "CWidgetButtonEnterCar",
+      "target_path": "expected/units/CWidgetButtonEnterCar.o"
+    },
+    {
+      "name": "CWidgetButtonHelpText",
+      "target_path": "expected/units/CWidgetButtonHelpText.o"
+    },
+    {
+      "name": "CWidgetButtonHorn",
+      "target_path": "expected/units/CWidgetButtonHorn.o"
+    },
+    {
+      "name": "CWidgetButtonHydraulics",
+      "target_path": "expected/units/CWidgetButtonHydraulics.o"
+    },
+    {
+      "name": "CWidgetButtonMissionCancel",
+      "target_path": "expected/units/CWidgetButtonMissionCancel.o"
+    },
+    {
+      "name": "CWidgetButtonMissionStart",
+      "target_path": "expected/units/CWidgetButtonMissionStart.o"
+    },
+    {
+      "name": "CWidgetButtonRocket",
+      "target_path": "expected/units/CWidgetButtonRocket.o"
+    },
+    {
+      "name": "CWidgetButtonSchool",
+      "target_path": "expected/units/CWidgetButtonSchool.o"
+    },
+    {
+      "name": "CWidgetButtonSkipCutscene",
+      "target_path": "expected/units/CWidgetButtonSkipCutscene.o"
+    },
+    {
+      "name": "CWidgetButtonSprint",
+      "target_path": "expected/units/CWidgetButtonSprint.o"
+    },
+    {
+      "name": "CWidgetButtonSwapWeapons",
+      "target_path": "expected/units/CWidgetButtonSwapWeapons.o"
+    },
+    {
+      "name": "CWidgetButtonSwim",
+      "target_path": "expected/units/CWidgetButtonSwim.o"
+    },
+    {
+      "name": "CWidgetButtonTargeting",
+      "target_path": "expected/units/CWidgetButtonTargeting.o"
+    },
+    {
+      "name": "CWidgetButtonVCShoot",
+      "target_path": "expected/units/CWidgetButtonVCShoot.o"
+    },
+    {
+      "name": "CWidgetButtonVehicleShoot",
+      "target_path": "expected/units/CWidgetButtonVehicleShoot.o"
+    },
+    {
+      "name": "CWidgetButtonZoom",
+      "target_path": "expected/units/CWidgetButtonZoom.o"
+    },
+    {
+      "name": "CWidgetHelpText",
+      "target_path": "expected/units/CWidgetHelpText.o"
+    },
+    {
+      "name": "CWidgetHorseResults",
+      "target_path": "expected/units/CWidgetHorseResults.o"
+    },
+    {
+      "name": "CWidgetInfoFrame",
+      "target_path": "expected/units/CWidgetInfoFrame.o"
+    },
+    {
+      "name": "CWidgetList",
+      "target_path": "expected/units/CWidgetList.o"
+    },
+    {
+      "name": "CWidgetListShop",
+      "target_path": "expected/units/CWidgetListShop.o"
+    },
+    {
+      "name": "CWidgetListText",
+      "target_path": "expected/units/CWidgetListText.o"
+    },
+    {
+      "name": "CWidgetMap",
+      "target_path": "expected/units/CWidgetMap.o"
+    },
+    {
+      "name": "CWidgetMissionTimers",
+      "target_path": "expected/units/CWidgetMissionTimers.o"
+    },
+    {
+      "name": "CWidgetPlayerInfo",
+      "target_path": "expected/units/CWidgetPlayerInfo.o"
+    },
+    {
+      "name": "CWidgetPool",
+      "target_path": "expected/units/CWidgetPool.o"
+    },
+    {
+      "name": "CWidgetRaceResults",
+      "target_path": "expected/units/CWidgetRaceResults.o"
+    },
+    {
+      "name": "CWidgetRacing",
+      "target_path": "expected/units/CWidgetRacing.o"
+    },
+    {
+      "name": "CWidgetRadar",
+      "target_path": "expected/units/CWidgetRadar.o"
+    },
+    {
+      "name": "CWidgetRegion",
+      "target_path": "expected/units/CWidgetRegion.o"
+    },
+    {
+      "name": "CWidgetRegionArcadeStick",
+      "target_path": "expected/units/CWidgetRegionArcadeStick.o"
+    },
+    {
+      "name": "CWidgetRegionBasketBallJump",
+      "target_path": "expected/units/CWidgetRegionBasketBallJump.o"
+    },
+    {
+      "name": "CWidgetRegionColorPicker",
+      "target_path": "expected/units/CWidgetRegionColorPicker.o"
+    },
+    {
+      "name": "CWidgetRegionDriveHybrid",
+      "target_path": "expected/units/CWidgetRegionDriveHybrid.o"
+    },
+    {
+      "name": "CWidgetRegionFlick",
+      "target_path": "expected/units/CWidgetRegionFlick.o"
+    },
+    {
+      "name": "CWidgetRegionGang",
+      "target_path": "expected/units/CWidgetRegionGang.o"
+    },
+    {
+      "name": "CWidgetRegionHydraulics",
+      "target_path": "expected/units/CWidgetRegionHydraulics.o"
+    },
+    {
+      "name": "CWidgetRegionLook",
+      "target_path": "expected/units/CWidgetRegionLook.o"
+    },
+    {
+      "name": "CWidgetRegionMove",
+      "target_path": "expected/units/CWidgetRegionMove.o"
+    },
+    {
+      "name": "CWidgetRegionPoolBallInHand",
+      "target_path": "expected/units/CWidgetRegionPoolBallInHand.o"
+    },
+    {
+      "name": "CWidgetRegionPoolEnglish",
+      "target_path": "expected/units/CWidgetRegionPoolEnglish.o"
+    },
+    {
+      "name": "CWidgetRegionResponse",
+      "target_path": "expected/units/CWidgetRegionResponse.o"
+    },
+    {
+      "name": "CWidgetRegionRhythmSelect",
+      "target_path": "expected/units/CWidgetRegionRhythmSelect.o"
+    },
+    {
+      "name": "CWidgetRegionSprint",
+      "target_path": "expected/units/CWidgetRegionSprint.o"
+    },
+    {
+      "name": "CWidgetRegionSteer",
+      "target_path": "expected/units/CWidgetRegionSteer.o"
+    },
+    {
+      "name": "CWidgetRegionSteeringSelection",
+      "target_path": "expected/units/CWidgetRegionSteeringSelection.o"
+    },
+    {
+      "name": "CWidgetRegionSwipeRadio",
+      "target_path": "expected/units/CWidgetRegionSwipeRadio.o"
+    },
+    {
+      "name": "CWidgetRegionTouchLayoutSelection",
+      "target_path": "expected/units/CWidgetRegionTouchLayoutSelection.o"
+    },
+    {
+      "name": "CWidgetReplay",
+      "target_path": "expected/units/CWidgetReplay.o"
+    },
+    {
+      "name": "CWidgetRouletteSpin",
+      "target_path": "expected/units/CWidgetRouletteSpin.o"
+    },
+    {
+      "name": "CWidgetSaveNotification",
+      "target_path": "expected/units/CWidgetSaveNotification.o"
+    },
+    {
+      "name": "CWidgetSlider",
+      "target_path": "expected/units/CWidgetSlider.o"
+    },
+    {
+      "name": "CWidgetTapMeter",
+      "target_path": "expected/units/CWidgetTapMeter.o"
+    },
+    {
+      "name": "CWidgetThumbCircle",
+      "target_path": "expected/units/CWidgetThumbCircle.o"
+    },
+    {
+      "name": "CWidgetVitalStats",
+      "target_path": "expected/units/CWidgetVitalStats.o"
+    },
+    {
+      "name": "CWidgetWager",
+      "target_path": "expected/units/CWidgetWager.o"
+    },
+    {
+      "name": "CWindModifiers",
+      "target_path": "expected/units/CWindModifiers.o"
+    },
+    {
+      "name": "CWorld",
+      "target_path": "expected/units/CWorld.o"
+    },
+    {
+      "name": "CWorldScan",
+      "target_path": "expected/units/CWorldScan.o"
+    },
+    {
+      "name": "CZone",
+      "target_path": "expected/units/CZone.o"
+    },
+    {
+      "name": "CZoneDef",
+      "target_path": "expected/units/CZoneDef.o"
+    },
+    {
+      "name": "C_PcSave",
+      "target_path": "expected/units/C_PcSave.o"
+    },
+    {
+      "name": "CharSelectScreen",
+      "target_path": "expected/units/CharSelectScreen.o"
+    },
+    {
+      "name": "CloudWaitScreen",
+      "target_path": "expected/units/CloudWaitScreen.o"
+    },
+    {
+      "name": "CommonSize",
+      "target_path": "expected/units/CommonSize.o"
+    },
+    {
+      "name": "ConfirmationScreen",
+      "target_path": "expected/units/ConfirmationScreen.o"
+    },
+    {
+      "name": "ControlsScreen",
+      "target_path": "expected/units/ControlsScreen.o"
+    },
+    {
+      "name": "CppFreeFunctions",
+      "target_path": "expected/units/CppFreeFunctions.o"
+    },
+    {
+      "name": "DeleteScreen",
+      "target_path": "expected/units/DeleteScreen.o"
+    },
+    {
+      "name": "DisplayScreen",
+      "target_path": "expected/units/DisplayScreen.o"
+    },
+    {
+      "name": "DownloadScreen",
+      "target_path": "expected/units/DownloadScreen.o"
+    },
+    {
+      "name": "ES2IndexBuffer",
+      "target_path": "expected/units/ES2IndexBuffer.o"
+    },
+    {
+      "name": "ES2RQShaderBinding",
+      "target_path": "expected/units/ES2RQShaderBinding.o"
+    },
+    {
+      "name": "ES2ResourceContainer",
+      "target_path": "expected/units/ES2ResourceContainer.o"
+    },
+    {
+      "name": "ES2Shader",
+      "target_path": "expected/units/ES2Shader.o"
+    },
+    {
+      "name": "ES2Texture",
+      "target_path": "expected/units/ES2Texture.o"
+    },
+    {
+      "name": "ES2TextureContainer",
+      "target_path": "expected/units/ES2TextureContainer.o"
+    },
+    {
+      "name": "ES2VectorBinding",
+      "target_path": "expected/units/ES2VectorBinding.o"
+    },
+    {
+      "name": "ES2VertexBuffer",
+      "target_path": "expected/units/ES2VertexBuffer.o"
+    },
+    {
+      "name": "ES2VertexState",
+      "target_path": "expected/units/ES2VertexState.o"
+    },
+    {
+      "name": "EmuShader",
+      "target_path": "expected/units/EmuShader.o"
+    },
+    {
+      "name": "EntryIndex",
+      "target_path": "expected/units/EntryIndex.o"
+    },
+    {
+      "name": "FlowScreen",
+      "target_path": "expected/units/FlowScreen.o"
+    },
+    {
+      "name": "FreeFunctions",
+      "target_path": "expected/units/FreeFunctions.o"
+    },
+    {
+      "name": "FurnitureGroup_c",
+      "target_path": "expected/units/FurnitureGroup_c.o"
+    },
+    {
+      "name": "FurnitureManager_c",
+      "target_path": "expected/units/FurnitureManager_c.o"
+    },
+    {
+      "name": "FurnitureSubGroup_c",
+      "target_path": "expected/units/FurnitureSubGroup_c.o"
+    },
+    {
+      "name": "FxEmitterBP_c",
+      "target_path": "expected/units/FxEmitterBP_c.o"
+    },
+    {
+      "name": "FxEmitterPrt_c",
+      "target_path": "expected/units/FxEmitterPrt_c.o"
+    },
+    {
+      "name": "FxEmitter_c",
+      "target_path": "expected/units/FxEmitter_c.o"
+    },
+    {
+      "name": "FxFrustumInfo_c",
+      "target_path": "expected/units/FxFrustumInfo_c.o"
+    },
+    {
+      "name": "FxInfoAnimTexture_c",
+      "target_path": "expected/units/FxInfoAnimTexture_c.o"
+    },
+    {
+      "name": "FxInfoAttractLine_c",
+      "target_path": "expected/units/FxInfoAttractLine_c.o"
+    },
+    {
+      "name": "FxInfoAttractPt_c",
+      "target_path": "expected/units/FxInfoAttractPt_c.o"
+    },
+    {
+      "name": "FxInfoColourBright_c",
+      "target_path": "expected/units/FxInfoColourBright_c.o"
+    },
+    {
+      "name": "FxInfoColourRange_c",
+      "target_path": "expected/units/FxInfoColourRange_c.o"
+    },
+    {
+      "name": "FxInfoColour_c",
+      "target_path": "expected/units/FxInfoColour_c.o"
+    },
+    {
+      "name": "FxInfoDir_c",
+      "target_path": "expected/units/FxInfoDir_c.o"
+    },
+    {
+      "name": "FxInfoEmAngle_c",
+      "target_path": "expected/units/FxInfoEmAngle_c.o"
+    },
+    {
+      "name": "FxInfoEmDir_c",
+      "target_path": "expected/units/FxInfoEmDir_c.o"
+    },
+    {
+      "name": "FxInfoEmLife_c",
+      "target_path": "expected/units/FxInfoEmLife_c.o"
+    },
+    {
+      "name": "FxInfoEmPos_c",
+      "target_path": "expected/units/FxInfoEmPos_c.o"
+    },
+    {
+      "name": "FxInfoEmRate_c",
+      "target_path": "expected/units/FxInfoEmRate_c.o"
+    },
+    {
+      "name": "FxInfoEmRotation_c",
+      "target_path": "expected/units/FxInfoEmRotation_c.o"
+    },
+    {
+      "name": "FxInfoEmSize_c",
+      "target_path": "expected/units/FxInfoEmSize_c.o"
+    },
+    {
+      "name": "FxInfoEmSpeed_c",
+      "target_path": "expected/units/FxInfoEmSpeed_c.o"
+    },
+    {
+      "name": "FxInfoEmWeather_c",
+      "target_path": "expected/units/FxInfoEmWeather_c.o"
+    },
+    {
+      "name": "FxInfoFlat_c",
+      "target_path": "expected/units/FxInfoFlat_c.o"
+    },
+    {
+      "name": "FxInfoFloat_c",
+      "target_path": "expected/units/FxInfoFloat_c.o"
+    },
+    {
+      "name": "FxInfoForce_c",
+      "target_path": "expected/units/FxInfoForce_c.o"
+    },
+    {
+      "name": "FxInfoFriction_c",
+      "target_path": "expected/units/FxInfoFriction_c.o"
+    },
+    {
+      "name": "FxInfoGroundCollide_c",
+      "target_path": "expected/units/FxInfoGroundCollide_c.o"
+    },
+    {
+      "name": "FxInfoHeatHaze_c",
+      "target_path": "expected/units/FxInfoHeatHaze_c.o"
+    },
+    {
+      "name": "FxInfoJitter_c",
+      "target_path": "expected/units/FxInfoJitter_c.o"
+    },
+    {
+      "name": "FxInfoManager_c",
+      "target_path": "expected/units/FxInfoManager_c.o"
+    },
+    {
+      "name": "FxInfoNoise_c",
+      "target_path": "expected/units/FxInfoNoise_c.o"
+    },
+    {
+      "name": "FxInfoRotSpeed_c",
+      "target_path": "expected/units/FxInfoRotSpeed_c.o"
+    },
+    {
+      "name": "FxInfoSelfLit_c",
+      "target_path": "expected/units/FxInfoSelfLit_c.o"
+    },
+    {
+      "name": "FxInfoSize_c",
+      "target_path": "expected/units/FxInfoSize_c.o"
+    },
+    {
+      "name": "FxInfoSmoke_c",
+      "target_path": "expected/units/FxInfoSmoke_c.o"
+    },
+    {
+      "name": "FxInfoSpriteRect_c",
+      "target_path": "expected/units/FxInfoSpriteRect_c.o"
+    },
+    {
+      "name": "FxInfoTrail_c",
+      "target_path": "expected/units/FxInfoTrail_c.o"
+    },
+    {
+      "name": "FxInfoUnderwater_c",
+      "target_path": "expected/units/FxInfoUnderwater_c.o"
+    },
+    {
+      "name": "FxInfoWind_c",
+      "target_path": "expected/units/FxInfoWind_c.o"
+    },
+    {
+      "name": "FxInfo_c",
+      "target_path": "expected/units/FxInfo_c.o"
+    },
+    {
+      "name": "FxInterpInfo255_c",
+      "target_path": "expected/units/FxInterpInfo255_c.o"
+    },
+    {
+      "name": "FxInterpInfo32_c",
+      "target_path": "expected/units/FxInterpInfo32_c.o"
+    },
+    {
+      "name": "FxInterpInfoFloat_c",
+      "target_path": "expected/units/FxInterpInfoFloat_c.o"
+    },
+    {
+      "name": "FxInterpInfoU255_c",
+      "target_path": "expected/units/FxInterpInfoU255_c.o"
+    },
+    {
+      "name": "FxInterpInfo_c",
+      "target_path": "expected/units/FxInterpInfo_c.o"
+    },
+    {
+      "name": "FxManager_c",
+      "target_path": "expected/units/FxManager_c.o"
+    },
+    {
+      "name": "FxMemoryPool_c",
+      "target_path": "expected/units/FxMemoryPool_c.o"
+    },
+    {
+      "name": "FxPrimBP_c",
+      "target_path": "expected/units/FxPrimBP_c.o"
+    },
+    {
+      "name": "FxPrim_c",
+      "target_path": "expected/units/FxPrim_c.o"
+    },
+    {
+      "name": "FxPrtMult_c",
+      "target_path": "expected/units/FxPrtMult_c.o"
+    },
+    {
+      "name": "FxSphere_c",
+      "target_path": "expected/units/FxSphere_c.o"
+    },
+    {
+      "name": "FxSystemBP_c",
+      "target_path": "expected/units/FxSystemBP_c.o"
+    },
+    {
+      "name": "FxSystem_c",
+      "target_path": "expected/units/FxSystem_c.o"
+    },
+    {
+      "name": "Fx_c",
+      "target_path": "expected/units/Fx_c.o"
+    },
+    {
+      "name": "GameScreen",
+      "target_path": "expected/units/GameScreen.o"
+    },
+    {
+      "name": "GlobalFunctions",
+      "target_path": "expected/units/GlobalFunctions.o"
+    },
+    {
+      "name": "HeapBlockDesc",
+      "target_path": "expected/units/HeapBlockDesc.o"
+    },
+    {
+      "name": "HeapFreeBlockDesc",
+      "target_path": "expected/units/HeapFreeBlockDesc.o"
+    },
+    {
+      "name": "IKChainManager_c",
+      "target_path": "expected/units/IKChainManager_c.o"
+    },
+    {
+      "name": "IKChain_c",
+      "target_path": "expected/units/IKChain_c.o"
+    },
+    {
+      "name": "InteriorGroup_c",
+      "target_path": "expected/units/InteriorGroup_c.o"
+    },
+    {
+      "name": "InteriorManager_c",
+      "target_path": "expected/units/InteriorManager_c.o"
+    },
+    {
+      "name": "Interior_c",
+      "target_path": "expected/units/Interior_c.o"
+    },
+    {
+      "name": "KeyboardControlsScreen",
+      "target_path": "expected/units/KeyboardControlsScreen.o"
+    },
+    {
+      "name": "LanguageScreen",
+      "target_path": "expected/units/LanguageScreen.o"
+    },
+    {
+      "name": "ListItem_c",
+      "target_path": "expected/units/ListItem_c.o"
+    },
+    {
+      "name": "List_c",
+      "target_path": "expected/units/List_c.o"
+    },
+    {
+      "name": "LoadScreen",
+      "target_path": "expected/units/LoadScreen.o"
+    },
+    {
+      "name": "LoadTask",
+      "target_path": "expected/units/LoadTask.o"
+    },
+    {
+      "name": "MainMenuScreen",
+      "target_path": "expected/units/MainMenuScreen.o"
+    },
+    {
+      "name": "MenuScreen",
+      "target_path": "expected/units/MenuScreen.o"
+    },
+    {
+      "name": "MobileMenu",
+      "target_path": "expected/units/MobileMenu.o"
+    },
+    {
+      "name": "MobileSettings",
+      "target_path": "expected/units/MobileSettings.o"
+    },
+    {
+      "name": "OALBase",
+      "target_path": "expected/units/OALBase.o"
+    },
+    {
+      "name": "OALBuffer",
+      "target_path": "expected/units/OALBuffer.o"
+    },
+    {
+      "name": "OALSource",
+      "target_path": "expected/units/OALSource.o"
+    },
+    {
+      "name": "OSArray",
+      "target_path": "expected/units/OSArray.o"
+    },
+    {
+      "name": "OkScreen",
+      "target_path": "expected/units/OkScreen.o"
+    },
+    {
+      "name": "OpenAL",
+      "target_path": "expected/units/OpenAL.o"
+    },
+    {
+      "name": "PreallocatedBuffers",
+      "target_path": "expected/units/PreallocatedBuffers.o"
+    },
+    {
+      "name": "ProcObjectMan_c",
+      "target_path": "expected/units/ProcObjectMan_c.o"
+    },
+    {
+      "name": "ProcSurfaceInfo_c",
+      "target_path": "expected/units/ProcSurfaceInfo_c.o"
+    },
+    {
+      "name": "RQIndexBuffer",
+      "target_path": "expected/units/RQIndexBuffer.o"
+    },
+    {
+      "name": "RQMatrix",
+      "target_path": "expected/units/RQMatrix.o"
+    },
+    {
+      "name": "RQRenderTarget",
+      "target_path": "expected/units/RQRenderTarget.o"
+    },
+    {
+      "name": "RQShader",
+      "target_path": "expected/units/RQShader.o"
+    },
+    {
+      "name": "RQTexture",
+      "target_path": "expected/units/RQTexture.o"
+    },
+    {
+      "name": "RQVertexBuffer",
+      "target_path": "expected/units/RQVertexBuffer.o"
+    },
+    {
+      "name": "RQVertexState",
+      "target_path": "expected/units/RQVertexState.o"
+    },
+    {
+      "name": "RenderBuffer",
+      "target_path": "expected/units/RenderBuffer.o"
+    },
+    {
+      "name": "RenderQueue",
+      "target_path": "expected/units/RenderQueue.o"
+    },
+    {
+      "name": "RenderWare_Rp",
+      "target_path": "expected/units/RenderWare_Rp.o"
+    },
+    {
+      "name": "RxOpenGLMeshInstanceData",
+      "target_path": "expected/units/RxOpenGLMeshInstanceData.o"
+    },
+    {
+      "name": "SArray",
+      "target_path": "expected/units/SArray.o"
+    },
+    {
+      "name": "SaveScreen",
+      "target_path": "expected/units/SaveScreen.o"
+    },
+    {
+      "name": "SaveSelectScreen",
+      "target_path": "expected/units/SaveSelectScreen.o"
+    },
+    {
+      "name": "SelectScreen",
+      "target_path": "expected/units/SelectScreen.o"
+    },
+    {
+      "name": "SettingsScreen",
+      "target_path": "expected/units/SettingsScreen.o"
+    },
+    {
+      "name": "SharedGPUResource",
+      "target_path": "expected/units/SharedGPUResource.o"
+    },
+    {
+      "name": "StartGameScreen",
+      "target_path": "expected/units/StartGameScreen.o"
+    },
+    {
+      "name": "StatsScreen",
+      "target_path": "expected/units/StatsScreen.o"
+    },
+    {
+      "name": "SurfaceInfos_c",
+      "target_path": "expected/units/SurfaceInfos_c.o"
+    },
+    {
+      "name": "TDBArray",
+      "target_path": "expected/units/TDBArray.o"
+    },
+    {
+      "name": "Telemetry",
+      "target_path": "expected/units/Telemetry.o"
+    },
+    {
+      "name": "TextureDatabase",
+      "target_path": "expected/units/TextureDatabase.o"
+    },
+    {
+      "name": "TextureDatabaseEntry",
+      "target_path": "expected/units/TextureDatabaseEntry.o"
+    },
+    {
+      "name": "TextureDatabaseRuntime",
+      "target_path": "expected/units/TextureDatabaseRuntime.o"
+    },
+    {
+      "name": "TextureListingContainer",
+      "target_path": "expected/units/TextureListingContainer.o"
+    },
+    {
+      "name": "WaterCreatureManager_c",
+      "target_path": "expected/units/WaterCreatureManager_c.o"
+    },
+    {
+      "name": "WaterCreature_c",
+      "target_path": "expected/units/WaterCreature_c.o"
+    },
+    {
+      "name": "YesNoScreen",
+      "target_path": "expected/units/YesNoScreen.o"
+    },
+    {
+      "name": "ZIPFile",
+      "target_path": "expected/units/ZIPFile.o"
+    },
+    {
+      "name": "_JNIEnv",
+      "target_path": "expected/units/_JNIEnv.o"
+    },
+    {
+      "name": "cBuoyancy",
+      "target_path": "expected/units/cBuoyancy.o"
+    },
+    {
+      "name": "cHandlingDataMgr",
+      "target_path": "expected/units/cHandlingDataMgr.o"
+    },
+    {
+      "name": "cTransmission",
+      "target_path": "expected/units/cTransmission.o"
     }
   ]
 }
