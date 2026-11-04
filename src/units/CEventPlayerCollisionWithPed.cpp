@@ -8,3 +8,6 @@ public:
     virtual void DummyKeyFunction();
     virtual ~CEventPlayerCollisionWithPed();
 };
+
+CEventPlayerCollisionWithPed::~CEventPlayerCollisionWithPed() {
+}
