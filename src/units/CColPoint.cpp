@@ -18,3 +18,12 @@ public:
 
     CColPoint& operator=(const CColPoint& other);
 };
+
+CColPoint& CColPoint::operator=(const CColPoint& other) {
+    m_vecPosition = other.m_vecPosition;
+    m_vecNormal = other.m_vecNormal;
+    m_dataA = other.m_dataA;
+    m_dataB = other.m_dataB;
+    m_fDepth = other.m_fDepth;
+    return *this;
+}
