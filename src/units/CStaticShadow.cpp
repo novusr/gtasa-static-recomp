@@ -15,3 +15,17 @@ public:
 
     void Free();
 };
+
+void CStaticShadow::Free() {
+    if (m_pPolyBunch) {
+        CPolyBunch* oldEmpty = CShadows::pEmptyBunchList;
+        CShadows::pEmptyBunchList = m_pPolyBunch;
+        CPolyBunch* bunch = m_pPolyBunch;
+        while (bunch->m_pNext) {
+            bunch = bunch->m_pNext;
+        }
+        bunch->m_pNext = oldEmpty;
+    }
+    m_nId = 0;
+    m_pPolyBunch = nullptr;
+}
