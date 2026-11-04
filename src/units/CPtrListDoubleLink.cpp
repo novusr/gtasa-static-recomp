@@ -34,3 +34,7 @@ public:
     ~CPtrListDoubleLink();
     void Flush();
 };
+
+CPtrListDoubleLink::~CPtrListDoubleLink() {
+    Flush();
+}
