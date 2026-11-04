@@ -5,3 +5,6 @@ public:
         __builtin_trap();
     }
 };
+
+FxInfo_c::~FxInfo_c() {
+}
