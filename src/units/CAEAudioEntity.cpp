@@ -5,6 +5,7 @@ public:
 
 class CAEAudioEntity {
 public:
+    virtual void Service();
     virtual ~CAEAudioEntity();
     void* m_pEntity;
     CAESound m_sound;
