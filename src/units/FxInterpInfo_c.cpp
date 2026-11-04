@@ -4,7 +4,7 @@ public:
     void* m_pField10;
 
     FxInterpInfo_c();
-    virtual ~FxInterpInfo_c();
+    virtual ~FxInterpInfo_c() = 0;
 };
 
 FxInterpInfo_c::~FxInterpInfo_c() {
