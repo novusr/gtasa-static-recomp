@@ -40,5 +40,8 @@ public:
     }
 };
 
+CTaskAllocatorRetreat::~CTaskAllocatorRetreat() {
+}
+
 void CTaskAllocatorRetreat::AllocateTasks(CPedGroupIntelligence*) {
 }
