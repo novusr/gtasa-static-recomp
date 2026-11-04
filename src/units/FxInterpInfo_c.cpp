@@ -8,7 +8,6 @@ public:
 };
 
 FxInterpInfo_c::~FxInterpInfo_c() {
-    __builtin_trap();
 }
 
 FxInterpInfo_c::FxInterpInfo_c() {
