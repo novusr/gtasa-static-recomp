@@ -6,3 +6,8 @@ struct CMatrixLink {
     void Remove();
     void Insert(CMatrixLink* pLink);
 };
+
+void CMatrixLink::Remove() {
+    m_pNext->m_pPrev = m_pPrev;
+    m_pPrev->m_pNext = m_pNext;
+}
