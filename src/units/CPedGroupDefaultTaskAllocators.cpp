@@ -27,3 +27,8 @@ static CPedGroupDefaultTaskAllocator* const ms_allocators[6] = {
     &CPedGroupDefaultTaskAllocators::ms_randomAllocator,
 };
 
+CPedGroupDefaultTaskAllocator* CPedGroupDefaultTaskAllocators::Get(int id) {
+    if ((unsigned int)id <= 5)
+        return ms_allocators[id];
+    return nullptr;
+}
