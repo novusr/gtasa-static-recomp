@@ -21,3 +21,9 @@ void CJoySticks::ClearJoyInfo(int n) {
     JoyStickNum[n].bZAxisPresent = false;
     JoyStickNum[n].bZRotPresent = false;
 }
+
+CJoySticks::CJoySticks() {
+    ClearJoyInfo(0);
+    ClearJoyInfo(1);
+}
+
