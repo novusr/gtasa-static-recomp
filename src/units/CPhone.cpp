@@ -3,3 +3,6 @@ public:
     CPhone();
     ~CPhone();
 };
+
+CPhone::CPhone() {
+}
