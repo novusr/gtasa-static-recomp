@@ -14,3 +14,10 @@ public:
     CJoySticks();
     void ClearJoyInfo(int);
 };
+
+void CJoySticks::ClearJoyInfo(int n) {
+    JoyStickNum[n].wDeviceID = 0;
+    JoyStickNum[n].bJoyAttachedToPort = false;
+    JoyStickNum[n].bZAxisPresent = false;
+    JoyStickNum[n].bZRotPresent = false;
+}
