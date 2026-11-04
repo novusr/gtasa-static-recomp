@@ -24,3 +24,7 @@ public:
 
 void CTaskComplexWanderMedic::ScanForStuff(CPed* ped) {
 }
+
+CTaskComplexWanderMedic::~CTaskComplexWanderMedic() {
+}
+
