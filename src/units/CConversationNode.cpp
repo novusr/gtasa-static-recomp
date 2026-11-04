@@ -15,3 +15,12 @@ class CConversations {
 public:
     static CConversationNode m_aNodes[];
 };
+
+void CConversationNode::Clear() {
+    m_Name[0] = 0;
+    m_NodeYes = -1;
+    m_NodeNo = -1;
+    m_Speech = 0;
+    m_SpeechY = 0;
+    m_SpeechN = 0;
+}
