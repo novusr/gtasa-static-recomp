@@ -32,7 +32,7 @@ public:
     CPtrNodeDoubleLink* m_node;
 
     ~CPtrListDoubleLink();
-    void Flush();
+    __attribute__((noinline)) void Flush();
 };
 
 CPtrListDoubleLink::~CPtrListDoubleLink() {
