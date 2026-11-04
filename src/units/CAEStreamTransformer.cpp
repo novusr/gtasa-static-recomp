@@ -7,7 +7,7 @@ public:
 };
 
 void CAEStreamTransformer::Initialise() {
-    static const unsigned char key[16] = {1};
+    alignas(16) static const unsigned char key[16] = {1};
     *(CAEStreamTransformer*)this = *(const CAEStreamTransformer*)key;
 }
 
