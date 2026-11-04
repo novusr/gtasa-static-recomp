@@ -1,7 +1,7 @@
 #pragma once
 #include "CVector.h"
 
-struct alignas(16) CMatrix {
+struct CMatrix {
     CVector right;
     unsigned int flags;
     CVector up;
