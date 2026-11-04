@@ -13,3 +13,10 @@ public:
 
     void Flush();
 };
+
+void CPedTaskPair::Flush() {
+    m_pPed = nullptr;
+    delete m_pTask;
+    m_pTask = nullptr;
+    m_taskType = -1;
+}

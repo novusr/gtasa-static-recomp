@@ -19,3 +19,7 @@ public:
     CTask* m_pSubTask;
     virtual ~CTaskComplexBeCop();
 };
+
+CTaskComplexBeCop::~CTaskComplexBeCop() {
+    delete m_pSubTask;
+}

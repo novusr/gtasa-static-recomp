@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Populates full expected objects and objdiff.json for GTA SA 2.10 Android ARM64
-using libGTASA.so symbol definitions and GNU as direct .incbin slicing.
+"""Populates full expected objects, stub sources, config/symbols.json, and objdiff.json
+for GTA SA 2.10 Android ARM64 using libGTASA.so symbol definitions and GNU as direct .incbin slicing.
 """
 
 import collections
@@ -17,12 +17,19 @@ SO_PATH = ROOT / "libGTASA.so"
 AS = Path("/home/novusr/Android/Sdk/ndk/android-ndk-r16b/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/bin/aarch64-linux-android-as")
 EXPECTED_DIR = ROOT / "expected"
 UNITS_DIR = EXPECTED_DIR / "units"
+SRC_UNITS_DIR = ROOT / "src" / "units"
+BUILD_UNITS_DIR = ROOT / "build" / "units"
+CONFIG_DIR = ROOT / "config"
+
 UNITS_DIR.mkdir(parents=True, exist_ok=True)
+SRC_UNITS_DIR.mkdir(parents=True, exist_ok=True)
+BUILD_UNITS_DIR.mkdir(parents=True, exist_ok=True)
+CONFIG_DIR.mkdir(parents=True, exist_ok=True)
 
 ALREADY_MATCHED = {
-    "_Z12CrossProductRK7CVectorS1_",
-    "_Z11Multiply3x3RK7CMatrixRK7CVector",
-    "_ZN7CVector9NormaliseEv",
+    "_Z12CrossProductRK7CVectorS1_": "CrossProduct",
+    "_Z11Multiply3x3RK7CMatrixRK7CVector": "Multiply3x3",
+    "_ZN7CVector9NormaliseEv": "Normalise",
 }
 
 def collect_symbols():
@@ -32,6 +39,7 @@ def collect_symbols():
         classes = collections.defaultdict(list)
         free_funcs = collections.defaultdict(list)
         seen = set()
+        symbol_map = {}
 
         for s in symtab.iter_symbols():
             if s["st_info"]["type"] == "STT_FUNC" and s["st_size"] > 0 and s["st_value"] > 0:
@@ -39,9 +47,19 @@ def collect_symbols():
                     continue
                 seen.add(s["st_value"])
                 name = s.name
+                vaddr = int(s["st_value"])
+                size = int(s["st_size"])
+
                 if name in ALREADY_MATCHED:
+                    symbol_map[name] = {
+                        "vaddr": vaddr,
+                        "ghidra_addr": f"{vaddr + 0x100000:08x}",
+                        "size": size,
+                        "unit": ALREADY_MATCHED[name],
+                    }
                     continue
 
+                unit_name = None
                 if name.startswith("_ZN"):
                     rest = name[3:]
                     num_str = ""
@@ -51,46 +69,71 @@ def collect_symbols():
                     if num_str:
                         n = int(num_str)
                         cls_name = rest[:n]
-                        classes[cls_name].append((s["st_value"], s["st_size"], name))
+                        unit_name = cls_name
+                        classes[cls_name].append((vaddr, size, name))
                     else:
-                        free_funcs["FreeFunctions"].append((s["st_value"], s["st_size"], name))
+                        unit_name = "FreeFunctions"
+                        free_funcs[unit_name].append((vaddr, size, name))
                 elif name.startswith(("Rw", "_Rw")):
-                    free_funcs["RenderWare_Rw"].append((s["st_value"], s["st_size"], name))
+                    unit_name = "RenderWare_Rw"
+                    free_funcs[unit_name].append((vaddr, size, name))
                 elif name.startswith(("Rp", "_Rp")):
-                    free_funcs["RenderWare_Rp"].append((s["st_value"], s["st_size"], name))
+                    unit_name = "RenderWare_Rp"
+                    free_funcs[unit_name].append((vaddr, size, name))
                 elif name.startswith(("Rt", "_Rt")):
-                    free_funcs["RenderWare_Rt"].append((s["st_value"], s["st_size"], name))
+                    unit_name = "RenderWare_Rt"
+                    free_funcs[unit_name].append((vaddr, size, name))
                 elif name.startswith(("OS_", "AND_", "NV_")):
-                    free_funcs["OSWrapper"].append((s["st_value"], s["st_size"], name))
+                    unit_name = "OSWrapper"
+                    free_funcs[unit_name].append((vaddr, size, name))
                 elif name.startswith(("al", "alc")):
-                    free_funcs["OpenAL"].append((s["st_value"], s["st_size"], name))
+                    unit_name = "OpenAL"
+                    free_funcs[unit_name].append((vaddr, size, name))
                 elif name.startswith("_Z"):
-                    free_funcs["CppFreeFunctions"].append((s["st_value"], s["st_size"], name))
+                    unit_name = "CppFreeFunctions"
+                    free_funcs[unit_name].append((vaddr, size, name))
                 else:
-                    free_funcs["GlobalFunctions"].append((s["st_value"], s["st_size"], name))
+                    unit_name = "GlobalFunctions"
+                    free_funcs[unit_name].append((vaddr, size, name))
 
-    return classes, free_funcs
+                symbol_map[name] = {
+                    "vaddr": vaddr,
+                    "ghidra_addr": f"{vaddr + 0x100000:08x}",
+                    "size": size,
+                    "unit": unit_name,
+                }
+
+    return classes, free_funcs, symbol_map
 
 def assemble_unit(args):
     name, fns = args
     s_path = UNITS_DIR / f"{name}.s"
     o_path = UNITS_DIR / f"{name}.o"
+    cpp_path = SRC_UNITS_DIR / f"{name}.cpp"
 
-    lines = []
-    for vaddr, size, sym in fns:
-        lines.append(f".global {sym}")
-        lines.append(f".type {sym}, %function")
-        lines.append(f"{sym}:")
-        lines.append(f'\t.incbin "{SO_PATH}", {vaddr}, {size}')
-        lines.append(f".size {sym}, .-{sym}\n")
+    if not cpp_path.exists():
+        cpp_path.write_text("", encoding="utf-8")
 
-    s_path.write_text("\n".join(lines))
-    subprocess.run([str(AS), "-o", str(o_path), str(s_path)], check=True)
+    if not o_path.exists():
+        lines = []
+        for vaddr, size, sym in sorted(fns, key=lambda x: x[0]):
+            lines.append(f".global {sym}")
+            lines.append(f".type {sym}, %function")
+            lines.append(f"{sym}:")
+            lines.append(f'\t.incbin "{SO_PATH}", {vaddr}, {size}')
+            lines.append(f".size {sym}, .-{sym}\n")
+
+        s_path.write_text("\n".join(lines), encoding="utf-8")
+        subprocess.run([str(AS), "-o", str(o_path), str(s_path)], check=True)
+
     return name, str(o_path.relative_to(ROOT))
 
 def main():
     print("Collecting symbols from libGTASA.so...")
-    classes, free_funcs = collect_symbols()
+    classes, free_funcs, symbol_map = collect_symbols()
+
+    (CONFIG_DIR / "symbols.json").write_text(json.dumps(symbol_map, indent=2), encoding="utf-8")
+    print(f"Saved {len(symbol_map)} symbols to config/symbols.json.")
 
     total_cls_fns = sum(len(v) for v in classes.values())
     total_free_fns = sum(len(v) for v in free_funcs.values())
@@ -98,17 +141,15 @@ def main():
     print(f"Total functions: {total_fns} across {len(classes)} classes and {len(free_funcs)} free groups.")
 
     work_items = list(classes.items()) + list(free_funcs.items())
-    print(f"Assembling {len(work_items)} expected units in parallel...")
+    print(f"Preparing {len(work_items)} expected units and source stubs...")
     t0 = time.time()
     unit_targets = []
     with ThreadPoolExecutor(max_workers=os.cpu_count() or 8) as executor:
         for unit_name, rel_path in executor.map(assemble_unit, work_items):
             unit_targets.append((unit_name, rel_path))
 
-    print(f"Assembled {len(unit_targets)} units in {time.time() - t0:.2f}s.")
+    print(f"Prepared {len(unit_targets)} units in {time.time() - t0:.2f}s.")
 
-    # Build objdiff.json
-    # Keep the 3 matched units at the top
     units = [
         {
             "name": "CrossProduct",
@@ -142,7 +183,11 @@ def main():
     for unit_name, rel_path in sorted(unit_targets):
         units.append({
             "name": unit_name,
-            "target_path": rel_path
+            "target_path": rel_path,
+            "base_path": f"build/units/{unit_name}.o",
+            "metadata": {
+                "source_path": f"src/units/{unit_name}.cpp"
+            }
         })
 
     objdiff_cfg = {
@@ -150,11 +195,12 @@ def main():
         "target_dir": "expected",
         "base_dir": "build",
         "build_target": False,
+        "custom_make": "make",
         "units": units
     }
 
     out_file = ROOT / "objdiff.json"
-    out_file.write_text(json.dumps(objdiff_cfg, indent=2))
+    out_file.write_text(json.dumps(objdiff_cfg, indent=2), encoding="utf-8")
     print(f"Updated objdiff.json with {len(units)} units.")
 
 if __name__ == "__main__":

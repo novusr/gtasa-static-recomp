@@ -14,3 +14,13 @@ struct TextureListingContainer {
 
     ~TextureListingContainer();
 };
+
+extern "C" void free(void*);
+TextureListingContainer::~TextureListingContainer() {
+    void* p = data;
+    if (ownsData) {
+        free(p);
+    }
+    data = nullptr;
+    dataSize = 0;
+}
