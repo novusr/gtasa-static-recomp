@@ -36,3 +36,6 @@ public:
     CEventInAir();
     virtual ~CEventInAir();
 };
+
+CEventInAir::CEventInAir() {
+}
