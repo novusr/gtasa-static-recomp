@@ -13,3 +13,9 @@ public:
 
     void Update();
 };
+
+void CBulletTrace::Update() {
+    if (CTimer::m_snTimeInMilliseconds - m_nCreationTime >= m_nLifeTime) {
+        m_bExist = false;
+    }
+}
