@@ -21,3 +21,6 @@ public:
     virtual ~CTaskComplexWanderMedic();
     virtual void ScanForStuff(CPed* ped);
 };
+
+void CTaskComplexWanderMedic::ScanForStuff(CPed* ped) {
+}
