@@ -16,3 +16,7 @@ public:
     void SetColourID(unsigned char id);
     void ProcessForDisplayCounter(unsigned short type);
 };
+
+void COnscreenCounterEntry::SetColourID(unsigned char id) {
+    m_nColourId = id;
+}
