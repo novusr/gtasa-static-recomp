@@ -27,3 +27,7 @@ public:
     void Clear();
     bool CheckForInput();
 };
+
+void CControllerState::Clear() {
+    memset(this, 0, sizeof(*this));
+}
