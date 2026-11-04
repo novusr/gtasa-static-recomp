@@ -3,7 +3,7 @@ typedef unsigned int uint32_t;
 
 extern bool skipBlendRender;
 extern bool emu_InternalBlendEnabled;
-extern bool skipNonblendRender;
+extern volatile bool skipNonblendRender;
 
 void emu_ArraysDrawStoredSeparate(uint64_t, uint64_t, uint32_t, uint32_t, uint32_t);
 void emu_ArraysDrawStored(uint64_t, uint32_t);
@@ -21,3 +21,20 @@ public:
 
     void DrawStored();
 };
+
+void RxOpenGLMeshInstanceData::DrawStored() {
+    if (skipBlendRender && emu_InternalBlendEnabled)
+        return;
+    if (skipNonblendRender && !emu_InternalBlendEnabled)
+        return;
+
+    if (m_nVertexData) {
+        if (m_nSeparateData) {
+            emu_ArraysDrawStoredSeparate(m_nSeparateData, m_nVertexData, m_nPrimType, m_nNumIndices, m_nNumVertices);
+        } else {
+            emu_ArraysDrawStored(m_nVertexData, m_nPrimType);
+        }
+    } else {
+        emu_ArraysDrawStored(m_nIndexData, m_nPrimType);
+    }
+}
