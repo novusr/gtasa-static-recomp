@@ -20,3 +20,11 @@ public:
 
     void Set(float radius, const CVector& center, unsigned char material, unsigned char flags, unsigned char lighting);
 };
+
+void CColSphere::Set(float radius, const CVector& center, unsigned char material, unsigned char flags, unsigned char lighting) {
+    m_fRadius = radius;
+    m_vecCenter = center;
+    m_nMaterial = material;
+    m_nFlags = flags;
+    m_nLighting = lighting;
+}
