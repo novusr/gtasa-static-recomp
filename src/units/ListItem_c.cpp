@@ -6,3 +6,6 @@ public:
     ListItem_c();
     ~ListItem_c();
 };
+
+ListItem_c::~ListItem_c() {
+}
