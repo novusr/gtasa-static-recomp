@@ -10,7 +10,7 @@ public:
 
 extern void* func1();
 extern void func2(void*, void*, void*);
-extern void func3(void*);
+extern void func3(void*, void*);
 
 class CTaskComplexUseEffectRunning : public CTaskComplex {
 public:
@@ -22,13 +22,11 @@ public:
     virtual ~CTaskComplexUseEffectRunning();
 };
 
-
 CTaskComplexUseEffectRunning::~CTaskComplexUseEffectRunning() {
     if (m_field30 && m_field28) {
-        func1();
-        func2(nullptr, m_field28, m_field30);
+        func2(func1(), m_field30, m_field28);
     }
     if (m_pSubTask) {
-        func3(m_pSubTask);
+        func3(m_pSubTask, &m_pSubTask);
     }
 }
