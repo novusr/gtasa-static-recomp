@@ -3,6 +3,7 @@ public:
     unsigned char m_nField8;
     void* m_pField10;
 
+    virtual void DummyKeyFunction();
     FxInterpInfo_c();
     virtual ~FxInterpInfo_c() = 0;
 };
