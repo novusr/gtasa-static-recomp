@@ -7,5 +7,10 @@ public:
     ~ListItem_c();
 };
 
+ListItem_c::ListItem_c() {
+    m_pPrev = nullptr;
+    m_pNext = nullptr;
+}
+
 ListItem_c::~ListItem_c() {
 }
