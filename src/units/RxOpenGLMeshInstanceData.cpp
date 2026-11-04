@@ -25,16 +25,15 @@ public:
 void RxOpenGLMeshInstanceData::DrawStored() {
     if (skipBlendRender && emu_InternalBlendEnabled)
         return;
-    if (skipNonblendRender && !emu_InternalBlendEnabled)
-        return;
-
-    if (m_nVertexData) {
-        if (m_nSeparateData) {
-            emu_ArraysDrawStoredSeparate(m_nSeparateData, m_nVertexData, m_nPrimType, m_nNumIndices, m_nNumVertices);
+    if (!skipNonblendRender || emu_InternalBlendEnabled) {
+        if (m_nVertexData) {
+            if (m_nSeparateData) {
+                emu_ArraysDrawStoredSeparate(m_nSeparateData, m_nVertexData, m_nPrimType, m_nNumIndices, m_nNumVertices);
+            } else {
+                emu_ArraysDrawStored(m_nVertexData, m_nPrimType);
+            }
         } else {
-            emu_ArraysDrawStored(m_nVertexData, m_nPrimType);
+            emu_ArraysDrawStored(m_nIndexData, m_nPrimType);
         }
-    } else {
-        emu_ArraysDrawStored(m_nIndexData, m_nPrimType);
     }
 }
