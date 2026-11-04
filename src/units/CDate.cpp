@@ -19,3 +19,13 @@ CDate::CDate() {
     m_nMonth = 0;
     m_nYear = 0;
 }
+
+void CDate::PopulateDateFields(const char& sec, const char& min, const char& hour, const char& day, const char& month, short year) {
+    m_nSeconds = sec;
+    m_nMinutes = min;
+    m_nHours = hour;
+    m_nDay = day;
+    m_nMonth = month;
+    m_nYear = year;
+}
+
