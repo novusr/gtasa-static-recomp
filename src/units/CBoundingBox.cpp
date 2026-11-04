@@ -21,3 +21,8 @@ public:
 
     CBoundingBox();
 };
+
+CBoundingBox::CBoundingBox() {
+    m_vecMin = {1.0f, 1.0f, 1.0f};
+    m_vecMax = {-1.0f, -1.0f, -1.0f};
+}
