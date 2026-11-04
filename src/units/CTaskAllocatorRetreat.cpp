@@ -39,3 +39,6 @@ public:
         CPools::ms_pTaskAllocatorPool->Delete(static_cast<CTaskAllocator*>(ptr));
     }
 };
+
+void CTaskAllocatorRetreat::AllocateTasks(CPedGroupIntelligence*) {
+}
