@@ -38,3 +38,19 @@ public:
 CPtrListDoubleLink::~CPtrListDoubleLink() {
     Flush();
 }
+
+void CPtrListDoubleLink::Flush() {
+    CPtrNodeDoubleLink* node = m_node;
+    while (node) {
+        CPtrNodeDoubleLink* next = node->m_next;
+        if (m_node == node)
+            m_node = node->m_next;
+        if (node->m_prev)
+            node->m_prev->m_next = node->m_next;
+        if (node->m_next)
+            node->m_next->m_prev = node->m_prev;
+        CPools::ms_pPtrNodeDoubleLinkPool->Delete(node);
+        node = next;
+    }
+}
+
