@@ -10,9 +10,13 @@ public:
 };
 
 float CCarPathLink::OneWayLaneOffset() {
-    if (!m_nLeftLanes)
-        return m_nRightLanes * 0.5f - 0.5f;
-    if (!m_nRightLanes)
-        return m_nLeftLanes * 0.5f - 0.5f;
-    return (float)m_nOneWayLaneOffset / 15.0f + 0.5f;
+    unsigned short left = m_nLeftLanes;
+    unsigned short right = m_nRightLanes;
+    if (left == 0) {
+        return 0.5f - (float)right * 0.5f;
+    }
+    if (right == 0) {
+        return 0.5f - (float)left * 0.5f;
+    }
+    return (float)m_nOneWayLaneOffset / 100.0f + 0.5f;
 }
