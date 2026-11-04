@@ -17,3 +17,13 @@ public:
 
     static CPedGroupDefaultTaskAllocator* Get(int id);
 };
+
+static CPedGroupDefaultTaskAllocator* const ms_allocators[6] = {
+    &CPedGroupDefaultTaskAllocators::ms_followAnyMeansAllocator,
+    &CPedGroupDefaultTaskAllocators::ms_followLimitedAllocator,
+    &CPedGroupDefaultTaskAllocators::ms_standStillAllocator,
+    &CPedGroupDefaultTaskAllocators::ms_chatAllocator,
+    &CPedGroupDefaultTaskAllocators::ms_sitInLeaderCarAllocator,
+    &CPedGroupDefaultTaskAllocators::ms_randomAllocator,
+};
+
