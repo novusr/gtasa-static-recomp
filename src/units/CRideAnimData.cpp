@@ -11,3 +11,6 @@ public:
     CRideAnimData();
     ~CRideAnimData();
 };
+
+CRideAnimData::~CRideAnimData() {
+}
