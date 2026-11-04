@@ -15,3 +15,13 @@ public:
 
     void Set(float radius, const CVector& start, const CVector& end, float thickness, unsigned char material, unsigned char piece, unsigned char lighting);
 };
+
+void CColDisk::Set(float radius, const CVector& start, const CVector& end, float thickness, unsigned char material, unsigned char piece, unsigned char lighting) {
+    m_fRadius = radius;
+    m_vecStart = start;
+    m_vecEnd = end;
+    m_fThickness = thickness;
+    m_nMaterial = material;
+    m_nPiece = piece;
+    m_nLighting = lighting;
+}
