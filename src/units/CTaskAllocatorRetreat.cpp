@@ -32,6 +32,7 @@ public:
 
 class CTaskAllocatorRetreat : public CTaskAllocator {
 public:
+    virtual int GetType() const;
     virtual ~CTaskAllocatorRetreat();
     virtual void AllocateTasks(CPedGroupIntelligence*);
 
