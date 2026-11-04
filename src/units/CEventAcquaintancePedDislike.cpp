@@ -8,3 +8,6 @@ public:
     virtual void DummyKeyFunction();
     virtual ~CEventAcquaintancePedDislike();
 };
+
+CEventAcquaintancePedDislike::~CEventAcquaintancePedDislike() {
+}
