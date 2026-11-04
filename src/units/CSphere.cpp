@@ -10,3 +10,8 @@ public:
 
     void Set(float radius, const CVector& center);
 };
+
+void CSphere::Set(float radius, const CVector& center) {
+    m_fRadius = radius;
+    m_vecCenter = center;
+}
