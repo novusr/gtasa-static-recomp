@@ -13,3 +13,7 @@ public:
 
 void CAEAudioEntity::UpdateParameters(CAESound*, short) {
 }
+
+CAEAudioEntity::~CAEAudioEntity() {
+}
+
