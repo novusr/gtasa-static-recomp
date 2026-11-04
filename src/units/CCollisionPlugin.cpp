@@ -25,5 +25,5 @@ int RpClumpRegisterPluginStream(unsigned int, RwStream* (*)(RwStream*, int, void
 
 extern CClumpModelInfo* gpClumpModelInfo;
 void CCollisionPlugin::SetModelInfo(CClumpModelInfo* modelInfo) {
-    gpClumpModelInfo = modelInfo;
+    gpCollisionModelInfo = modelInfo;
 }
