@@ -1,16 +1,19 @@
 class CPedGroupDefaultTaskAllocator;
+class CPedGroupDefaultTaskAllocatorFollowAnyMeans;
+class CPedGroupDefaultTaskAllocatorFollowLimited;
+class CPedGroupDefaultTaskAllocatorStandStill;
+class CPedGroupDefaultTaskAllocatorChat;
+class CPedGroupDefaultTaskAllocatorSitInLeaderCar;
+class CPedGroupDefaultTaskAllocatorRandom;
 
 class CPedGroupDefaultTaskAllocators {
 public:
-    static CPedGroupDefaultTaskAllocator* ms_allocators[6];
+    static CPedGroupDefaultTaskAllocatorFollowAnyMeans ms_followAnyMeansAllocator;
+    static CPedGroupDefaultTaskAllocatorFollowLimited ms_followLimitedAllocator;
+    static CPedGroupDefaultTaskAllocatorStandStill ms_standStillAllocator;
+    static CPedGroupDefaultTaskAllocatorChat ms_chatAllocator;
+    static CPedGroupDefaultTaskAllocatorSitInLeaderCar ms_sitInLeaderCarAllocator;
+    static CPedGroupDefaultTaskAllocatorRandom ms_randomAllocator;
+
     static CPedGroupDefaultTaskAllocator* Get(int id);
 };
-
-CPedGroupDefaultTaskAllocator* CPedGroupDefaultTaskAllocators::ms_allocators[6];
-
-
-CPedGroupDefaultTaskAllocator* CPedGroupDefaultTaskAllocators::Get(int id) {
-    if (static_cast<unsigned int>(id) > 5)
-        return nullptr;
-    return ms_allocators[id];
-}
