@@ -1,10 +1,10 @@
-class CPedGroupDefaultTaskAllocator;
-class CPedGroupDefaultTaskAllocatorFollowAnyMeans;
-class CPedGroupDefaultTaskAllocatorFollowLimited;
-class CPedGroupDefaultTaskAllocatorStandStill;
-class CPedGroupDefaultTaskAllocatorChat;
-class CPedGroupDefaultTaskAllocatorSitInLeaderCar;
-class CPedGroupDefaultTaskAllocatorRandom;
+class CPedGroupDefaultTaskAllocator {};
+class CPedGroupDefaultTaskAllocatorFollowAnyMeans : public CPedGroupDefaultTaskAllocator {};
+class CPedGroupDefaultTaskAllocatorFollowLimited : public CPedGroupDefaultTaskAllocator {};
+class CPedGroupDefaultTaskAllocatorStandStill : public CPedGroupDefaultTaskAllocator {};
+class CPedGroupDefaultTaskAllocatorChat : public CPedGroupDefaultTaskAllocator {};
+class CPedGroupDefaultTaskAllocatorSitInLeaderCar : public CPedGroupDefaultTaskAllocator {};
+class CPedGroupDefaultTaskAllocatorRandom : public CPedGroupDefaultTaskAllocator {};
 
 class CPedGroupDefaultTaskAllocators {
 public:
