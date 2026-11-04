@@ -6,3 +6,6 @@ public:
     CGangInfo();
     ~CGangInfo();
 };
+
+CGangInfo::~CGangInfo() {
+}
