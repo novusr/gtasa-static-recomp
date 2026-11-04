@@ -8,3 +8,6 @@ class CEventEscalator : public CEvent {
 public:
     virtual ~CEventEscalator();
 };
+
+CEventEscalator::~CEventEscalator() {
+}
