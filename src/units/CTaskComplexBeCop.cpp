@@ -15,6 +15,7 @@ public:
 
 class CTaskComplexBeCop : public CTaskComplexWander {
 public:
+    virtual void DummyKeyFunction();
     char pad[0x30];
     CTask* m_pSubTask;
     virtual ~CTaskComplexBeCop();
