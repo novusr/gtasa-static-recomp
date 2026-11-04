@@ -12,3 +12,6 @@ public:
     virtual ~CTaskAllocatorPlayerCommandRetreat();
     virtual void AllocateTasks(CPedGroupIntelligence*);
 };
+
+void CTaskAllocatorPlayerCommandRetreat::AllocateTasks(CPedGroupIntelligence*) {
+}
