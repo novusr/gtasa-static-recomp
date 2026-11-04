@@ -5,3 +5,6 @@ public:
 
     CPedStuckChecker();
 };
+
+CPedStuckChecker::CPedStuckChecker() : m_state(0) {
+}
