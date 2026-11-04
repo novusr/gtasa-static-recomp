@@ -12,5 +12,15 @@ public:
     ~CRideAnimData();
 };
 
+CRideAnimData::CRideAnimData()
+    : m_animGroup(0),
+      m_fBarSteerAngle(0.0f),
+      m_fLeanAngle(0.0f),
+      m_fDesiredLeanAngle(0.0f),
+      m_fLeanFwd(0.0f),
+      m_fAnimLeanLeft(0.0f),
+      m_fAnimLeanFwd(0.0f) {
+}
+
 CRideAnimData::~CRideAnimData() {
 }
