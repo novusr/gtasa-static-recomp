@@ -1,5 +1,8 @@
 # Clock countdown AOT milestone, 2026-11-06
 
+Current follow-up: [depth-function B.HI milestone](DEPTH_FUNC.md), backend
+`integer-bhi-v1`. Subset and audit counts below retain their historical versions.
+
 The selected original leaf is `COnscreenTimer::SetClockBeepCountdownSecs`
 (`_ZN14COnscreenTimer25SetClockBeepCountdownSecsEjj`), range
 **[0x3db37c,0x3db390)**: 20 bytes, five instructions, no call edges.

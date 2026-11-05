@@ -176,7 +176,7 @@ class BneRejectionTests(unittest.TestCase):
 
     def test_other_conditions_and_reserved_encodings(self):
         for condition in range(16):
-            if condition != 1:
+            if condition not in (1, 8):
                 with self.subTest(condition=condition):
                     self.rejected(words(0x54000040 | condition, RET, RET))
         # Bit 4 selects BC.cond on newer ISAs; bit 24 is fixed zero for B.cond.

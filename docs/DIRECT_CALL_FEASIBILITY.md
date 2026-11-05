@@ -1,5 +1,8 @@
 # Direct-call AOT feasibility, 2026-11-06
 
+Current follow-up: [depth-function B.HI milestone](DEPTH_FUNC.md), backend
+`integer-bhi-v1`. Subset and audit counts below retain their historical versions.
+
 Latest follow-up: the [clock-countdown audit and candidate matrix](CLOCK_BEEP.md)
 rechecks the post-CountMembers backend and adds only an original B.NE leaf.
 The non-leaf objective remains incomplete. Counts below remain historical.

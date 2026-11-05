@@ -83,11 +83,16 @@ jump tables and flags. The non-leaf milestone remains incomplete; no call backen
 or semantic evidence was added. Loader/relocation development stays frozen for
 this AOT stage. The proposed `CLoadedCarGroup::CountMembers` leaf is now verified
 as described above. Its non-leaf callers still require additional instruction
-and loop support. B.NE is now implemented; the next bounded proposal is B.HI
-for original
-`GLDepthFuncFromRQ` `[0x264cd0,0x264ce8)`, a six-instruction register-only
-acyclic leaf with two RET exits. It requires separate condition/outcome tests
-and a fresh oracle before acceptance. Other B.cond conditions remain rejected.
+and loop support. B.NE and B.HI are now implemented. The
+[depth-function milestone](DEPTH_FUNC.md) verifies original `GLDepthFuncFromRQ`
+`[0x264cd0,0x264ce8)` with both RET exits and both HI outcomes. The concrete
+`mpg123_getparam` -> `mpg123_getpar` closure remains blocked by stack/writeback,
+indexed stores, ADRP/LDRSW, indirect jump-table control flow and binary64
+conversion, even after HI acceptance. The next bounded AOT proposal is ordinary
+B.LO for `CPed::SetWeaponSkill` `[0x59bf24,0x59bf38)`: five instructions using
+already-supported LDR W, CMP immediate and STRB, with one conditional store.
+Its original bytes have been rechecked; separate semantics/rejection tests and
+a fresh original oracle are still required. No further condition is implemented.
 For example, the original `PickLeastUsedModel` caller contains CMP
 and B.lt/B.le/B.ne as well as a loop, signed-byte loads and other blockers;
 flag branches alone would not make that caller or a non-leaf closure supported.

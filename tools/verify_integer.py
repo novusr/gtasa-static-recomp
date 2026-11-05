@@ -184,7 +184,7 @@ def verify(config_path, output):
     image = Image(data)
     # Keep the two existing FP oracle functions in their original test harness.
     selections = [s for s in config['functions'] if s['output'] not in ('cross_product', 'multiply3x3')
-                  and s.get('verification') not in ('memory', 'control_flow', 'count_members', 'clock_beep')]
+                  and s.get('verification') not in ('memory', 'control_flow', 'count_members', 'clock_beep', 'depth_func')]
     functions = lift(image, selections)
     for fn in functions:
         if not set(fn['opcodes']) <= {'mov', 'movz', 'movn', 'add', 'sub', 'neg', 'nop', 'ret'}:

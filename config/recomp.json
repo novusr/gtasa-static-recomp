@@ -6,6 +6,11 @@
   "ghidra_image_base": 1048576,
   "functions": [
     {
+      "symbol": "_Z17GLDepthFuncFromRQ11RQDepthFunc",
+      "output": "depth_func_from_rq",
+      "verification": "depth_func"
+    },
+    {
       "symbol": "_ZN14COnscreenTimer25SetClockBeepCountdownSecsEjj",
       "output": "clock_beep_countdown",
       "verification": "clock_beep",

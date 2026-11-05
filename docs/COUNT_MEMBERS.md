@@ -1,5 +1,8 @@
 # CountMembers AOT milestone
 
+Current follow-up: [depth-function B.HI milestone](DEPTH_FUNC.md), backend
+`integer-bhi-v1`. Subset and audit counts below retain their historical versions.
+
 Follow-up: [clock countdown](CLOCK_BEEP.md) adds B.NE in `integer-bne-v1`.
 The subset/rejection and scan descriptions below document `integer-flags-v1`;
 other B.cond conditions and calls remain rejected.
