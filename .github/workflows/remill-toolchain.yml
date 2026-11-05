@@ -55,6 +55,21 @@ jobs:
           if-no-files-found: error
           retention-days: 1
           compression-level: 0
+      - name: Build experiment driver without game input
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo unshare --net -- sudo -u "$(id -un)" env \
+            CI_WORK_ROOT="$CI_WORK_ROOT" CI_PREFIX="$CI_PREFIX" CI_SCRIPTS="$GITHUB_WORKSPACE/ci" \
+            PATH=/usr/lib/llvm-21/bin:/usr/bin:/bin \
+            bash "$GITHUB_WORKSPACE/ci/build-driver.sh" 2>&1 | tee "$CI_WORK_ROOT/logs/driver-build.log"
+      - name: Upload experiment driver
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: remill-proof-driver
+          path: /tmp/remill-proof/driver-artifacts/
+          if-no-files-found: error
+          retention-days: 1
       - name: Upload diagnostic logs
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
