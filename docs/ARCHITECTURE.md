@@ -255,3 +255,14 @@ isolated inventory, not a jointly mapped process or lookup scope. All symbol,
 version, relocation and RELRO inventories remain intact, with no additional
 fixup, symbol selection or guest call. See [DEPENDENCY_EVIDENCE.md](DEPENDENCY_EVIDENCE.md)
 for the schema, validation/publication boundary and next evidence milestone.
+
+## Pure packed-byte decoding
+
+The separate `recomp_aps2_rela` library decodes Android APS2 RELA byte ranges
+into raw tuples and group/entry byte provenance with explicit expansion limits
+and atomic publication. It receives no guest memory, ELF image or resolver.
+It is not linked into the loader and cannot promote tuples to application.
+All packed-format rejection gates remain unchanged; RELR and packed REL are
+unsupported. See [APS2_RELA.md](APS2_RELA.md) for the strict nonwrapping,
+exact-consumption profile, API and data-only verification. Pure RELR decoding
+is the next format milestone; structural integration remains separate.

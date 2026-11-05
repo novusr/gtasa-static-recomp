@@ -151,7 +151,9 @@ dependency association, platform scope, version match or execution readiness.
 
 ## Proposed stages and acceptance contracts
 
-All stages below are future work requiring a separate implementation task.
+The original stages below describe the staged proposal. Stage 1 APS2 RELA is
+now implemented separately as documented in [APS2_RELA.md](APS2_RELA.md);
+RELR and all structural inventory/application integration remain future work.
 Do not remove current rejection guards as part of this documentation milestone.
 
 ### 1. Bounded pure decoding, first APS2 RELA then RELR
@@ -165,7 +167,9 @@ structure layout. No guest address is a host pointer.
 
 APS2 RELA contract:
 
-- Require SHT_ANDROID_RELA and exact APS2 signature. Decode signed LEB128 after
+- The future ELF integration must require SHT_ANDROID_RELA. The pure RELA-only
+  byte decoder requires the exact APS2 signature and assumes its caller selected
+  RELA semantics; APS2 itself cannot distinguish REL from RELA. Decode signed LEB128 after
   the four signature bytes: total count, initial offset, then groups. Validate
   nonnegative bounded count/initial address and positive group size no larger
   than the remaining count. Zero-count plus initial zero is valid.
@@ -176,8 +180,9 @@ APS2 RELA contract:
 - Offset state accumulates signed deltas, including backwards deltas between
   groups. Require each resulting unsigned guest VA in range; do not implement
   negative deltas by overflowing signed C++. Preserve raw 64-bit r_info and
-  split into uint32 symbol index/type. Validate the section's exact linked symbol
-  table and each index; names do not identify a symbol.
+  split into uint32 symbol index/type. Validation of the section's exact linked
+  symbol table and each index belongs to future structural integration; the pure
+  decoder receives no symbol table. Names do not identify a symbol.
 - Addend starts at zero. A group without has-addend resets it to zero. With
   ungrouped addends, accumulate a signed delta for each record. With grouped
   addend, add the group delta **once on group entry**, retaining that value for
@@ -191,7 +196,12 @@ APS2 RELA contract:
   before shifts, reject truncation, continuation past byte ten and out-of-range
   values; allow nonminimal encodings that still fit, since minimality is not a
   format requirement here. No shift by 64 or signed overflow. Require exact
-  record count and no trailing bytes; table padding outside sh_size is separate.
+  record count and no trailing bytes. This is a conservative profile: the official
+  LLD writer can append zero padding **inside** sh_size when avoiding shrinkage
+  during layout convergence (`relocData.append(oldSize - relocData.size(), 0)`).
+  Bionic stops at the declared record count. This decoder deliberately rejects
+  such padding, including zero bytes; future integration needs a reviewed policy.
+  Padding outside the supplied byte range is not inspected.
 - Android packed REL stays explicitly unsupported initially; an ARM64 RELA
   decoder must not guess its addend semantics from the APS2 signature alone.
 
@@ -315,3 +325,16 @@ full Python instruction suite or differential guest-instruction harness was run.
 No game, guest function, constructor, initializer, JNI_OnLoad or IFUNC resolver
 was executed. The original worktree, its agents, the device and existing pins
 were not modified.
+
+## Contract review for the pure APS2 implementation, 2026-11-06
+
+Implementation starts from HEAD `077466e` with a clean worktree. Official
+Bionic iterator/SLEB sources at android-16.0.0_r1 and the LLVM 20.1.0 writer
+linked above were retrieved again directly from their official repositories.
+Grouped addend is confirmed as one addition on group entry, not per record.
+The corrections above separate byte decoding from ELF/symbol binding and
+identify LLD in-section padding as intentionally unsupported by the requested
+exact-consumption profile. Nonnegative initial offset and nonwrapping offset/
+addend arithmetic are conservative limits rather than Bionic modular behavior.
+The prior diagnosis and its local script remain historical evidence, not the
+production decoder. See APS2_RELA.md for the implemented API and checks.

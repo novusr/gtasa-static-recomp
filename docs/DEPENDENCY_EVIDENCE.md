@@ -498,3 +498,22 @@ changed; rejected files remain unsupported. The separate original three-file
 audit is structurally identical to the historical report and preserves the
 complete GTASA baseline. Existing acquisition notes and ignored records remain
 intact; no device operation, guest execution, commit or push occurred.
+
+## Pure APS2 decoder follow-up, 2026-11-06
+
+The standalone [APS2 RELA byte decoder](APS2_RELA.md) adds no dependency-audit
+acceptance or symbol policy. Rechecking the existing 11 acquisition pins with
+the unchanged native validator still accepts libc and rejects the other ten
+packed-section inputs. Separate pure decoding matches all 796 historical APS2
+tuples across ten streams, including four empty streams. This is diagnostic
+decoder evidence, not a successful audit of those ten files. No device change
+or additional acquisition occurred.
+
+A fresh three-file original dependency audit is structurally identical to the
+historical report, including the exact GTASA baseline and all missing edges.
+The output is ignored `generated/aps2-rela-baseline-recheck.json`; the separate
+decoder/native recheck is `generated/aps2-rela-device-recheck.json`. Original
+manifest, pins and reports were preserved. No scope/version policy, original
+resolution plan, provider or fixup changed. The next bounded format step is
+pure RELR decoding; format acceptance and structural integration remain future
+work. See the decoder document for the data-only test results and limits.

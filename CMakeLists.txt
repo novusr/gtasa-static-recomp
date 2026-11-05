@@ -19,6 +19,14 @@ target_link_libraries(recomp_runtime PUBLIC OpenSSL::Crypto)
 target_include_directories(recomp_runtime PUBLIC include)
 target_compile_options(recomp_runtime PRIVATE -Wall -Wextra -Wpedantic -Werror -ffp-contract=off -fno-fast-math)
 
+# Pure byte decoding stays separate from the ELF loader and lifted runtime.
+add_library(recomp_aps2_rela STATIC src/aps2_rela.cpp)
+target_include_directories(recomp_aps2_rela PUBLIC include)
+target_compile_options(recomp_aps2_rela PRIVATE -Wall -Wextra -Wpedantic -Werror)
+add_executable(recomp_aps2_rela_test tests/aps2_rela_test.cpp)
+target_link_libraries(recomp_aps2_rela_test PRIVATE recomp_aps2_rela)
+target_compile_options(recomp_aps2_rela_test PRIVATE -Wall -Wextra -Wpedantic -Werror)
+
 add_library(recomp_lifted STATIC "${RECOMP_GENERATED_DIR}/lifted.cpp")
 target_include_directories(recomp_lifted PUBLIC "${RECOMP_GENERATED_DIR}")
 target_link_libraries(recomp_lifted PUBLIC recomp_runtime)
@@ -42,6 +50,7 @@ target_compile_options(recomp_image_smoke PRIVATE -Wall -Wextra -Wpedantic -Werr
 
 include(CTest)
 if(BUILD_TESTING)
+    add_test(NAME aps2_rela_data_only COMMAND recomp_aps2_rela_test)
     find_package(Python3 REQUIRED COMPONENTS Interpreter)
     add_test(NAME original_image_load COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_SOURCE_DIR}/tools/load_image.py"

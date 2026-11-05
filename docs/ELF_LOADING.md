@@ -466,3 +466,15 @@ device files, including four empty APS2 streams. Current section/dynamic rejecti
 and all application APIs remain unchanged. Future pure decoding and inventory
 need separate provenance, bounds, expansion limits and atomic publication tests;
 normalized RELA fields must not silently authorize application of packed entries.
+
+## Standalone APS2 RELA helper, 2026-11-06
+
+[Pure APS2 RELA decoding](APS2_RELA.md) is now available in a separate library,
+with no call from ElfImage, audit tools or the planner. Its records are distinct
+from ImageRelocation and carry no application eligibility. All existing packed
+section/dynamic rejection guards, accepted formats and relocation application
+behavior remain unchanged. The ten device libraries still reject. The fresh
+GTASA data-only smoke/audit preserves 5,252 applied RELATIVE, 21,458 unresolved
+(21,072 preemptible / 386 undefined), 274 unresolved imports, sealed RELRO and
+false readiness. Next implement the pure RELR decoder, before any inventory
+integration or additional fixup work.

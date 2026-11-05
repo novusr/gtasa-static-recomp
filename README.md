@@ -31,6 +31,9 @@ removal are now available; these do not authorize initialization or execution.
   native prepared-image inventory, with table/index identities and unresolved groups.
 - `docs/LINKER_AUDIT.md`: verified findings, official ABI/platform sources and resolver milestones.
 - `docs/ELF_LOADING.md`: loader contracts, verification and remaining linker work.
+- `include/recomp/aps2_rela.h`, `src/aps2_rela.cpp`: standalone bounded APS2
+  RELA byte decoder with atomic results and decoding provenance; no loader/audit
+  format acceptance or fixup support. See [APS2_RELA.md](docs/APS2_RELA.md).
 - `CMakeLists.txt`: host C++11 build, independent of the Android NDK.
 - `tests/`: synthetic ELF/lifter checks, control-flow semantics and native smoke tests.
 - `tools/verify_leaf.py`: differential comparison with original ARM64 instructions
