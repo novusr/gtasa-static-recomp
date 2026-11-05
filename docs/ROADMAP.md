@@ -33,6 +33,14 @@
   tests. Original-image smoke independently verifies 5,252 applied entries at
   bias 0x100000000; 21,458 relocations and all 274 imports remain unresolved.
   Readiness stays false and no guest code or initializer is invoked.
+- Transactional RELA ABS64/GLOB_DAT/JUMP_SLOT data fixups for defined,
+  non-preemptible internal symbols, with table/index metadata, checked guest
+  addresses, SHN_ABS handling, per-reason unresolved status and a combined
+  RELATIVE/symbol API. JUMP_SLOT accepts zero addends pending platform policy;
+  it supplies no dispatch. Synthetic tests cover resolution, arithmetic,
+  rejection, atomicity and phase interaction. Original-image verification finds
+  no eligible internal symbols: 5,252 RELATIVE applied, 21,072 preemptible and
+  386 undefined relocations unresolved, with all 274 imports unresolved.
 
 These milestones do not mean the game can start or that arbitrary ARM64 can run.
 
@@ -51,9 +59,10 @@ These milestones do not mean the game can start or that arbitrary ARM64 can run.
 
 - Extend the bounded PT_LOAD/BSS loader with Android linker requirements,
   relocation target validation, RELRO policy and any required packed-table support.
-- Extend relocation support beyond RELA RELATIVE to ABS64, GLOB_DAT, JUMP_SLOT
-  and TLS relocations as encountered;
-  unrecognized relocation types must fail startup.
+- Extend bounded internal-symbol relocation support with dependency/preemptible
+  resolution, symbol versions and verified platform JUMP_SLOT addend policy;
+  implement TLS and other required relocation forms. Unrecognized requirements
+  must fail startup.
 - Implement address-to-entry dispatch and guest stack/call/callback conventions.
 - Handle initialization, allocation, C++ exceptions/unwinding and threading.
 - Build an import manifest with explicit implementations and unresolved entries.

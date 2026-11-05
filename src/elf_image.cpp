@@ -37,6 +37,7 @@ struct Reader {
 
 struct Section {
     uint32_t type;
+    uint64_t flags;
     uint64_t address;
     uint64_t offset;
     uint64_t size;
@@ -68,6 +69,67 @@ std::string symbol_name(const Reader& r, const std::vector<Section>& sections,
     entries(symbols, 24);
     require(index < symbols.size / 24, "invalid ELF relocation symbol index");
     return string_at(r, linked(sections, symbols), r.word(symbols.offset + uint64_t(index) * 24, 4));
+}
+
+ImageSymbol read_symbol(const Reader& r, const std::vector<Section>& sections,
+                        uint32_t table, uint32_t index) {
+    const Section& symbols = sections.at(table);
+    ImageSymbol s;
+    s.name = symbol_name(r, sections, symbols, index);
+    const uint64_t p = symbols.offset + uint64_t(index) * 24;
+    s.table_section = table;
+    s.table_type = symbols.type;
+    s.index = index;
+    s.value = r.word(p + 8, 8);
+    s.size = r.word(p + 16, 8);
+    s.section_index = static_cast<uint16_t>(r.word(p + 6, 2));
+    const uint8_t info = static_cast<uint8_t>(r.word(p + 4, 1));
+    s.binding = info >> 4;
+    s.type = info & 15;
+    s.other = static_cast<uint8_t>(r.word(p + 5, 1));
+    // AAELF64 uses the low two bits for ordinary visibility; all other
+    // attributes (including VARIANT_PCS) need explicit future support.
+    s.visibility = s.other & 3;
+    require(s.section_index >= 0xff00 || s.section_index < sections.size(),
+            "invalid ELF symbol section index");
+    if (!index || !s.section_index) s.resolution_reason = "undefined_symbol";
+    else if (s.type == 10) s.resolution_reason = "ifunc_unsupported";
+    else if (s.type == 6) s.resolution_reason = "tls_unsupported";
+    else if (s.type == 5 || s.section_index == 0xfff2)
+        s.resolution_reason = "common_unsupported";
+    else if (s.type > 3) s.resolution_reason = "symbol_type_unsupported";
+    else if (s.binding > 2) s.resolution_reason = "symbol_binding_unsupported";
+    else if (s.other & ~3U) s.resolution_reason = "symbol_attributes_unsupported";
+    else if (s.binding == 0 && s.visibility == 3)
+        s.resolution_reason = "local_protected_invalid";
+    else if (s.binding != 0 && s.visibility == 0)
+        s.resolution_reason = "preemptible_symbol";
+    else if (s.section_index >= 0xff00 && s.section_index != 0xfff1)
+        s.resolution_reason = "special_section_unsupported";
+    else if (s.section_index != 0xfff1) {
+        const Section& section = sections[s.section_index];
+        if (section.flags & 0x400) s.resolution_reason = "tls_unsupported";
+        else if (!(section.flags & 2)) s.resolution_reason = "nonallocated_symbol_section";
+        else if (s.value < section.address || s.value - section.address > section.size ||
+                 s.size > section.size - (s.value - section.address))
+            s.resolution_reason = "symbol_outside_section";
+    }
+    for (const Section& section : sections)
+        if (section.type == 0x6fffffff && section.link == table &&
+            s.resolution_reason.empty()) s.resolution_reason = "symbol_versioning_unsupported";
+    return s;
+}
+
+std::string relocation_reason(const ImageRelocation& r) {
+    if (!r.has_addend) return "rel_implicit_addend_unsupported";
+    if (r.type == 1027) return "relative_not_applied";
+    if (r.type != 257 && r.type != 1025 && r.type != 1026)
+        return "relocation_type_unsupported";
+    if (!r.definition.resolution_reason.empty()) return r.definition.resolution_reason;
+    // AAELF64 delegates honoring RELA JUMP_SLOT addends to the platform ABI.
+    // Zero is independent of that choice; do not guess for nonzero addends.
+    if (r.type == 1026 && r.addend_bits) return "jump_slot_addend_policy_unsupported";
+    return "internal_symbol_not_applied";
 }
 
 } // namespace
@@ -159,6 +221,7 @@ ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha
         const uint64_t p = shoff + i * 64;
         Section s;
         s.type = static_cast<uint32_t>(r.word(p + 4, 4));
+        s.flags = r.word(p + 8, 8);
         s.address = r.word(p + 16, 8);
         s.offset = r.word(p + 24, 8);
         s.size = r.word(p + 32, 8);
@@ -173,6 +236,14 @@ ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha
         for (const Section& s : sections)
             if (s.type == 6 && s.offset == range.first && s.size == range.second) found = true;
         require(found, "PT_DYNAMIC missing matching section inventory");
+    }
+    for (std::size_t table = 0; table < sections.size(); ++table) {
+        const Section& s = sections[table];
+        if (s.type != 2 && s.type != 11) continue;
+        entries(s, 24);
+        for (uint64_t i = 0; i < s.size / 24; ++i)
+            image.symbols_.push_back(read_symbol(r, sections, static_cast<uint32_t>(table),
+                                                 static_cast<uint32_t>(i)));
     }
     for (const Section& s : sections) {
         if (s.type == 11) { // SHT_DYNSYM: every named undefined symbol stays unresolved.
@@ -201,8 +272,10 @@ ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha
                 entry.type = static_cast<uint32_t>(info);
                 entry.symbol_index = static_cast<uint32_t>(info >> 32);
                 entry.symbol = symbol_name(r, sections, symbols, entry.symbol_index);
+                entry.definition = read_symbol(r, sections, s.link, entry.symbol_index);
                 entry.has_addend = s.type == 4;
                 entry.addend_bits = entry.has_addend ? r.word(p + 16, 8) : 0;
+                entry.unresolved_reason = relocation_reason(entry);
                 image.relocations_.push_back(entry);
             }
         } else if (s.type == 6) { // SHT_DYNAMIC: DT_NEEDED only, no initialization.
@@ -261,28 +334,56 @@ ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha
     return image;
 }
 
-void ElfImage::apply_relative_relocations() {
-    if (relative_applied_) return;
-    std::vector<ImageRelocation> applied, unresolved;
+void ElfImage::apply_relative_relocations() { apply_relocation_batch(true, false); }
+void ElfImage::apply_symbol_relocations() { apply_relocation_batch(false, true); }
+void ElfImage::apply_relocations() { apply_relocation_batch(true, true); }
+
+void ElfImage::apply_relocation_batch(bool relative, bool symbols) {
+    relative = relative && !relative_applied_;
+    symbols = symbols && !symbols_applied_;
+    if (!relative && !symbols) return;
+    std::vector<ImageRelocation> applied = applied_, unresolved;
     std::map<uint64_t, uint64_t> writes;
     std::map<uint64_t, std::size_t> target_counts;
     for (const ImageRelocation& r : relocations_) ++target_counts[r.address];
+    for (const ImageRelocation& r : applied_) ++target_counts[r.address];
     // Allocate reports and validate every write before touching guest bytes.
     for (const ImageRelocation& r : relocations_) {
-        if (r.type != 1027 || !r.has_addend) {
+        const bool is_relative = relative && r.type == 1027 && r.has_addend;
+        const bool is_symbol = symbols && r.has_addend &&
+            (r.type == 257 || r.type == 1025 || r.type == 1026) &&
+            r.definition.resolution_reason.empty() && !(r.type == 1026 && r.addend_bits);
+        if (!is_relative && !is_symbol) {
             unresolved.push_back(r);
             continue;
         }
-        require(r.symbol_index == 0, "RELA RELATIVE requires symbol index zero");
-        require(r.address % 8 == 0, "RELA RELATIVE target must be 8-byte aligned");
-        require(target_counts.at(r.address) == 1,
-                "duplicate RELA RELATIVE target (composition unsupported)");
+        if (is_relative)
+            require(r.symbol_index == 0, "RELA RELATIVE requires symbol index zero");
+        require(r.address % 8 == 0, "RELA target must be 8-byte aligned");
+        // Reject shared and partially overlapping fields, including unsupported
+        // entries and entries already applied by the other explicit phase.
+        std::map<uint64_t, std::size_t>::const_iterator it =
+            target_counts.lower_bound(r.address >= 7 ? r.address - 7 : 0);
+        for (; it != target_counts.end(); ++it) {
+            if (it->first > r.address && it->first - r.address >= 8) break;
+            require(it->first == r.address && it->second == 1,
+                    "duplicate/overlapping RELA target (composition unsupported)");
+        }
         memory_.region(r.address, 8, true); // checked complete range and PF_W
-        // AAELF64: Delta + signed A, reduced to the 64-bit target field.
-        // Unsigned addition of the two's-complement bits implements this exactly
-        // without signed overflow or implementation-defined signed conversions.
-        writes.insert(std::make_pair(r.address, bias_ + r.addend_bits));
-        applied.push_back(r);
+        uint64_t base = bias_;
+        if (is_symbol) {
+            // SHN_ABS is invariant under relocation. Ordinary ET_DYN values
+            // are virtual addresses; check their bias addition separately from
+            // the ABI's modular relocation expression.
+            base = r.definition.section_index == 0xfff1 ? r.definition.value :
+                add(bias_, r.definition.value);
+        }
+        // AAELF64: S + signed A (or Delta + A), reduced to bits [63:0].
+        // Unsigned addition avoids signed overflow and implementation-defined casts.
+        writes.insert(std::make_pair(r.address, base + r.addend_bits));
+        ImageRelocation done = r;
+        done.unresolved_reason.clear();
+        applied.push_back(done);
     }
     // No allocation or permission changes occur during commit. With exclusive
     // access to this image, every checked store is now guaranteed to succeed.
@@ -290,7 +391,8 @@ void ElfImage::apply_relative_relocations() {
         memory_.store64(write.first, write.second);
     applied_.swap(applied);
     relocations_.swap(unresolved);
-    relative_applied_ = true;
+    if (relative) relative_applied_ = true;
+    if (symbols) symbols_applied_ = true;
 }
 
 } // namespace recomp

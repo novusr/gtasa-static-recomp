@@ -184,8 +184,15 @@ The data loader now maps PT_LOAD data and BSS with an explicit bias, but never
 reports execution readiness. Its explicit, transactional RELA RELATIVE phase
 writes bias plus signed addend modulo 2^64 through checked guest memory, requiring
 aligned targets wholly inside existing PF_W mappings. Applied and unresolved
-entries are separate; repeat application is a no-op. Other types and all imports
-remain unresolved. A full loader must apply further AArch64 relocations in guest memory,
+entries are separate; repeat application is a no-op. A separate internal-symbol phase supports RELA
+ABS64/GLOB_DAT/JUMP_SLOT for proven non-preemptible definitions, retaining table
+and index identity. SHN_ABS does not receive bias; other supported symbols do.
+A combined API plans both phases transactionally, preserving prior applied
+entries. JUMP_SLOT accepts only zero addends pending platform policy and patches
+a guest-address data slot only. Default-visible global/weak definitions, all
+undefined imports, IFUNC, TLS, COMMON, symbol versioning and other unsupported
+forms remain unresolved. No resolver is invoked. See [ELF loading](ELF_LOADING.md)
+for ABI sources, resolution rules, arithmetic and target policies. A full loader must apply further AArch64 relocations in guest memory,
 initialize TLS and constructors, and dispatch guest addresses to compiled entry
 points. ELF segments must never be executed directly by the x86_64 host.
 

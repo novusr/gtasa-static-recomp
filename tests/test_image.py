@@ -34,6 +34,44 @@ def fixture():
     return data
 
 
+def symbol_fixture(symbols=None, relocations=None, second_symbols=None):
+    """Two independent tables, deliberately sharing names and symbol indices."""
+    symbols = symbols if symbols is not None else [dict()]
+    second_symbols = second_symbols if second_symbols is not None else [dict(value=0x9020)]
+    relocations = relocations if relocations is not None else [(0x9000, 257, 1, 0, 2)]
+    data = bytearray(0x1a00)
+    data[:16] = b'\x7fELF' + bytes([2, 1, 1]) + bytes(9)
+    struct.pack_into('<HHIQQQIHHHHHH', data, 16, 3, 183, 1, 0, 64,
+                     0x1800, 0, 64, 56, 2, 64, 8, 0)
+    struct.pack_into('<IIQQQQQQ', data, 64, 1, 5, 0x200, 0x8000, 0, 16, 16, 1)
+    struct.pack_into('<IIQQQQQQ', data, 120, 1, 6, 0x300, 0x9000, 0, 64, 64, 1)
+    data[0x300:0x340] = bytes(range(64))
+    data[0x500:0x506] = b'\0same\0'
+    for offset, syms in ((0x600, symbols), (0x900, second_symbols)):
+        for i, spec in enumerate(syms, 1):
+            struct.pack_into('<IBBHQQ', data, offset + i * 24, 1,
+                             (spec.get('binding', 0) << 4) | spec.get('type', 1),
+                             spec.get('other', spec.get('visibility', 0)),
+                             spec.get('section', 4), spec.get('value', 0x9010),
+                             spec.get('size', 0))
+    counts = {2: 0, 3: 0}
+    for target, kind, index, addend, table in relocations:
+        offset = (0xc00 if table == 2 else 0xf00) + counts[table] * 24
+        struct.pack_into('<QQq', data, offset, target, (index << 32) | kind, addend)
+        counts[table] += 1
+    headers = [(3, 0, 0, 0x500, 6, 0, 0),
+               (11, 0, 0, 0x600, (len(symbols) + 1) * 24, 1, 24),
+               (2, 0, 0, 0x900, (len(second_symbols) + 1) * 24, 1, 24),
+               (1, 3, 0x9000, 0x300, 64, 0, 0),
+               (4, 0, 0, 0xc00, counts[2] * 24, 2, 24),
+               (4, 0, 0, 0xf00, counts[3] * 24, 3, 24),
+               (0, 0, 0, 0, 0, 0, 0)]
+    for i, (kind, flags, address, offset, size, link, stride) in enumerate(headers, 1):
+        struct.pack_into('<IIQQQQIIQQ', data, 0x1800 + i * 64,
+                         0, kind, flags, address, offset, size, link, 0, 8, stride)
+    return data
+
+
 class ImageTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -52,8 +90,10 @@ class ImageTests(unittest.TestCase):
 int main(int argc, char** argv) {
     if (argc != 3) return 1;
     recomp::ElfImage image = recomp::ElfImage::load(argv[1], argv[2], 0);
+    image.apply_relocations();
+    image.apply_relocations();
     image.apply_relative_relocations();
-    image.apply_relative_relocations();
+    image.apply_symbol_relocations();
     if (image.applied_relocations().size() != 1 || image.ready_to_execute()) return 2;
     try { image.memory().load64(0x9000); }
     catch (const std::out_of_range&) { return 0; }
@@ -70,16 +110,16 @@ int main(int argc, char** argv) {
     def tearDownClass(cls):
         cls.temp.cleanup()
 
-    def run_image(self, data=None, bias=0x100000000, digest=None, limit=None, relocate=False):
+    def run_image(self, data=None, bias=0x100000000, digest=None, limit=None, relocate=False, mode=None):
         if data is None:
             data = fixture()
         path = self.directory / 'fixture.elf'
         path.write_bytes(data)
         args = [str(self.runner), str(path), digest or hashlib.sha256(data).hexdigest(), str(bias)]
-        if limit is not None or relocate:
+        if limit is not None or relocate or mode:
             args.append(str(limit if limit is not None else 536870912))
-        if relocate:
-            args.append("--relocate")
+        if relocate or mode:
+            args.append(mode or "--relocate")
         return subprocess.run(args, capture_output=True, text=True)
 
     def test_mapping_bss_permissions_holes_and_inventory(self):
@@ -98,7 +138,8 @@ int main(int argc, char** argv) {
                 self.assertEqual(report['needed_libraries'], ['libfixture.so'])
                 self.assertEqual(report['imports'], [dict(symbol='external', symbol_index=1,
                                                          binding=1, type=2, status='unresolved')])
-                self.assertEqual(report['relocations'], [
+                self.assertEqual([{k: v for k, v in r.items() if k not in ('definition', 'reason')}
+                                  for r in report['relocations']], [
                     dict(address=bias + 0x9000, type=1027, symbol_index=0, symbol='',
                          addend_bits=(1 << 64) - 4, has_addend=True, status='unresolved'),
                     dict(address=bias + 0x9008, type=1025, symbol_index=1, symbol='external',
@@ -218,7 +259,8 @@ int main(int argc, char** argv) {
         self.assertEqual(result.returncode, 0, result.stderr)
         report = json.loads(result.stdout)
         self.assertEqual(report['imports'], [])
-        self.assertEqual(report['relocations'], [])
+        self.assertEqual([{k: v for k, v in r.items() if k not in ('definition', 'reason')}
+                                  for r in report['relocations']], [])
         self.assertFalse(report['ready_to_execute'])
 
     def test_relative_values_bytes_and_reapplication(self):
@@ -231,7 +273,8 @@ int main(int argc, char** argv) {
                     self.assertEqual(result.returncode, 0, result.stderr)
                     report = json.loads(result.stdout)
                     value = (bias + addend) % (1 << 64)
-                    self.assertEqual(report['applied_relocations'], [dict(
+                    self.assertEqual([{k: v for k, v in r.items() if k not in ('definition', 'type')}
+                                      for r in report['applied_relocations']], [dict(
                         address=bias + 0x9000, addend_bits=addend % (1 << 64),
                         value=value, bytes=list(value.to_bytes(8, 'little')), status='applied')])
                     self.assertEqual(len(report['relocations']), 1)
@@ -328,6 +371,205 @@ int main(int argc, char** argv) {
         report = json.loads(result.stdout)
         self.assertEqual(report['applied_relocations'], [])
         self.assertFalse(report['relocations'][0]['has_addend'])
+
+    def test_symbol_binding_visibility_and_special_forms(self):
+        cases = [({}, None),
+                 ({'type': 0}, None), ({'type': 2}, None), ({'type': 3}, None),
+                 ({'visibility': 1}, None), ({'visibility': 2}, None),
+                 ({'binding': 2, 'visibility': 1}, None),
+                 ({'binding': 1, 'visibility': 3, 'section': 0xfff1}, None),
+                 ({'binding': 1, 'visibility': 2}, None),
+                 ({'binding': 1, 'visibility': 1}, None),
+                 ({'binding': 1, 'visibility': 3}, None),
+                 ({'binding': 2, 'visibility': 2}, None),
+                 ({'binding': 2, 'visibility': 3}, None),
+                 ({'binding': 1}, 'preemptible_symbol'),
+                 ({'binding': 2}, 'preemptible_symbol'),
+                 ({'binding': 1, 'section': 0}, 'undefined_symbol'),
+                 ({'binding': 2, 'section': 0}, 'undefined_symbol'),
+                 ({'visibility': 3}, 'local_protected_invalid'),
+                 ({'binding': 10}, 'symbol_binding_unsupported'),
+                 ({'type': 10}, 'ifunc_unsupported'),
+                 ({'type': 6}, 'tls_unsupported'),
+                 ({'type': 5}, 'common_unsupported'),
+                 ({'section': 0xfff2}, 'common_unsupported'),
+                 ({'section': 0xffff}, 'special_section_unsupported'),
+                 ({'type': 4}, 'symbol_type_unsupported'),
+                 ({'other': 0x82}, 'symbol_attributes_unsupported'),
+                 ({'other': 4}, 'symbol_attributes_unsupported'),
+                 ({'section': 0xff10}, 'special_section_unsupported'),
+                 ({'value': 0xa000}, 'symbol_outside_section')]
+        for kind in (257, 1025, 1026):
+            for spec, reason in cases:
+                with self.subTest(kind=kind, spec=spec):
+                    data = symbol_fixture([spec], [(0x9000, kind, 1, 0, 2)])
+                    result = self.run_image(data, mode='--all')
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    report = json.loads(result.stdout)
+                    if reason:
+                        self.assertEqual(report['applied_relocations'], [])
+                        self.assertEqual(report['relocations'][0]['reason'], reason)
+                    else:
+                        self.assertEqual(report['relocations'], [])
+                        self.assertEqual(report['applied_relocations'][0]['value'],
+                                         0x9010 if spec.get('section') == 0xfff1 else 0x100009010)
+                    self.assertFalse(report['ready_to_execute'])
+                    if spec.get('section') == 0:
+                        self.assertEqual(len(report['imports']), 1)
+
+    def test_symbol_values_bias_addends_abs_and_overflow(self):
+        for kind in (257, 1025, 1026):
+            for bias in (0, 0x100000000, 0xffffffffffff0000):
+                for absolute in (False, True):
+                    for value in ((0, 1, (1 << 64) - 1) if absolute else (0x9010,)):
+                        for addend in (0, 4, -4, -(1 << 63), (1 << 63) - 1):
+                            with self.subTest(kind=kind, bias=bias, absolute=absolute,
+                                              value=value, addend=addend):
+                                spec = dict(value=value, section=0xfff1 if absolute else 4)
+                                data = symbol_fixture([spec], [(0x9000, kind, 1, addend, 2)])
+                                result = self.run_image(data, bias=bias, mode='--all')
+                                self.assertEqual(result.returncode, 0, result.stderr)
+                                report = json.loads(result.stdout)
+                                if kind == 1026 and addend:
+                                    self.assertEqual(report['relocations'][0]['reason'],
+                                                     'jump_slot_addend_policy_unsupported')
+                                    continue
+                                applied = report['applied_relocations'][0]
+                                expected = (value + (0 if absolute else bias) + addend) % (1 << 64)
+                                self.assertEqual(applied['value'], expected)
+                                self.assertEqual(applied['bytes'], list(expected.to_bytes(8, 'little')))
+                                definition = applied['definition']
+                                self.assertEqual(definition['value'], value)
+                                self.assertEqual(definition['table_section'], 2)
+                                self.assertEqual(definition['index'], 1)
+                                self.assertEqual(definition['section_index'], spec['section'])
+
+    def test_symbol_tables_are_resolved_by_identity_and_invalid_indices_fail(self):
+        data = symbol_fixture(relocations=[(0x9000, 257, 1, 0, 2), (0x9008, 1025, 1, 0, 3)])
+        result = self.run_image(data, mode='--all')
+        self.assertEqual(result.returncode, 0, result.stderr)
+        applied = json.loads(result.stdout)['applied_relocations']
+        self.assertEqual([r['value'] for r in applied], [0x100009010, 0x100009020])
+        self.assertEqual([r['definition']['name'] for r in applied], ['same', 'same'])
+        self.assertEqual([r['definition']['table_type'] for r in applied], [11, 2])
+        for table in (2, 3):
+            data = symbol_fixture(relocations=[(0x9000, 257, 20, 0, table)])
+            result = self.run_image(data, mode='--all')
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('symbol index', result.stderr)
+        result = self.run_image(symbol_fixture([dict(section=20)]), mode='--all')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('symbol section index', result.stderr)
+
+    def test_symbol_target_validation_and_transaction(self):
+        for kind in (257, 1025, 1026):
+            for target, message in ((0xa000, 'unmapped'), (0x8000, 'permission'),
+                                    (0x9011, 'aligned'), (0x9038, 'unmapped'),
+                                    (0x9000, 'composition')):
+                with self.subTest(kind=kind, target=target):
+                    data = symbol_fixture(relocations=[(0x9000, 257, 1, 0, 2),
+                                                        (target, kind, 1, 0, 2)])
+                    if target == 0x9038:
+                        struct.pack_into('<Q', data, 160, 60)
+                        struct.pack_into('<Q', data, 152, 60)
+                    result = self.run_image(data, mode='--all')
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertIn(message, result.stderr)
+                    self.assertNotIn('partial', result.stderr)
+            for flags in (0, 1, 4, 5):
+                data = symbol_fixture(relocations=[(0x9000, kind, 1, 0, 2)])
+                struct.pack_into('<I', data, 124, flags)
+                result = self.run_image(data, mode='--all')
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn('permission', result.stderr)
+        # Biasing an ordinary definition is checked address formation, separate
+        # from S+A field reduction; even a valid first plan entry must not commit.
+        data = symbol_fixture([{}, dict(value=(1 << 64) - 256, section=7)],
+                              [(0x9000, 257, 1, 0, 2), (0x9008, 257, 2, 0, 2)])
+        struct.pack_into('<IIQQQQIIQQ', data, 0x1800 + 7 * 64,
+                         0, 8, 2, (1 << 64) - 256, 0, 64, 0, 0, 1, 0)
+        result = self.run_image(data, mode='--all')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('address/size overflow', result.stderr)
+        self.assertNotIn('partial', result.stderr)
+        # An aligned target straddling adjacent mappings still fails as one range.
+        data = symbol_fixture(relocations=[(0x9000, 257, 1, 0, 2), (0x9008, 1025, 1, 0, 2)])
+        struct.pack_into('<Q', data, 160, 12)
+        struct.pack_into('<Q', data, 152, 12)
+        struct.pack_into('<Q', data, 80, 0x900c)
+        result = self.run_image(data, mode='--all')
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('unmapped', result.stderr)
+        self.assertNotIn('partial', result.stderr)
+
+    def test_symbol_relative_combination_phase_order_and_composition(self):
+        entries = [(0x9000, 1027, 0, -4, 2), (0x9008, 257, 1, 8, 2),
+                   (0x9010, 1026, 1, 0, 2)]
+        for mode in ('--all', '--relative-symbols', '--symbols-relative'):
+            result = self.run_image(symbol_fixture(relocations=entries), mode=mode)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report = json.loads(result.stdout)
+            self.assertEqual(len(report['applied_relocations']), 3)
+            self.assertEqual(report['relocations'], [])
+        for first_kind, second_kind in ((1027, 257), (257, 1027), (257, 1032), (1025, 257)):
+            for target in (0x9000, 0x9004):
+                data = symbol_fixture(relocations=[(0x9000, first_kind, int(first_kind != 1027), 0, 2),
+                                                    (target, second_kind, int(second_kind != 1027), 0, 2)])
+                for mode in ('--all', '--relative-symbols', '--symbols-relative'):
+                    result = self.run_image(data, mode=mode)
+                    self.assertNotEqual(result.returncode, 0)
+                    self.assertNotIn('partial', result.stderr)
+
+    def test_later_phase_failure_preserves_prior_applied_entries(self):
+        for mode, entries in (
+                ('--relative-symbols', [(0x9000, 1027, 0, 1, 2),
+                                        (0x9008, 257, 1, 0, 2), (0xa000, 1025, 1, 0, 2)]),
+                ('--symbols-relative', [(0x9000, 257, 1, 0, 2),
+                                        (0x9008, 1027, 0, 1, 2), (0xa000, 1027, 0, 0, 2)])):
+            result = self.run_image(symbol_fixture(relocations=entries), mode=mode)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('unmapped', result.stderr)
+            self.assertNotIn('partial', result.stderr)
+            self.assertNotIn('incorrectly completed', result.stderr)
+
+    def test_symbol_write_only_rel_and_phase_isolation(self):
+        data = symbol_fixture()
+        struct.pack_into('<I', data, 124, 2)
+        path = self.directory / 'symbol-write-only.elf'
+        path.write_bytes(data)
+        result = subprocess.run([str(self.write_only_runner), str(path),
+                                 hashlib.sha256(data).hexdigest()], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        data = symbol_fixture(relocations=[(0x9000, 1027, 0, 4, 2), (0x9008, 257, 1, 4, 2)])
+        for mode, kind in (('--relocate', 1027), ('--symbols', 257)):
+            result = self.run_image(data, mode=mode)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report = json.loads(result.stdout)
+            self.assertEqual([r['type'] for r in report['applied_relocations']], [kind])
+            self.assertEqual(len(report['relocations']), 1)
+        for kind in (257, 1025, 1026):
+            data = symbol_fixture(relocations=[(0x9000, kind, 1, 0, 2)])
+            struct.pack_into('<I', data, 0x1800 + 5 * 64 + 4, 9)
+            struct.pack_into('<Q', data, 0x1800 + 5 * 64 + 32, 16)
+            struct.pack_into('<Q', data, 0x1800 + 5 * 64 + 56, 16)
+            result = self.run_image(data, mode='--all')
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report = json.loads(result.stdout)
+            self.assertEqual(report['applied_relocations'], [])
+            self.assertEqual(report['relocations'][0]['reason'], 'rel_implicit_addend_unsupported')
+
+    def test_symbol_versioning_nonallocated_and_tls_sections_remain_unresolved(self):
+        for flags, reason in ((0, 'nonallocated_symbol_section'), (0x403, 'tls_unsupported')):
+            data = symbol_fixture()
+            struct.pack_into('<Q', data, 0x1800 + 4 * 64 + 8, flags)
+            report = json.loads(self.run_image(data, mode='--all').stdout)
+            self.assertEqual(report['relocations'][0]['reason'], reason)
+        data = symbol_fixture()
+        struct.pack_into('<IIQQQQIIQQ', data, 0x1800 + 7 * 64,
+                         0, 0x6fffffff, 0, 0, 0x1200, 4, 2, 0, 2, 2)
+        report = json.loads(self.run_image(data, mode='--all').stdout)
+        self.assertEqual(report['relocations'][0]['reason'], 'symbol_versioning_unsupported')
+
 
 
 if __name__ == '__main__':

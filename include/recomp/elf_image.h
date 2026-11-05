@@ -16,6 +16,21 @@ struct ImageSegment {
     uint32_t flags;
 };
 
+struct ImageSymbol {
+    std::string name;
+    uint32_t table_section; // identity is (section index, symbol index), never name
+    uint32_t table_type;
+    uint32_t index;
+    uint64_t value;
+    uint64_t size;
+    uint16_t section_index;
+    uint8_t binding;
+    uint8_t type;
+    uint8_t visibility;
+    uint8_t other;
+    std::string resolution_reason; // empty only for supported internal definitions
+};
+
 struct ImageImport {
     std::string name;
     uint32_t symbol_index;
@@ -30,9 +45,11 @@ struct ImageRelocation {
     std::string symbol;
     uint64_t addend_bits; // raw two's-complement ELF64 signed addend
     bool has_addend;
+    ImageSymbol definition;
+    std::string unresolved_reason;
 };
 
-// Data loading and explicit RELA RELATIVE fixups only. No import bridges,
+// Data loading and explicit bounded RELA guest-address fixups only. No import bridges,
 // initializer calls, entry dispatch, dlopen, host executable mappings or ARM64
 // execution are provided.
 class ElfImage {
@@ -40,8 +57,12 @@ public:
     static ElfImage load(const std::string& path, const std::string& expected_sha256,
                          uint64_t load_bias, uint64_t memory_limit = UINT64_C(536870912));
     // Validate the complete batch, then write only to existing PF_W mappings.
-    // Subsequent calls are no-ops; REL/other types remain unresolved.
+    // Each successful phase is idempotent; REL/unsupported forms stay unresolved.
     void apply_relative_relocations();
+    void apply_symbol_relocations();
+    // One transaction for both phases, including validation/allocation.
+    void apply_relocations();
+    const std::vector<ImageSymbol>& symbols() const { return symbols_; }
     const std::vector<ImageRelocation>& applied_relocations() const { return applied_; }
     Memory& memory() { return memory_; }
     const Memory& memory() const { return memory_; }
@@ -54,10 +75,13 @@ public:
     // Even an image with empty inventories has no runtime startup support yet.
     bool ready_to_execute() const { return false; }
 private:
-    ElfImage() : memory_(0, 0), bias_(0), relative_applied_(false) {}
+    ElfImage() : memory_(0, 0), bias_(0), relative_applied_(false), symbols_applied_(false) {}
+    void apply_relocation_batch(bool relative, bool symbols);
     Memory memory_;
     uint64_t bias_;
     bool relative_applied_;
+    bool symbols_applied_;
+    std::vector<ImageSymbol> symbols_;
     std::string sha256_;
     std::vector<ImageSegment> segments_;
     std::vector<ImageImport> imports_;

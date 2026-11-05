@@ -1,6 +1,7 @@
 #include "recomp/elf_image.h"
 #include <fstream>
 #include <vector>
+#include <utility>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -20,12 +21,63 @@ std::string quote(const std::string& s) {
     }
     return result + '"';
 }
+void symbol_json(const recomp::ImageSymbol& s) {
+    std::cout << "{\"name\":" << quote(s.name) << ",\"table_section\":" << s.table_section
+              << ",\"table_type\":" << s.table_type << ",\"index\":" << s.index
+              << ",\"value\":" << s.value << ",\"size\":" << s.size
+              << ",\"section_index\":" << s.section_index << ",\"binding\":" << unsigned(s.binding)
+              << ",\"type\":" << unsigned(s.type) << ",\"visibility\":" << unsigned(s.visibility)
+              << ",\"other\":" << unsigned(s.other) << ",\"resolution_reason\":"
+              << quote(s.resolution_reason) << '}';
+}
 void fault(recomp::Memory& memory, uint64_t address) {
     try { memory.load8(address); }
     catch (const std::out_of_range&) { return; }
     throw std::runtime_error("unmapped guest read succeeded");
 }
-void relocate(recomp::ElfImage& image) {
+void apply_checked(recomp::ElfImage& image, unsigned phase) {
+    std::vector<std::pair<uint64_t, std::vector<uint8_t> > > before;
+    for (const recomp::ImageSegment& segment : image.segments()) {
+        if (!(segment.flags & 4)) continue;
+        std::vector<uint8_t> bytes;
+        for (uint64_t i = 0; i < segment.memory_size; ++i)
+            bytes.push_back(image.memory().load8(segment.address + i));
+        before.push_back(std::make_pair(segment.address, bytes));
+    }
+    const std::vector<recomp::ImageRelocation> applied = image.applied_relocations();
+    const std::vector<recomp::ImageRelocation> pending = image.unresolved_relocations();
+    try {
+        if (phase == 0) image.apply_relative_relocations();
+        else if (phase == 1) image.apply_symbol_relocations();
+        else image.apply_relocations();
+    } catch (...) {
+        for (const auto& snapshot : before)
+            for (std::size_t i = 0; i < snapshot.second.size(); ++i)
+                check(image.memory().load8(snapshot.first + i) == snapshot.second[i],
+                      "partial relocation mutation");
+        check(image.applied_relocations().size() == applied.size() &&
+              image.unresolved_relocations().size() == pending.size(), "partial relocation status change");
+        for (std::size_t i = 0; i < pending.size(); ++i)
+            check(image.unresolved_relocations()[i].address == pending[i].address &&
+                  image.unresolved_relocations()[i].unresolved_reason == pending[i].unresolved_reason,
+                  "partial unresolved inventory change");
+        for (std::size_t i = 0; i < applied.size(); ++i)
+            check(image.applied_relocations()[i].address == applied[i].address &&
+                  image.applied_relocations()[i].type == applied[i].type,
+                  "partial applied inventory change");
+        // A failed transaction must not mark its phase complete: retry must fail
+        // again on unchanged input, rather than silently skipping pending work.
+        bool rejected_again = false;
+        try {
+            if (phase == 0) image.apply_relative_relocations();
+            else if (phase == 1) image.apply_symbol_relocations();
+            else image.apply_relocations();
+        } catch (const std::exception&) { rejected_again = true; }
+        check(rejected_again, "failed relocation phase incorrectly completed");
+        throw;
+    }
+}
+void relocate(recomp::ElfImage& image, const std::string& mode) {
     struct Snapshot { uint64_t base; std::vector<uint8_t> bytes; };
     std::vector<Snapshot> before;
     for (const recomp::ImageSegment& s : image.segments()) {
@@ -36,20 +88,21 @@ void relocate(recomp::ElfImage& image) {
             snapshot.bytes.push_back(image.memory().load8(s.address + i));
         before.push_back(snapshot);
     }
-    const std::size_t pending = image.unresolved_relocations().size();
-    try { image.apply_relative_relocations(); }
-    catch (...) {
-        for (const Snapshot& s : before)
-            for (std::size_t i = 0; i < s.bytes.size(); ++i)
-                check(image.memory().load8(s.base + i) == s.bytes[i], "partial relocation mutation");
-        check(image.applied_relocations().empty() &&
-              image.unresolved_relocations().size() == pending, "partial relocation status change");
-        throw;
-    }
+    if (mode == "--relocate") apply_checked(image, 0);
+    else if (mode == "--symbols") apply_checked(image, 1);
+    else if (mode == "--relative-symbols") {
+        apply_checked(image, 0);
+        apply_checked(image, 1);
+    } else if (mode == "--symbols-relative") {
+        apply_checked(image, 1);
+        apply_checked(image, 0);
+    } else apply_checked(image, 2);
     // Independent sign/magnitude arithmetic, rather than the loader's raw-bit sum.
     for (const recomp::ImageRelocation& r : image.applied_relocations()) {
+        const uint64_t base = r.type == 1027 ? image.load_bias() :
+            r.definition.value + (r.definition.section_index == 0xfff1 ? 0 : image.load_bias());
         const uint64_t expected = (r.addend_bits >> 63) ?
-            image.load_bias() - (~r.addend_bits + 1) : image.load_bias() + r.addend_bits;
+            base - (~r.addend_bits + 1) : base + r.addend_bits;
         check(image.memory().load64(r.address) == expected, "relocated pointer mismatch");
         for (unsigned i = 0; i < 8; ++i) {
             check(image.memory().load8(r.address + i) == uint8_t(expected >> (8 * i)),
@@ -63,7 +116,13 @@ void relocate(recomp::ElfImage& image) {
     }
     const std::size_t applied = image.applied_relocations().size();
     const std::size_t unresolved = image.unresolved_relocations().size();
-    image.apply_relative_relocations();
+    if (mode == "--relocate") image.apply_relative_relocations();
+    else if (mode == "--symbols") image.apply_symbol_relocations();
+    else {
+        image.apply_relocations();
+        image.apply_symbol_relocations();
+        image.apply_relative_relocations();
+    }
     check(image.applied_relocations().size() == applied &&
           image.unresolved_relocations().size() == unresolved, "reapplication changed status");
     // Check all readable bytes after both applications, including untouched data.
@@ -77,7 +136,7 @@ void relocate(recomp::ElfImage& image) {
 
 int main(int argc, char** argv) {
     try {
-        check(argc == 4 || argc == 5 || argc == 6, "usage: recomp_image_smoke INPUT SHA256 LOAD_BIAS [MEMORY_LIMIT [--relocate]]");
+        check(argc == 4 || argc == 5 || argc == 6, "usage: recomp_image_smoke INPUT SHA256 LOAD_BIAS [MEMORY_LIMIT [--relocate|--symbols|--all]]");
         std::size_t used = 0;
         const std::string bias_text = argv[3];
         const uint64_t bias = std::stoull(bias_text, &used, 0);
@@ -133,8 +192,10 @@ int main(int argc, char** argv) {
             }
         }
         if (argc == 6) {
-            check(std::string(argv[5]) == "--relocate", "unknown image operation");
-            relocate(image);
+            const std::string mode = argv[5];
+            check(mode == "--relocate" || mode == "--symbols" || mode == "--all" ||
+                  mode == "--relative-symbols" || mode == "--symbols-relative", "unknown image operation");
+            relocate(image, mode);
         }
         std::cout << "{\"sha256\":" << quote(image.sha256()) << ",\"load_bias\":" << bias
                   << ",\"ready_to_execute\":false,\"file_bytes_checked\":" << copied
@@ -163,21 +224,27 @@ int main(int argc, char** argv) {
             std::cout << "{\"address\":" << r.address << ",\"type\":" << r.type
                       << ",\"symbol_index\":" << r.symbol_index << ",\"symbol\":" << quote(r.symbol)
                       << ",\"addend_bits\":" << r.addend_bits << ",\"has_addend\":"
-                      << (r.has_addend ? "true" : "false") << ",\"status\":\"unresolved\"}";
+                      << (r.has_addend ? "true" : "false") << ",\"status\":\"unresolved\",\"reason\":"
+                      << quote(r.unresolved_reason) << ",\"definition\":";
+            symbol_json(r.definition);
+            std::cout << '}';
         }
         std::cout << "],\"applied_relocations\":[";
         first = true;
         for (const recomp::ImageRelocation& r : image.applied_relocations()) {
             if (!first) std::cout << ',';
             first = false;
-            std::cout << "{\"address\":" << r.address << ",\"addend_bits\":" << r.addend_bits
+            std::cout << "{\"address\":" << r.address << ",\"type\":" << r.type
+                      << ",\"addend_bits\":" << r.addend_bits
                       << ",\"value\":" << image.memory().load64(r.address)
                       << ",\"status\":\"applied\",\"bytes\":[";
             for (unsigned i = 0; i < 8; ++i) {
                 if (i) std::cout << ',';
                 std::cout << unsigned(image.memory().load8(r.address + i));
             }
-            std::cout << "]}";
+            std::cout << "],\"definition\":";
+            symbol_json(r.definition);
+            std::cout << '}';
         }
         std::cout << "]}\n";
         return 0;

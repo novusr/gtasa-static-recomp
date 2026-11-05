@@ -11,8 +11,8 @@ five register-only integer leaves, eight integer-memory leaves, and five
 control-flow functions with branches/multiple RETs selected in the configuration.
 The next stages are cyclic control-flow (loops), switch/jump tables, a broader
 instruction backend, further ELF relocation support, guest-to-host ABI bridges
-and platform services. PT_LOAD/BSS data loading and explicit RELA RELATIVE
-fixups are now available; these do not authorize initialization or execution.
+and platform services. PT_LOAD/BSS data loading, explicit RELA RELATIVE and bounded internal-symbol
+ABS64/GLOB_DAT/JUMP_SLOT fixups are now available; these do not authorize initialization or execution.
 
 ## What is here
 
@@ -23,8 +23,8 @@ fixups are now available; these do not authorize initialization or execution.
   checked little-endian guest memory and scalar FP operations.
 - `include/recomp/elf_image.h`, `src/elf_image.cpp`: hash-verified PT_LOAD/BSS
   loading with explicit bias, checked segment storage, transactional RELA RELATIVE
-  fixups and separate applied/unresolved inventories.
-- `tools/load_image.py`: original-image data/RELATIVE smoke test and applied/unresolved report.
+  and internal-symbol fixups and separate applied/unresolved inventories.
+- `tools/load_image.py`: original-image data/relocation smoke test and applied/unresolved report.
 - `docs/ELF_LOADING.md`: loader contracts, verification and remaining linker work.
 - `CMakeLists.txt`: host C++11 build, independent of the Android NDK.
 - `tests/`: synthetic ELF/lifter checks, control-flow semantics and native smoke tests.
@@ -208,8 +208,10 @@ aliases. These totals are not decompilation percentages.
 Generated C++, inventory, original binaries and assets are local ignored files.
 The native image loader verifies the configured hash again, copies PT_LOAD file
 data and zeroes BSS at explicit biased guest addresses. It can explicitly apply
-RELA `R_AARCH64_RELATIVE` to existing writable guest mappings after validating the complete batch; other relocations and all imports
-remain unresolved. Applied entries are reported separately. It always reports
+RELA `R_AARCH64_RELATIVE` and internal non-preemptible ABS64/GLOB_DAT/JUMP_SLOT
+fixups to existing writable guest mappings after validating the complete batch.
+JUMP_SLOT requires a zero addend pending platform policy; preemptible definitions,
+undefined symbols, special unsupported forms and all imports remain unresolved. Applied entries are reported separately. It always reports
 `ready_to_execute=false`. It never invokes constructors, JNI_OnLoad or game entry
 points. See [ELF loading](docs/ELF_LOADING.md) for its bounded input support.
 
