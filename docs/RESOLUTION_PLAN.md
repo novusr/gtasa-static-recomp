@@ -213,3 +213,12 @@ evidence, while retaining the original relocation/import baseline. Therefore
 acquiring and attributing these inputs remains the next milestone before any
 policy expansion or planning of original dependencies. The manifest itself
 selects no symbols and applies no plan.
+
+The subsequent [APK library evidence audit](DEPENDENCY_EVIDENCE.md#user-supplied-apk-library-audit-2026-11-06)
+now inventories three user-attributed files, with unknown authenticity, 25
+unassociated NEEDED records and two name-only candidates. It exposes additional
+libz.so/libGLESv1_CM.so needs and libdl `LIBC` version requirements. Eleven unique
+needed names still have no supplied candidate, and all seven process evidence
+slots remain unknown. That audit does not invoke this planner or expand its
+scope/version policy; acquisition and attribution followed by read-only auditing
+remain the next milestone for original dependencies.

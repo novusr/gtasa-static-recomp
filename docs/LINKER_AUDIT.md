@@ -242,3 +242,14 @@ false. No additional fixup or provider selection occurs. All four CTest cases,
 114 Python tests and four bounded semantic regressions passed. The next milestone
 is obtaining exact missing files and process/device evidence before extending
 scope/version policy; no dependency is claimed resolved.
+
+The follow-up [user-supplied APK library audit](DEPENDENCY_EVIDENCE.md#user-supplied-apk-library-audit-2026-11-06)
+accepts three isolated file instances (GTASA, OpenAL, SCAnd), with locally pinned
+hashes and authenticity unknown. It preserves the GTASA baseline exactly and
+inventories 25 ordered dependency records; two supplied name candidates have
+no attributed edges. Eleven unique required names have no supplied candidate,
+including libz.so and libGLESv1_CM.so newly observed in the additional files.
+The additional libdl `LIBC` requirements and all unknown process facts require
+further evidence collection. This updates the single-file availability findings
+above without changing validation, symbol policy or unresolved status. No
+original-dependency resolution planning was performed.

@@ -79,13 +79,17 @@ index provenance, tests preemption and visibility, separates missing strong/weak
 from unsupported requirements, and changes no image state. See
 [RESOLUTION_PLAN.md](RESOLUTION_PLAN.md). Read-only dependency evidence collection
 is now implemented with explicit file/hash/bias instances and DT_NEEDED edges;
-see [DEPENDENCY_EVIDENCE.md](DEPENDENCY_EVIDENCE.md). The original audit has one
-verified file, 11 missing dependencies and unknown Android process evidence.
-The next bounded step is acquiring and attributing those exact dependency files
-and API/device/target/namespace/main/preload/load-order observations. The observed
-libc/libm version requirements then need verified provider exports before a
-separately tested scope/version/weak-definition policy can be designed.
-Transactional plan application follows later.
+see [DEPENDENCY_EVIDENCE.md](DEPENDENCY_EVIDENCE.md). The follow-up user-supplied
+APK directory audit accepts GTASA, OpenAL and SCAnd under unchanged validators.
+It finds 25 ordered NEEDED entries, two name-only candidates, no attributed
+edges, and 11 unique required names with no supplied candidate, including the
+newly observed libz.so and libGLESv1_CM.so requirements. Authenticity and Android
+process evidence remain unknown; expected hashes pin observed local content.
+The next bounded step is acquiring and attributing those missing files, trusted
+comparison identities, candidate associations, libc/libm/libdl version-export
+evidence and API/device/target/namespace/main/preload/load-order observations,
+then repeating the read-only audit. Original-dependency resolution planning and
+scope/version policy expansion are outside this evidence milestone.
 
 - Extend the bounded PT_LOAD/BSS loader with Android linker requirements,
   relocation target validation, further RELRO/platform layouts and any required

@@ -249,3 +249,12 @@ Missing dependencies are valid report data, and unknown Android process evidence
 is retained without inventing a scope or selecting import providers. See
 [DEPENDENCY_EVIDENCE.md](docs/DEPENDENCY_EVIDENCE.md) for the input contract,
 reproduction, official sources, verified baseline and evidence-driven next step.
+
+The follow-up audit of the user-supplied APK library directory accepts GTASA,
+OpenAL and SCAnd using unchanged validators. Its 25 DT_NEEDED entries retain
+their original order and section/index; two supplied files are name-only
+candidates, with no attributed edges or resolved imports. Eleven required names
+have no supplied candidate. Local hashes pin content; APK authenticity and all
+seven Android process evidence slots remain unknown. The dependency evidence
+document records aggregate findings and the next acquisition/attribution step;
+local identities, manifests and full reports remain ignored under `generated/`.

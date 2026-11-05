@@ -16,7 +16,7 @@ Every audited file must be explicitly supplied. A minimal manifest is:
   "guest_page_size": 4096,
   "objects": [
     {"instance_id": "A", "path": "generated/A.elf",
-     "sha256": "<expected 64 lowercase hex digits from trusted input evidence>",
+     "sha256": "<expected 64 lowercase hex digits; document reference or local pin origin>",
      "load_bias": 4294967296}
   ],
   "edges": [],
@@ -25,7 +25,11 @@ Every audited file must be explicitly supplied. A minimal manifest is:
 }
 ```
 
-The hash placeholder must be replaced before use. Paths are explicit, absolute
+The hash placeholder must be replaced before use. Record whether its source is
+an independently trusted reference or an observed local content pin. The latter
+detects changes after pinning, but does not authenticate an APK or file. Hash
+validation proves agreement with the declared identity, not its provenance.
+Paths are explicit, absolute
 or relative to the project root. IDs are distinct nonempty instance identifiers,
 independent of path, hash, filename and SONAME. The same file/hash may be supplied
 as multiple instances; every instance is rehashed and audited independently.
@@ -181,7 +185,7 @@ The prior [native/audit sources](LINKER_AUDIT.md#official-rules-and-platform-bou
 and [planner sources](RESOLUTION_PLAN.md#official-evidence-checked-2026-11-06)
 remain the references for unchanged validation and symbol metadata semantics.
 
-## Verified result and next milestone
+## Historical single-input result
 
 The original-input run on 2026-11-06 supplies exactly one verified GTASA instance
 at bias `0x100000000`, explicit guest page size `0x1000`. Its 11 DT_NEEDED entries
@@ -218,14 +222,155 @@ calls. These explicitly requested regression tests use the existing instruction
 oracle harnesses; the manifest audit itself invokes no guest function and none
 of these commands performs game startup.
 
-The next milestone is **acquisition and attribution of the missing dependency
-and process evidence**, followed by another read-only manifest audit. The observed
-libc/libm version requirements make exact Android builds and their version exports
-a concrete prerequisite. The missing libSCAnd.so and the other ten files require
-explicit paths, trusted expected hashes and independently attributed associations;
-API/device build, target SDK, namespace, main executable, preload and load order
-need process/device evidence. No new file path or historical API policy is guessed.
-Only after this evidence is available should a separately named scope/version
-policy be designed around the observed requirements, with synthetic semantics
-and rejection tests. Transactional plan application and bridges remain later,
-separate work.
+## User-supplied APK library audit, 2026-11-06
+
+Foundation: `ef9baca`. Inventory was authorized only in
+`inputs/apk-2.10/lib/arm64-v8a/`; no other dependency directory was searched.
+The user attributes these files to libraries extracted from the GTA SA 2.10 APK.
+This is user attribution, not independently verified APK provenance. No trusted
+comparison APK/file hash was supplied; authenticity remains **unknown** for all
+three files. GTASA's observed hash also matches the pre-existing configuration,
+which establishes baseline content identity, not independent APK authenticity.
+
+All three directory entries are regular little-endian AArch64 ELF64 ET_DYN files
+accepted by the existing native and metadata validators. There were no other
+architectures, rejected inputs, symlinks or subdirectories in the supplied
+directory. No native acceptance rule was extended.
+
+The explicit paths, instance IDs, byte sizes, complete SHA-256 identities,
+provenance and validation status are recorded locally in ignored
+`generated/apk-2.10-file-inventory.json`. The manifest is
+`generated/apk-2.10-dependency-input.json`: each instance ID is `apk-2.10:` followed
+by its filename, each path is the filename beneath the authorized directory,
+and every expected SHA-256 is a pin of locally observed content. These pins are
+not independent authenticity evidence. Every isolated image uses explicit bias
+`0x100000000` and guest page size `0x1000`; these are analysis parameters, not
+observed Android process addresses or device geometry. Reusing the bias does
+not establish a joint mapping or load order.
+
+Reproduce the validated manifest audit with the local manifest already pinned:
+
+```bash
+uv run python tools/audit_dependencies.py \
+  --manifest generated/apk-2.10-dependency-input.json \
+  --output generated/apk-2.10-dependency-evidence.json
+```
+
+Do not regenerate expected hashes automatically when repeating this audit: a
+changed input should fail against its recorded pin. The successful report retains
+the complete symbol tables, dynamic entries, versions, special attributes,
+applied/unresolved relocations and RELRO evidence for each instance. The existing
+capture/hash/native/metadata/configuration validation and atomic publication
+boundary is unchanged. No resolution planner was invoked and no additional
+fixup was applied. The earlier single-input report was retained separately.
+`generated/apk-2.10-audit-summary.json` contains derived counts, ordered needs
+and name candidates; it is descriptive output, never an input validation source.
+All binaries, local manifests and original-input reports remain ignored.
+
+| Audited file | Bytes | Applied RELATIVE | Unresolved relocations | Unresolved imports |
+| --- | ---: | ---: | ---: | ---: |
+| libGTASA.so | 49,784,160 | 5,252 | 21,458 | 274 |
+| libOpenAL64.so | 18,165,648 | 1,147 | 2,863 | 191 |
+| libSCAnd.so | 8,589,752 | 272 | 5,877 | 149 |
+| Total across isolated inventories | 76,539,560 | 6,671 | 30,198 | 614 |
+
+GTASA exactly retains 21,072 `preemptible_symbol` and 386 `undefined_symbol`
+relocations. OpenAL has 2,669 preemptible / 194 undefined; SCAnd has 5,727
+preemptible / 150 undefined. All applied entries are the existing RELA RELATIVE
+subset; all 36,869 relocation records are RELA. Every image has sealed RELRO and
+`ready_to_execute=false`. All 614 import entries remain unresolved; counts across
+files/tables do not identify unique APIs or selected providers.
+
+### Ordered dependencies and association limits
+
+The following table preserves each original dynamic section/index and NEEDED
+ordinal. Full raw entries remain in the ignored report. `GTASA`, `OpenAL` and
+`SCAnd` abbreviate the three instance IDs only in this table.
+
+| Ordinal | GTASA section 16: index / name | OpenAL section 17: index / name | SCAnd section 17: index / name |
+| ---: | --- | --- | --- |
+| 0 | 0 / libSCAnd.so | 0 / libc.so | 0 / libc.so |
+| 1 | 1 / libandroid.so | 1 / libm.so | 1 / libm.so |
+| 2 | 2 / libc.so | 2 / liblog.so | 2 / liblog.so |
+| 3 | 3 / libm.so | 3 / libdl.so | 3 / libdl.so |
+| 4 | 4 / liblog.so | 4 / libz.so | 4 / libz.so |
+| 5 | 5 / libEGL.so | 5 / libOpenSLES.so | 5 / libGLESv1_CM.so |
+| 6 | 6 / libGLESv2.so | 6 / libstdc++.so | 6 / libstdc++.so |
+| 7 | 7 / libOpenSLES.so | — | — |
+| 8 | 8 / libOpenAL64.so | — | — |
+| 9 | 9 / libstdc++.so | — | — |
+| 10 | 10 / libdl.so | — | — |
+
+There is no explicit per-entry attribution connecting these instances. Merely
+being supplied together as APK-extracted libraries does not identify an actual
+DT_NEEDED selection. The manifest therefore has `edges: []`: all 25 required
+associations remain `missing` / `not_supplied`, with target null and provider
+unknown. The filename and SONAME of supplied SCAnd and OpenAL match GTASA's
+section 16 entries 0 and 8 respectively. These are **two name-only candidates**,
+not attributed edges, import resolutions or evidence of Android selection.
+
+The other 23 NEEDED occurrences have no supplied name candidate. Their 11 unique
+names are libandroid.so, libc.so, libm.so, liblog.so, libEGL.so, libGLESv2.so,
+libOpenSLES.so, libstdc++.so, libdl.so, libz.so and libGLESv1_CM.so. All remain
+missing within the authorized inventory. In particular libz.so (both additional
+files) and libGLESv1_CM.so (SCAnd) were not in GTASA's direct list. These are
+observed requirements of separately audited candidate files, not proven
+transitive edges from GTASA. Transitive requirements of missing files, runtime
+loads and the overall dependency closure remain unknown. An empty attributed
+cycle list likewise does not prove that the actual process graph is acyclic.
+
+### Versions, platform evidence and next milestone
+
+All three files have versym and verneed metadata, with no version definitions.
+Every requirement below is named `LIBC`, with flags 0; numeric indices are local
+to each file. The native and metadata inventories retain all raw records.
+
+| Instance | libc.so version index / import entries | libm.so version index / import entries | libdl.so version index / import entries | Imports with raw versym 0 |
+| --- | --- | --- | --- | ---: |
+| GTASA | 3 / 131 | 2 / 25 | No requirement record | 118 |
+| OpenAL | 2 / 158 | 3 / 25 | 4 / 1 | 7 |
+| SCAnd | 2 / 137 | 3 / 4 | 4 / 1 | 7 |
+
+There are eight version requirement records across the files. All are in
+section 5: GTASA record indices 0/1 are libc/libm; OpenAL and SCAnd each have
+indices 0/1/2 for libdl/libm/libc. No TLS symbols/sections/segments, IFUNC symbols,
+extra st_other attributes or TLS/IRELATIVE relocations were observed in these
+three inputs. This absence says nothing about missing files or runtime loads.
+The additional libdl `LIBC` requirements make its exact file and version exports
+another evidence gap alongside libc/libm; matching a version name does not
+establish provider eligibility.
+
+Android API, device build, target SDK, namespace, main executable, preload and
+load order all remain unknown. The official dynamic ABI, AOSP linker-change and
+namespace sources linked above were reopened on **2026-11-06**: dependency names
+do not capture process policy, API/target-dependent behavior or runtime namespace
+visibility. None identifies this game's process environment.
+
+The next milestone remains **acquisition and attribution of evidence followed
+by another read-only audit**: obtain explicitly supplied files for the 11 absent
+names, trusted APK/file comparison identities where available, attribution for
+the two supplied name candidates, exact libc/libm/libdl version exports, and
+process/device evidence for all seven unknown slots. Do not search new locations
+without authorization. Missing files' transitive requirements await those inputs.
+No original-dependency resolution plan, scope/version policy expansion,
+transactional plan application or platform bridge is part of this milestone.
+
+### Validation of this follow-up
+
+`uv sync --locked`, CMake/Ninja build, all four CTest cases and all 114 Python
+tests passed. No source code changed, so the four separate original-instruction
+differential commands were not rerun; their earlier results above remain
+historical. Existing synthetic/native regression tests are separate from the
+input audit, which called no guest function, constructor, initializer, JNI_OnLoad
+or IFUNC resolver. No game startup was attempted.
+
+Independent report assertions reconciled each file's counts, all 25 missing
+associations, unresolved imports, sealed RELRO, seven unknown platform slots and
+the exact GTASA baseline. A separate deliberately bad-hash manifest failed
+before native use and left the successful three-file report byte-for-byte
+unchanged; its diagnostic record is ignored
+`generated/apk-2.10-publication-check.json`. The existing manifest regression
+suite also passed its native/metadata/configuration failure publication checks.
+`git diff --check` passed, and `git check-ignore` confirmed the binaries and local
+audit artifacts remain ignored. Only documentation changed in Git; no commit or
+push was made.
