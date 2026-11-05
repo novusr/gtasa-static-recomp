@@ -8,6 +8,8 @@
 - Explicit scalar register state and checked guest memory.
 - Ahead-of-time lifting of two real math leaves, with rejection of unsupported code.
 - Synthetic analyzer tests, native semantic checks and an ARM64 oracle comparison.
+- Backend scan of defined function ranges with grouped instruction/addressing
+  blockers, unresolved imports and a separate, unverified semantic status.
 
 These milestones do not mean the game can start or that arbitrary ARM64 can run.
 
@@ -18,8 +20,9 @@ These milestones do not mean the game can start or that arbitrary ARM64 can run.
 - Recover CFGs, branch tables, indirect calls, tails, veneers and symbol-less code.
 - Implement/validate integer instructions, flags, NEON, full FP state, atomics and TLS.
 - Preserve guest register aliases and exception behavior.
-- Produce an explicit translated/blocked report; never infer completion from
-  symbol counts or successful host compilation alone.
+- Extend the current translatable/blocked scan to recovered CFGs and attach
+  explicit semantic evidence; never infer completion from symbol counts or
+  successful host compilation alone.
 
 ## Next: ELF image and ABI runtime
 

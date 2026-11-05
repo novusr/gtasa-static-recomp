@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""Inspect the original ELF and lift a deliberately bounded AArch64 leaf subset."""
+"""Inspect or scan the original ELF and lift a deliberately bounded AArch64 leaf subset."""
 
 import argparse
+from bisect import bisect_left
 from collections import Counter
 import hashlib
 import io
@@ -21,6 +22,12 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class RecompError(ValueError):
     pass
+
+
+class InstructionError(RecompError):
+    def __init__(self, kind, message):
+        super().__init__(message)
+        self.kind = kind
 
 
 class Image:
@@ -117,19 +124,47 @@ def load_statement(insn):
     operands = insn.operands
     paired = insn.mnemonic == 'ldp'
     if len(operands) != (3 if paired else 2) or insn.writeback:
-        raise RecompError('only non-writeback scalar FP loads are supported')
+        raise InstructionError('addressing_mode', 'only non-writeback scalar FP loads are supported')
     memory = operands[-1]
     if memory.type != ARM64_OP_MEM or memory.mem.index:
-        raise RecompError('only base-plus-immediate FP loads are supported')
+        raise InstructionError('addressing_mode', 'only base-plus-immediate FP loads are supported')
     base = insn.reg_name(memory.mem.base)
     if not re.fullmatch(r'x(?:[0-9]|[12][0-9]|30)', base):
-        raise RecompError('load base must be x0..x30')
+        raise InstructionError('addressing_mode', 'load base must be x0..x30')
     address = f'(state.x[{int(base[1:])}] + UINT64_C({memory.mem.disp % (1 << 64)}))'
     registers = [sreg(insn, op) for op in operands[:-1]]
     if len(registers) == 2 and registers[0] == registers[1]:
         raise RecompError('overlapping LDP destinations are not supported')
     return [f'state.s[{r}] = memory.load32({address} + UINT64_C({i * 4}));'
             for i, r in enumerate(registers)]
+
+
+def translate_instruction(insn, index, count):
+    mnemonic = insn.mnemonic
+    if mnemonic == 'ret':
+        if index != count - 1 or insn.op_str not in ('', 'x30'):
+            raise InstructionError('control_flow', 'only a final RET through x30 is supported')
+        emitted = ['return;']
+    elif mnemonic == 'nop':
+        emitted = []
+    elif mnemonic in ('ldr', 'ldp'):
+        emitted = load_statement(insn)
+    elif mnemonic in ('fmul', 'fmadd', 'fnmsub'):
+        expected = 3 if mnemonic == 'fmul' else 4
+        if len(insn.operands) != expected:
+            raise RecompError('unexpected FP operand count')
+        regs = [sreg(insn, operand) for operand in insn.operands]
+        dst, a, b = regs[:3]
+        if mnemonic == 'fmul':
+            expression = f'fp_mul(state.s[{a}], state.s[{b}])'
+        else:
+            c = regs[3]
+            helper = 'fp_madd' if mnemonic == 'fmadd' else 'fp_nmsub'
+            expression = f'{helper}(state.s[{a}], state.s[{b}], state.s[{c}])'
+        emitted = [f'state.s[{dst}] = {expression};']
+    else:
+        raise InstructionError('unsupported_instruction', f'unsupported instruction {mnemonic}')
+    return emitted
 
 
 def lift_body(code, address):
@@ -149,29 +184,7 @@ def lift_body(code, address):
             mnemonic = insn.mnemonic
             opcodes[mnemonic] += 1
             lines.append(f'    // Guest {insn.address:#x}: {mnemonic} {insn.op_str}')
-            if mnemonic == 'ret':
-                if index != len(instructions) - 1 or insn.op_str not in ('', 'x30'):
-                    raise RecompError('only a final RET through x30 is supported')
-                emitted = ['return;']
-            elif mnemonic == 'nop':
-                emitted = []
-            elif mnemonic in ('ldr', 'ldp'):
-                emitted = load_statement(insn)
-            elif mnemonic in ('fmul', 'fmadd', 'fnmsub'):
-                expected = 3 if mnemonic == 'fmul' else 4
-                if len(insn.operands) != expected:
-                    raise RecompError('unexpected FP operand count')
-                regs = [sreg(insn, operand) for operand in insn.operands]
-                dst, a, b = regs[:3]
-                if mnemonic == 'fmul':
-                    expression = f'fp_mul(state.s[{a}], state.s[{b}])'
-                else:
-                    c = regs[3]
-                    helper = 'fp_madd' if mnemonic == 'fmadd' else 'fp_nmsub'
-                    expression = f'{helper}(state.s[{a}], state.s[{b}], state.s[{c}])'
-                emitted = [f'state.s[{dst}] = {expression};']
-            else:
-                raise RecompError(f'unsupported instruction {mnemonic}')
+            emitted = translate_instruction(insn, index, len(instructions))
             lines += ['    ' + line for line in emitted]
         except RecompError as exc:
             raise RecompError(f'{insn.address:#x}: {insn.mnemonic} {insn.op_str}: {exc}') from exc
@@ -204,6 +217,92 @@ def lift(image, selections):
     return results
 
 
+def scan_body(code, address):
+    """Validate every decoded instruction, including words after decoding gaps."""
+    blockers = {}
+    opcodes = Counter()
+
+    def record(kind, reason, insn=None):
+        mnemonic = insn.mnemonic if insn is not None else ''
+        key = (kind, mnemonic, reason)
+        entry = blockers.setdefault(key, {'kind': kind, 'mnemonic': mnemonic,
+                                          'reason': reason, 'count': 0, 'examples': []})
+        entry['count'] += 1
+        if insn is not None and len(entry['examples']) < 3:
+            entry['examples'].append({'address': insn.address, 'operands': insn.op_str})
+
+    if address % 4 or not code or len(code) % 4:
+        record('range', 'function must be nonempty and 4-byte aligned')
+    decoder = Cs(CS_ARCH_ARM64, CS_MODE_LITTLE_ENDIAN)
+    decoder.detail = True
+    # AArch64 skipdata advances one 4-byte word, without treating it as executable.
+    decoder.skipdata = True
+    covered = 0
+    last = None
+    for index, insn in enumerate(decoder.disasm(code, address)):
+        covered += insn.size
+        last = insn
+        if insn.id == 0:
+            record('decode', 'undecodable instruction bytes', insn)
+            continue
+        opcodes[insn.mnemonic] += 1
+        try:
+            translate_instruction(insn, index, len(code) // 4)
+        except RecompError as exc:
+            record(getattr(exc, 'kind', 'operand_form'), str(exc), insn)
+    if covered != len(code):
+        record('decode', 'instruction decoding did not cover the complete function')
+    if last is None or last.mnemonic != 'ret':
+        record('control_flow', 'leaf function must end with RET')
+    return {'opcodes': dict(opcodes), 'decoded_instruction_count': sum(opcodes.values()),
+            'blockers': list(blockers.values())}
+
+
+def scan(image):
+    """Report backend acceptance, never a claim of semantic equivalence."""
+    inventory = image.inventory()
+    relocation_addresses = sorted(r['address'] for r in inventory['relocations'])
+    ranges = {}
+    functions = []
+    totals = {}
+    for fn in inventory['functions']:
+        lo, size = fn['address'], fn['size']
+        key = (lo, size)
+        if key not in ranges:
+            try:
+                result = scan_body(image.read(lo, size, executable=True), lo)
+            except RecompError as exc:
+                result = {'opcodes': {}, 'decoded_instruction_count': 0,
+                          'blockers': [{'kind': 'range', 'mnemonic': '',
+                                        'reason': str(exc), 'count': 1, 'examples': []}]}
+            index = bisect_left(relocation_addresses, lo)
+            end = bisect_left(relocation_addresses, lo + size)
+            if index < end:
+                result['blockers'].append({'kind': 'code_relocation', 'mnemonic': '',
+                                          'reason': 'code relocations require a linker-aware backend',
+                                          'count': end - index,
+                                          'examples': [{'address': a} for a in
+                                                       relocation_addresses[index:min(end, index + 3)]]})
+            result['status'] = 'blocked' if result['blockers'] else 'translatable'
+            result['semantic_verification'] = 'not_verified'
+            ranges[key] = result
+            for blocker in result['blockers']:
+                group = (blocker['kind'], blocker['mnemonic'], blocker['reason'])
+                entry = totals.setdefault(group, {**blocker, 'count': 0, 'function_ranges': 0})
+                entry['count'] += blocker['count']
+                entry['function_ranges'] += 1
+        functions.append({**fn, **ranges[key]})
+    return {'input_sha256': inventory['sha256'], 'backend': 'scalar-leaf-v1',
+            'scope': 'defined nonzero-sized STT_FUNC symbols; aliases preserved',
+            'semantic_verification': 'not_verified',
+            'summary': {'function_symbols': len(functions), 'unique_function_ranges': len(ranges),
+                        'symbol_status_counts': dict(Counter(f['status'] for f in functions)),
+                        'range_status_counts': dict(Counter(r['status'] for r in ranges.values()))},
+            'functions': functions,
+            'blocker_summary': [totals[k] for k in sorted(totals)],
+            'imports': [{**imp, 'status': 'unresolved'} for imp in inventory['imports']]}
+
+
 def write_lift(out, results, digest):
     # All input was validated before any generated translation is published.
     out.mkdir(parents=True, exist_ok=True)
@@ -229,7 +328,7 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--config', type=Path, default=ROOT / 'config/recomp.json')
     subparsers = parser.add_subparsers(dest='command', required=True)
-    for command in ('inspect', 'lift'):
+    for command in ('inspect', 'scan', 'lift'):
         sub = subparsers.add_parser(command)
         sub.add_argument('--output', type=Path, required=True)
     args = parser.parse_args(argv)
@@ -252,6 +351,14 @@ def main(argv=None):
             print(f'{inventory["function_symbols"]} function symbols; '
                   f'{inventory["unique_function_addresses"]} unique addresses; '
                   f'{len(inventory["imports"])} imports; {len(inventory["relocations"])} relocations')
+        elif args.command == 'scan':
+            report = scan(image)
+            args.output.parent.mkdir(parents=True, exist_ok=True)
+            args.output.write_text(json.dumps(report, indent=2) + '\n')
+            counts = report['summary']['symbol_status_counts']
+            print(f'{counts.get("translatable", 0)} translatable; '
+                  f'{counts.get("blocked", 0)} blocked function symbols; '
+                  'semantic verification: not_verified')
         else:
             results = lift(image, config['functions'])
             write_lift(args.output, results, digest)

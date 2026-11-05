@@ -12,7 +12,8 @@ backend, ELF relocation/loading, guest-to-host ABI bridges and platform services
 
 ## What is here
 
-- `tools/recomp.py`: SHA-256 validation, ELF64 inventory and strict leaf lifting.
+- `tools/recomp.py`: SHA-256 validation, ELF64 inventory, backend capability scan
+  and strict leaf lifting.
 - `config/recomp.json`: exact input identity, target and selected symbols.
 - `include/recomp/runtime.h`, `src/runtime.cpp`: explicit guest register state,
   checked little-endian guest memory and scalar FP operations.
@@ -39,6 +40,7 @@ config are resolved relative to the project root, not the shell's working direct
 ```bash
 uv sync --locked
 uv run python tools/recomp.py inspect --output generated/inventory.json
+uv run python tools/recomp.py scan --output generated/scan.json
 uv run python tools/recomp.py lift --output generated
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build
@@ -58,6 +60,39 @@ relocations are rejected before translation output is written. A failed lift
 returns nonzero; any previous generated files still describe the earlier input.
 Do not build after a failed generation step. No interpreter fallback or Android
 service stubs are provided.
+
+## Scan backend coverage
+
+`scan --output generated/scan.json` checks the configured binary's SHA-256 and
+architecture before scanning all defined, nonzero-sized function symbols from
+both symbol tables. It uses the same instruction validator as `lift`, regardless
+of the configured lift selections. It writes a JSON report, without generating
+C++ or executing guest code. Exit status 0 means the scan completed; blocked
+functions are report data. Invalid input or a hash mismatch returns nonzero
+before writing the report; an existing report then remains from the earlier run.
+
+Each function has `status: translatable` or `blocked`, opcode counts and grouped
+`blockers`. Categories distinguish unsupported instructions, addressing modes,
+operand forms, control flow, decoding failures, invalid ranges and code
+relocations. Examples include guest addresses and disassembled operands (up to
+three per group); counts include every occurrence. Decoding resumes at the next
+4-byte word after an undecodable word, which always blocks translation. These
+diagnostics assume symbol bytes are instructions; they do not recover a CFG or
+identify embedded data. Addressing-mode diagnostics describe rejected forms of
+the current load instructions; other mnemonics are unsupported as a whole.
+
+Aliases remain separate in `functions` and symbol totals. `blocker_summary` and
+range totals count identical `(address, size)` ranges once; overlapping ranges
+of different sizes can still overlap in these counts. The import list labels
+every import `unresolved`: no ABI/platform bridge is implemented, and the scan
+does not infer call targets or attribute imports to particular functions.
+Zero-sized symbols and code without function symbols are outside this scan.
+
+**Translatable means accepted by `scalar-leaf-v1`, not semantically verified.**
+Every scan entry has `semantic_verification: not_verified`; scanning does not
+run or import differential-test results. Successful translation/build and symbol
+counts are not proof of correctness or game completion. The backend's FP/state
+limits still apply, and accepted functions still need runtime integration.
 
 ## Source of truth
 

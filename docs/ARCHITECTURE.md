@@ -53,6 +53,18 @@ plus the configured image base (0x100000). Lifting uses ELF symbol values direct
 The analyzer does not treat zero-sized/undefined symbols as defined function
 bodies, nor invent missing function boundaries.
 
+`tools/recomp.py scan` validates the same configured input and checks every
+inventoried function range against the leaf backend's shared instruction
+validator. It reports all grouped rejections rather than stopping at the first
+instruction, and checks executable file backing and code relocations as lifting
+does. Unsupported decoded instructions, addressing/operand forms and decoding
+gaps are blockers; diagnostic decoding after a gap does not authorize execution.
+Aliases share analysis only when both address and size match. The JSON report
+separates backend acceptance (`translatable`/`blocked`) from semantic evidence
+(`not_verified` for every entry), and lists imports as unresolved. It provides
+neither CFG recovery nor evidence that an accepted function is safe under all
+guest FP states. See README for the command, aggregation rules and scan scope.
+
 ## What a full runtime needs
 
 A full backend must recover basic blocks, direct/indirect branches, jump tables,
