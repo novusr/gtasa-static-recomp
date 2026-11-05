@@ -1,41 +1,71 @@
 #include "recomp/runtime.h"
 
+#include <algorithm>
+#include <utility>
 #include <cmath>
 #include <cstring>
 #include <stdexcept>
 
 namespace recomp {
 
-Memory::Memory(uint64_t base, std::size_t size) : base_(base) {
-    if (size != 0 && size - 1 > std::numeric_limits<uint64_t>::max() - base) {
-        throw std::invalid_argument("guest memory range overflows");
-    }
-    bytes_.resize(size, 0);
+Memory::Memory(uint64_t base, std::size_t size) {
+    map(base, size, 6, NULL, 0);
 }
 
-std::size_t Memory::offset(uint64_t address, std::size_t size) const {
+void Memory::map(uint64_t base, std::size_t size, uint32_t flags,
+                 const uint8_t* file_data, std::size_t file_size) {
+    if (file_size > size ||
+        (size != 0 && size - 1 > std::numeric_limits<uint64_t>::max() - base)) {
+        throw std::invalid_argument("guest memory range overflows");
+    }
+    if (size == 0) return;
+    for (const Region& r : regions_) {
+        if (base <= r.base ? r.base - base < size : base - r.base < r.bytes.size()) {
+            throw std::invalid_argument("overlapping guest mappings");
+        }
+    }
+    Region r;
+    r.base = base;
+    r.flags = flags;
+    r.bytes.resize(size, 0);
+    if (file_size) std::copy(file_data, file_data + file_size, r.bytes.begin());
+    regions_.push_back(std::move(r));
+}
+
+const Memory::Region& Memory::region(uint64_t address, std::size_t size, bool write) const {
     // Validate the entire access before touching any byte. Subtractions avoid
     // overflowing either the guest address or the host size calculation.
-    if (size == 0 || size - 1 > std::numeric_limits<uint64_t>::max() - address ||
-        address < base_ || bytes_.size() < size || address - base_ > bytes_.size() - size) {
-        throw std::out_of_range("unmapped guest memory access");
+    if (size != 0 && size - 1 <= std::numeric_limits<uint64_t>::max() - address) {
+        for (const Region& r : regions_) {
+            if (address >= r.base && r.bytes.size() >= size &&
+                address - r.base <= r.bytes.size() - size) {
+                if (!(r.flags & (write ? 2U : 4U))) {
+                    throw std::out_of_range("guest mapping permission denied");
+                }
+                return r;
+            }
+        }
     }
-    return static_cast<std::size_t>(address - base_);
+    throw std::out_of_range("unmapped guest memory access");
 }
 
 uint64_t Memory::load(uint64_t address, std::size_t size) const {
-    const std::size_t at = offset(address, size);
+    const Region& r = region(address, size, false);
+    const std::size_t at = static_cast<std::size_t>(address - r.base);
     uint64_t value = 0;
     for (std::size_t i = 0; i < size; ++i) {
-        value |= uint64_t(bytes_[at + i]) << (i * 8);
+        value |= uint64_t(r.bytes[at + i]) << (i * 8);
     }
     return value;
 }
 
 void Memory::store(uint64_t address, uint64_t value, std::size_t size) {
-    const std::size_t at = offset(address, size);
+    const Region& checked = region(address, size, true);
+    const std::size_t at = static_cast<std::size_t>(address - checked.base);
+    // region() completed bounds and permission validation before any mutation.
+    Region& r = regions_[static_cast<std::size_t>(&checked - regions_.data())];
     for (std::size_t i = 0; i < size; ++i) {
-        bytes_[at + i] = static_cast<uint8_t>(value >> (i * 8));
+        r.bytes[at + i] = static_cast<uint8_t>(value >> (i * 8));
     }
 }
 

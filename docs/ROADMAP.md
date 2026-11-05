@@ -23,6 +23,10 @@
   targets, non-RET fallthrough, unreachable blocks, BL/BLR, BR and flag-dependent B.cond),
   native C++ goto/if emission, and differential register/memory verification against
   Unicorn for synthetic suites and five real GTA:SA functions.
+- Hash-verified native ELF64 PT_LOAD/BSS data loader with explicit load bias,
+  checked disjoint guest ranges and permissions, unresolved import/REL/RELA
+  inventories, synthetic malformed/overflow tests and an original-image byte
+  smoke test. No initializer or guest entry is executed; readiness remains false.
 
 These milestones do not mean the game can start or that arbitrary ARM64 can run.
 
@@ -39,7 +43,8 @@ These milestones do not mean the game can start or that arbitrary ARM64 can run.
 
 ## Next: ELF image and ABI runtime
 
-- Load PT_LOAD/BSS into guest-addressed memory with bounds/permissions.
+- Extend the bounded PT_LOAD/BSS loader with Android linker requirements,
+  relocation target validation, RELRO policy and any required packed-table support.
 - Apply RELATIVE, ABS64, GLOB_DAT, JUMP_SLOT and TLS relocations as encountered;
   unrecognized relocation types must fail startup.
 - Implement address-to-entry dispatch and guest stack/call/callback conventions.

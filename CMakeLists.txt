@@ -13,7 +13,9 @@ if(NOT EXISTS "${RECOMP_GENERATED_DIR}/lifted.cpp" OR NOT EXISTS "${RECOMP_GENER
     message(FATAL_ERROR "Run uv sync --locked and uv run python tools/recomp.py lift --output generated first")
 endif()
 
-add_library(recomp_runtime STATIC src/runtime.cpp)
+find_package(OpenSSL REQUIRED COMPONENTS Crypto)
+add_library(recomp_runtime STATIC src/runtime.cpp src/elf_image.cpp)
+target_link_libraries(recomp_runtime PUBLIC OpenSSL::Crypto)
 target_include_directories(recomp_runtime PUBLIC include)
 target_compile_options(recomp_runtime PRIVATE -Wall -Wextra -Wpedantic -Werror -ffp-contract=off -fno-fast-math)
 
@@ -34,8 +36,17 @@ add_executable(recomp_control_flow_smoke tests/control_flow_smoke.cpp)
 target_link_libraries(recomp_control_flow_smoke PRIVATE recomp_lifted)
 target_compile_options(recomp_control_flow_smoke PRIVATE -Wall -Wextra -Wpedantic -Werror -ffp-contract=off -fno-fast-math)
 
+add_executable(recomp_image_smoke tests/image_smoke.cpp)
+target_link_libraries(recomp_image_smoke PRIVATE recomp_runtime)
+target_compile_options(recomp_image_smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+
 include(CTest)
 if(BUILD_TESTING)
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
+    add_test(NAME original_image_load COMMAND "${Python3_EXECUTABLE}"
+        "${CMAKE_SOURCE_DIR}/tools/load_image.py"
+        --runner "$<TARGET_FILE:recomp_image_smoke>" --load-bias 0x100000000
+        --output "${CMAKE_BINARY_DIR}/image-load.json")
     add_test(NAME lifted_leaf_semantics COMMAND recomp_leaf_smoke)
     add_test(NAME guest_memory_accesses COMMAND recomp_memory_smoke)
     add_test(NAME control_flow_semantics COMMAND recomp_control_flow_smoke)

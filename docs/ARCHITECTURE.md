@@ -141,9 +141,11 @@ is no attempt to execute code requiring that state.
 
 The checked demo memory owns bytes in a guest address range. Access below the
 base, beyond the end or through an overflowing range throws. Multi-byte accesses
-use explicit little-endian conversion. There is no guest loader yet; the test
-harness populates its input data directly. It maps the HFA return convention to
-S0/S1/S2 in the explicit guest state rather than relying on the host C++ ABI.
+use explicit little-endian conversion. The leaf test harness populates its input
+data directly and maps the HFA return convention to S0/S1/S2 in the explicit guest
+state rather than relying on the host C++ ABI. The separate ELF data loader
+supplies checked, disjoint PT_LOAD mappings through the same Memory interface;
+see [ELF loading](ELF_LOADING.md) for hash, bias, BSS and inventory contracts.
 
 ## ELF analysis
 
@@ -178,7 +180,8 @@ Import calls must marshal the guest AAPCS64 ABI to the host ABI: pointers,
 structures, HFAs, callbacks, variadic calls and return values all need explicit
 rules. Reusing host libc with guest pointer values is invalid.
 
-The loader must map data and BSS, apply AArch64 relocations in guest memory,
+The data loader now maps PT_LOAD data and BSS with an explicit bias, but never
+reports execution readiness. A full loader must apply AArch64 relocations in guest memory,
 initialize TLS and constructors, and dispatch guest addresses to compiled entry
 points. ELF segments must never be executed directly by the x86_64 host.
 

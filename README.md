@@ -10,7 +10,8 @@ The supported subset recompiles the original `CrossProduct`, `Multiply3x3`,
 five register-only integer leaves, eight integer-memory leaves, and five
 control-flow functions with branches/multiple RETs selected in the configuration.
 The next stages are cyclic control-flow (loops), switch/jump tables, a broader
-instruction backend, ELF relocation/loading, guest-to-host ABI bridges and platform services.
+instruction backend, ELF relocation, guest-to-host ABI bridges and platform services.
+PT_LOAD/BSS data loading is now available; it does not authorize initialization or execution.
 
 ## What is here
 
@@ -19,6 +20,10 @@ instruction backend, ELF relocation/loading, guest-to-host ABI bridges and platf
 - `config/recomp.json`: exact input identity, target and selected symbols.
 - `include/recomp/runtime.h`, `src/runtime.cpp`: explicit guest register state,
   checked little-endian guest memory and scalar FP operations.
+- `include/recomp/elf_image.h`, `src/elf_image.cpp`: hash-verified PT_LOAD/BSS
+  loading with explicit bias, checked segment storage and unresolved inventories.
+- `tools/load_image.py`: original-image data smoke test and unresolved report.
+- `docs/ELF_LOADING.md`: loader contracts, verification and remaining linker work.
 - `CMakeLists.txt`: host C++11 build, independent of the Android NDK.
 - `tests/`: synthetic ELF/lifter checks, control-flow semantics and native smoke tests.
 - `tools/verify_leaf.py`: differential comparison with original ARM64 instructions
@@ -38,7 +43,7 @@ Android matching Makefile have been removed from this branch. They remain on
 
 ## Build and verify
 
-Requirements: Linux x86_64, CMake 3.20+, Ninja, a C++11 compiler, and `uv`.
+Requirements: Linux x86_64, CMake 3.20+, Ninja, a C++11 compiler, OpenSSL development headers/libcrypto, and `uv`.
 Python dependencies and the test oracle are pinned in `uv.lock`.
 
 Place the original `libGTASA.so` in `inputs/` (a local symlink also works).
@@ -54,6 +59,7 @@ cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ctest --test-dir build --output-on-failure
 uv run python -m unittest discover -s tests -p 'test_*.py'
+python3 tools/load_image.py --load-bias 0x100000000 --output generated/image-load.json
 uv run python tools/verify_leaf.py
 uv run python tools/verify_integer.py
 uv run python tools/verify_memory.py
@@ -198,5 +204,11 @@ will differ from the old decomp queue, which used only `.dynsym` and collapsed
 aliases. These totals are not decompilation percentages.
 
 Generated C++, inventory, original binaries and assets are local ignored files.
+The native image loader verifies the configured hash again, copies PT_LOAD file
+data and zeroes BSS at explicit biased guest addresses. It reports all ordinary
+REL/RELA relocations and dynamic imports as unresolved and always reports
+`ready_to_execute=false`. It never invokes constructors, JNI_OnLoad or game entry
+points. See [ELF loading](docs/ELF_LOADING.md) for its bounded input support.
+
 Native output is expected to differ from ARM64 bytes: semantic equivalence and
 runtime correctness are the validation goals for this branch.

@@ -21,7 +21,8 @@ static_assert(offsetof(State, s) == 0x100, "Invalid State::s offset");
 static_assert(sizeof(float) == 4 && std::numeric_limits<float>::is_iec559,
               "The scalar runtime requires IEEE-754 binary32");
 
-// Guest-addressed sandbox for the leaf demo, not an Android process loader.
+// Checked guest storage. The sandbox constructor retains its original flat range.
+// ELF mappings remain separate; gaps and segment permissions are enforced.
 class Memory {
 public:
     Memory(uint64_t base, std::size_t size);
@@ -34,11 +35,18 @@ public:
     void store32(uint64_t address, uint32_t value);
     void store64(uint64_t address, uint64_t value);
 private:
-    std::size_t offset(uint64_t address, std::size_t size) const;
+    friend class ElfImage;
+    struct Region {
+        uint64_t base;
+        uint32_t flags;
+        std::vector<uint8_t> bytes;
+    };
+    void map(uint64_t base, std::size_t size, uint32_t flags,
+             const uint8_t* file_data, std::size_t file_size);
+    const Region& region(uint64_t address, std::size_t size, bool write) const;
     uint64_t load(uint64_t address, std::size_t size) const;
     void store(uint64_t address, uint64_t value, std::size_t size);
-    uint64_t base_;
-    std::vector<uint8_t> bytes_;
+    std::vector<Region> regions_;
 };
 
 uint32_t float_bits(float value);
