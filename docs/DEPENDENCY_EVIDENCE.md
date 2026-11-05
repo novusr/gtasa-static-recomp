@@ -374,3 +374,37 @@ suite also passed its native/metadata/configuration failure publication checks.
 `git diff --check` passed, and `git check-ignore` confirmed the binaries and local
 audit artifacts remain ignored. Only documentation changed in Git; no commit or
 push was made.
+
+## Evidence request package, 2026-11-06
+
+Against foundation `56e1198`, the unchanged local pin manifest was revalidated
+through `tools/audit_dependencies.py` into the separate ignored
+`generated/apk-2.10-dependency-recheck.json`. Independent assertions found full
+structural equality with the historical three-file report, including the exact
+GTASA baseline, all 25 missing associations, eight version records, sealed RELRO
+and false readiness. The original report and expected pins were preserved.
+No additional explicitly authorized input path was supplied, so no new file or
+location was audited and no new object manifest was made.
+
+[EVIDENCE_REQUEST.md](EVIDENCE_REQUEST.md) now specifies the 11-name matrix,
+every requesting instance/ordinal/section/index, relevant version records,
+static provenance artifacts and external process captures needed next. Its local
+collection worksheet is `generated/dependency-platform-evidence-template.json`;
+the full 25-entry matrix is `generated/dependency-evidence-matrix.json`.
+Absent paths/hashes/biases remain null, candidate associations and all seven
+platform slots remain unknown, and local pins remain distinct from trusted
+reference hashes. The worksheet is not an audit manifest or lookup policy.
+
+Official ELF, AOSP linker/namespace and Android manifest sources were checked
+on 2026-11-06 and are linked with their limits in the request document. Current
+documentation does not establish APK authenticity or this process's platform
+facts. Acquisition and attribution followed by an explicitly authorized read-only
+audit remain the milestone; original-dependency resolution planning and
+scope/version expansion remain outside it.
+
+This package passed pinned `uv sync --locked`, CMake/Ninja build, all four CTest
+cases and all 114 Python tests. Documentation and ignored local artifacts alone
+changed; separate original-instruction differential commands were not rerun.
+The audit executed no guest code or resolver. Worksheet consistency, ignored
+artifact coverage and `git diff --check` were also checked. No commit or push
+was made.

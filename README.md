@@ -258,3 +258,10 @@ have no supplied candidate. Local hashes pin content; APK authenticity and all
 seven Android process evidence slots remain unknown. The dependency evidence
 document records aggregate findings and the next acquisition/attribution step;
 local identities, manifests and full reports remain ignored under `generated/`.
+
+[The evidence request package](docs/EVIDENCE_REQUEST.md) details the 11 missing
+names, all requesting instances and version requirements, and separates static
+file/build evidence from external process captures. The local worksheet is
+`generated/dependency-platform-evidence-template.json`, not an audit manifest.
+Rechecking the three inputs against unchanged old pins preserves the baseline;
+further auditing awaits explicitly supplied and authorized inputs.

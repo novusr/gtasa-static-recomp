@@ -91,6 +91,15 @@ evidence and API/device/target/namespace/main/preload/load-order observations,
 then repeating the read-only audit. Original-dependency resolution planning and
 scope/version policy expansion are outside this evidence milestone.
 
+The concrete [evidence request package](EVIDENCE_REQUEST.md), checked against
+`56e1198` on 2026-11-06, now supplies an 11-name matrix with all requester and
+version identities, plus an ignored local collection worksheet. Revalidation
+against unchanged old pins reproduces the complete three-file report and GTASA
+baseline. No additional input was explicitly supplied; acquisition remains
+pending, with authenticity, candidate associations and seven platform facts
+unknown. The next gate is user-supplied paths/build provenance and external
+captures, followed only by read-only validation of explicitly authorized inputs.
+
 - Extend the bounded PT_LOAD/BSS loader with Android linker requirements,
   relocation target validation, further RELRO/platform layouts and any required
   packed-table support.
