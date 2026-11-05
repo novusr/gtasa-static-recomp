@@ -164,3 +164,12 @@ expansion bounds and atomic synthetic tests. Structural inventory integration,
 format acceptance, cross-table budgets, target/symbol binding and any new
 relocation application require later work. Dependency scope/version policy and
 original resolution planning remain unchanged.
+
+## Structural inventory integration follow-up, 2026-11-06
+
+The separately named [inventory-only loader](RELOCATION_INVENTORY.md) now reuses
+this decoder with the remaining per-object record/storage budget. Its ELF binder
+checks section/tag/file provenance and linked symbol identities; canonical empty
+orphan sections retain their table record, including null sh_link where present.
+The pure decoder/API above is unchanged. Legacy load/audit rejection and all
+application limitations remain; this integration adds no fixup operation.

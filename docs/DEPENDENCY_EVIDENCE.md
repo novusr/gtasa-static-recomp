@@ -540,3 +540,20 @@ Next propose APS2 + RELR inventory-only integration for separate review, includi
 structural binding and cumulative per-object budgets, without application.
 Original-dependency resolution, scope/version policy and platform work remain
 unchanged. No commit or push was made.
+
+## Explicit inventory-only integration follow-up, 2026-11-06
+
+The new [native inventory-only profile](RELOCATION_INVENTORY.md) accepts APS2 RELA,
+Android/standard RELR and ordinary tables without applying relocations or sealing
+RELRO. All 11 unchanged device pins pass this separate profile; old loader and
+dependency audit still accept libc and reject the ten packed inputs. Results are
+kept separately under ignored `generated/inventory-only-device/`. No audit or
+resolution planner is switched to the new profile, and inventory acceptance does
+not create file associations, providers or process-platform evidence.
+
+The fresh original three-object audit is structurally identical to its historical
+report; the separate legacy GTASA data load retains 5,252 applied RELATIVE,
+21,458 unresolved (21,072 preemptible / 386 undefined), 274 unresolved imports,
+sealed RELRO and false readiness. The profile document records contract
+clarifications, aggregate accounting/atomicity and data-only verification. No
+acquisition pin, historical report, device state or guest code was changed.

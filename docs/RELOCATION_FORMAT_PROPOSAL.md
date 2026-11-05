@@ -357,3 +357,16 @@ by having equal starts; a sorted temporary address vector detects this without
 changing stream order. Its complete storage is included in the per-call budget.
 Biased addresses, mapped extents, permissions, symbols, cross-table overlap and
 aggregate per-object budgets belong to later integration. See [RELR.md](RELR.md).
+
+## Inventory-only implementation follow-up, 2026-11-06
+
+The separate [native inventory-only profile](RELOCATION_INVENTORY.md) now implements
+structural APS2 RELA, Android/standard RELR and ordinary REL/RELA binding using the
+existing pure decoders. Legacy loader/audit acceptance and application guards are
+preserved; no application or planner integration was added. The implementation
+contract clarifies that PLT-only families need JMPREL/PLTRELSZ/PLTREL, with ENT
+validated if supplied; referenced APS2 still requires decoded RELAENT=24. Canonical
+empty orphan APS2 may retain its observed null symbol-table link after complete
+decoding. That document records official evidence, complete provenance,
+cumulative accounting, atomic publication, synthetic tests and both device-profile
+results. Earlier proposal/diagnosis statements remain historical.

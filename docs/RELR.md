@@ -161,3 +161,13 @@ Next propose and separately review inventory-only integration of APS2 + RELR,
 including structural binding, per-object budgets and explicit application guards.
 Format acceptance, target reads, RELR application, original-dependency resolution,
 scope/version policy and platform startup remain future work.
+
+## Structural inventory integration follow-up, 2026-11-06
+
+The separately named [inventory-only loader](RELOCATION_INVENTORY.md) now calls
+this decoder after numeric section/tag/file binding. It passes only the remaining
+aggregate object budget, including duplicate-validation scratch, and validates
+biased eight-byte mapped extents without reading targets. The standalone decoder
+is unchanged; orphan sections, mixed aliases and RELRCOUNT reject at the new ELF
+boundary. Legacy load/audit rejection, application and planner policies remain
+unchanged. Inventory results cannot enter existing apply APIs.

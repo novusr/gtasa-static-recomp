@@ -27,7 +27,8 @@ class RelroTests(unittest.TestCase):
         cls.runner = cls.directory / 'relro-probe'
         subprocess.run(['c++', '-std=c++11', '-Wall', '-Wextra', '-Wpedantic', '-Werror',
                         '-I', str(ROOT / 'include'), str(ROOT / 'src/runtime.cpp'),
-                        str(ROOT / 'src/elf_image.cpp'), str(ROOT / 'tests/relro_probe.cpp'),
+                        str(ROOT / 'src/elf_image.cpp'),
+                        str(ROOT / 'src/aps2_rela.cpp'), str(ROOT / 'src/relr.cpp'), str(ROOT / 'tests/relro_probe.cpp'),
                         '-lcrypto', '-o', str(cls.runner)], check=True, capture_output=True)
 
     @classmethod

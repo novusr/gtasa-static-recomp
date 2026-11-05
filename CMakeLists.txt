@@ -15,11 +15,11 @@ endif()
 
 find_package(OpenSSL REQUIRED COMPONENTS Crypto)
 add_library(recomp_runtime STATIC src/runtime.cpp src/elf_image.cpp)
-target_link_libraries(recomp_runtime PUBLIC OpenSSL::Crypto)
+target_link_libraries(recomp_runtime PUBLIC OpenSSL::Crypto recomp_aps2_rela recomp_relr)
 target_include_directories(recomp_runtime PUBLIC include)
 target_compile_options(recomp_runtime PRIVATE -Wall -Wextra -Wpedantic -Werror -ffp-contract=off -fno-fast-math)
 
-# Pure byte decoding stays separate from the ELF loader and lifted runtime.
+# Pure byte decoders are reused by the explicit inventory-only loader profile.
 add_library(recomp_aps2_rela STATIC src/aps2_rela.cpp)
 target_include_directories(recomp_aps2_rela PUBLIC include)
 target_compile_options(recomp_aps2_rela PRIVATE -Wall -Wextra -Wpedantic -Werror)
@@ -57,9 +57,11 @@ target_compile_options(recomp_image_smoke PRIVATE -Wall -Wextra -Wpedantic -Werr
 
 include(CTest)
 if(BUILD_TESTING)
+    find_package(Python3 REQUIRED COMPONENTS Interpreter)
+    add_test(NAME relocation_inventory_data_only COMMAND "${Python3_EXECUTABLE}" -m unittest
+        discover -s "${CMAKE_SOURCE_DIR}/tests" -p test_relocation_inventory.py)
     add_test(NAME relr_data_only COMMAND recomp_relr_test)
     add_test(NAME aps2_rela_data_only COMMAND recomp_aps2_rela_test)
-    find_package(Python3 REQUIRED COMPONENTS Interpreter)
     add_test(NAME original_image_load COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_SOURCE_DIR}/tools/load_image.py"
         --runner "$<TARGET_FILE:recomp_image_smoke>" --load-bias 0x100000000 --guest-page-size 0x1000
@@ -68,3 +70,7 @@ if(BUILD_TESTING)
     add_test(NAME guest_memory_accesses COMMAND recomp_memory_smoke)
     add_test(NAME control_flow_semantics COMMAND recomp_control_flow_smoke)
 endif()
+
+add_executable(recomp_inventory_image tools/inventory_image.cpp)
+target_link_libraries(recomp_inventory_image PRIVATE recomp_runtime)
+target_compile_options(recomp_inventory_image PRIVATE -Wall -Wextra -Wpedantic -Werror)

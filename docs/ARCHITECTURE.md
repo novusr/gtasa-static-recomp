@@ -289,3 +289,14 @@ Next propose APS2 + RELR inventory-only integration for separate review, includi
 structural binding and cumulative per-object budgets, without application.
 Original-dependency resolution, scope/version policy and platform work remain
 unchanged. No commit or push was made.
+
+## Explicit relocation inventory-only integration, 2026-11-06
+
+[Native relocation inventory](RELOCATION_INVENTORY.md) adds a separately named
+`ElfImage::load_inventory_only` path sharing capture/hash/structural validation.
+It reuses both pure decoders and retains original formats in separate data types,
+with per-object cumulative record/storage budgets. All apply APIs and RELRO
+sealing reject this profile before phase changes. No target bytes/addends are
+read. Legacy load/audit/planner behavior and readiness=false remain unchanged.
+The decoder libraries are now linked for this explicit path; their standalone
+APIs and tests retain their original contracts. No guest execution was tested.

@@ -501,3 +501,14 @@ Next propose APS2 + RELR inventory-only integration for separate review, includi
 structural binding and cumulative per-object budgets, without application.
 Original-dependency resolution, scope/version policy and platform work remain
 unchanged. No commit or push was made.
+
+## Separate inventory-only profile, 2026-11-06
+
+`ElfImage::load_inventory_only` and `tools/inventory_image.py` provide a distinct
+[packed/ordinary relocation inventory](RELOCATION_INVENTORY.md). They share the
+native captured-byte hash and structural loader, validate APS2 RELA and both
+RELR number families using the existing decoders, and never enter application
+or RELRO sealing. The legacy `load`/audit contracts above remain unchanged.
+See the profile document for PLT tag-family and empty-orphan linkage corrections,
+provenance, conservative aggregate accounting, exclusions, atomicity, synthetic
+checks and device results. An accepted inventory is not a successful link audit.

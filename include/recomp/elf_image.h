@@ -1,6 +1,7 @@
 #pragma once
 
 #include "recomp/runtime.h"
+#include "recomp/relocation_inventory.h"
 #include <string>
 #include <vector>
 
@@ -56,6 +57,16 @@ class ElfImage {
 public:
     static ElfImage load(const std::string& path, const std::string& expected_sha256,
                          uint64_t load_bias, uint64_t memory_limit = UINT64_C(536870912));
+    // Structural inventory only; application-not-supported, no RELRO phase.
+    // Read relocation_inventory(); legacy symbol/import/relocation lists stay
+    // empty. Every linked symbol is validated without retaining a duplicate.
+    // Failure returns no object and cannot mutate any caller-held image.
+    static ElfImage load_inventory_only(const std::string& path,
+        const std::string& expected_sha256, uint64_t load_bias,
+        const InventoryLimits& limits = InventoryLimits(),
+        uint64_t memory_limit = UINT64_C(536870912));
+    bool inventory_only() const { return inventory_only_; }
+    const RelocationInventory& relocation_inventory() const { return inventory_; }
     // Validate the complete batch, then write only to existing PF_W mappings.
     // Each successful phase is idempotent; REL/unsupported forms stay unresolved.
     void apply_relative_relocations();
@@ -82,7 +93,11 @@ public:
     // Even an image with empty inventories has no runtime startup support yet.
     bool ready_to_execute() const { return false; }
 private:
-    ElfImage() : memory_(0, 0), bias_(0), relative_applied_(false), symbols_applied_(false),
+    static ElfImage load_impl(const std::string&, const std::string&, uint64_t,
+                              uint64_t, const InventoryLimits*);
+    bool inventory_only_;
+    RelocationInventory inventory_;
+    ElfImage() : inventory_only_(false), memory_(0, 0), bias_(0), relative_applied_(false), symbols_applied_(false),
                  relro_sealed_(false), relro_page_size_(0) {}
     void apply_relocation_batch(bool relative, bool symbols);
     Memory memory_;

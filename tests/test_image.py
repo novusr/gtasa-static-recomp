@@ -80,7 +80,8 @@ class ImageTests(unittest.TestCase):
         cls.runner = cls.directory / 'image-smoke'
         subprocess.run(['c++', '-std=c++11', '-Wall', '-Wextra', '-Wpedantic', '-Werror',
                         '-I', str(ROOT / 'include'), str(ROOT / 'src/runtime.cpp'),
-                        str(ROOT / 'src/elf_image.cpp'), str(ROOT / 'tests/image_smoke.cpp'),
+                        str(ROOT / 'src/elf_image.cpp'),
+                        str(ROOT / 'src/aps2_rela.cpp'), str(ROOT / 'src/relr.cpp'), str(ROOT / 'tests/image_smoke.cpp'),
                         '-lcrypto', '-o', str(cls.runner)], check=True, capture_output=True)
 
         # A write-only mapping must permit fixups without granting read access.
@@ -103,7 +104,8 @@ int main(int argc, char** argv) {
         cls.write_only_runner = cls.directory / 'write-only'
         subprocess.run(['c++', '-std=c++11', '-Wall', '-Wextra', '-Wpedantic', '-Werror',
                         '-I', str(ROOT / 'include'), str(ROOT / 'src/runtime.cpp'),
-                        str(ROOT / 'src/elf_image.cpp'), str(probe), '-lcrypto',
+                        str(ROOT / 'src/elf_image.cpp'),
+                        str(ROOT / 'src/aps2_rela.cpp'), str(ROOT / 'src/relr.cpp'), str(probe), '-lcrypto',
                         '-o', str(cls.write_only_runner)], check=True, capture_output=True)
 
     @classmethod

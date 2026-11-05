@@ -132,10 +132,284 @@ std::string relocation_reason(const ImageRelocation& r) {
     return "internal_symbol_not_applied";
 }
 
+bool relocation_section(uint32_t type) {
+    return type == 4 || type == 9 || type == 19 || type == 0x60000002 || type == 0x6fffff00;
+}
+
+uint64_t file_provenance(const Section& s, const std::vector<ImageSegment>& loads) {
+    add(s.address, s.size);
+    add(s.offset, s.size);
+    unsigned matches = 0;
+    uint64_t owner = 0;
+    for (const ImageSegment& load : loads) {
+        if (s.address >= load.virtual_address && s.address - load.virtual_address <= load.file_size &&
+            s.size <= load.file_size - (s.address - load.virtual_address) &&
+            s.offset == add(load.file_offset, s.address - load.virtual_address)) {
+            ++matches;
+            owner = static_cast<uint64_t>(&load - loads.data());
+        }
+    }
+    require(matches == 1, "inventory table must have unique PT_LOAD file provenance");
+    return owner;
+}
+
+// No dynamically allocated tag map: metadata validation storage is constant.
+struct InventoryTags {
+    const Reader& reader;
+    const Section* section;
+    uint64_t section_index;
+    bool get(uint64_t wanted, uint64_t& value, uint64_t& index) const {
+        if (!section) return false;
+        for (uint64_t i = 0; i < section->size / 16; ++i) {
+            const uint64_t p = section->offset + i * 16, tag = reader.word(p, 8);
+            if (!tag) return false;
+            if (tag == wanted) { value = reader.word(p + 8, 8); index = i; return true; }
+        }
+        return false;
+    }
+    bool has(uint64_t tag) const { uint64_t v = 0, i = 0; return get(tag, v, i); }
+    uint64_t value(uint64_t tag) const {
+        uint64_t v = 0, i = 0;
+        require(get(tag, v, i), "inventory missing dynamic partner tag");
+        return v;
+    }
+    void associate(InventoryTable& table, uint64_t tag) const {
+        uint64_t v = 0, i = 0;
+        require(get(tag, v, i), "inventory missing dynamic partner tag");
+        require(table.association_count < 6, "inventory association bounds");
+        InventoryDynamicAssociation a = {section_index, i, tag, v};
+        table.associations[table.association_count++] = a;
+    }
+};
+
+void inventory_target(uint64_t offset, uint64_t bias, bool relr,
+                      const std::vector<ImageSegment>& loads) {
+    const uint64_t target = add(offset, bias);
+    add(target, 8);
+    require(!relr || target % 8 == 0, "inventory unaligned biased RELR target");
+    bool mapped = false;
+    for (const ImageSegment& load : loads)
+        if (target >= load.address && target - load.address <= load.memory_size &&
+            8 <= load.memory_size - (target - load.address)) mapped = true;
+    require(mapped, "inventory target extent must fit one mapping");
+}
+
+void build_inventory(const Reader& r, const std::vector<Section>& sections,
+    const std::vector<ImageSegment>& loads, uint64_t bias, const InventoryLimits& limits,
+    RelocationInventory& output, uint64_t structural_storage) {
+    RelocationInventory pending;
+    uint64_t table_count = 0;
+    InventoryTags tags = {r, NULL, 0};
+    for (std::size_t i = 0; i < sections.size(); ++i) {
+        const Section& s = sections[i];
+        require(s.type != 0x60000001, "inventory Android packed REL unsupported");
+        if (relocation_section(s.type)) ++table_count;
+        if (s.type != 6) continue;
+        require(!tags.section, "inventory multiple dynamic sections unsupported");
+        entries(s, 16);
+        file_provenance(s, loads);
+        tags.section = &s;
+        tags.section_index = i;
+        bool terminated = false;
+        for (uint64_t j = 0; j < s.size / 16; ++j) {
+            const uint64_t tag = r.word(s.offset + j * 16, 8);
+            if (!tag) { terminated = true; break; }
+            require(tag != 0x6000000f && tag != 0x60000010 && tag != 0x6fffe005,
+                    "inventory unsupported Android REL/RELRCOUNT tag");
+            if (tag != 1) {
+                uint64_t value = 0, index = 0;
+                require(tags.get(tag, value, index) && index == j, "duplicate inventory dynamic tag");
+            } else string_at(r, linked(sections, s), r.word(s.offset + j * 16 + 8, 8));
+        }
+        require(terminated, "unterminated inventory dynamic table");
+    }
+    // Charge exact vector storage before any table allocation. Decoder temporary
+    // result objects/duplicate vectors are additionally charged during each call.
+    const uint64_t fixed = add(sizeof(RelocationInventory), structural_storage);
+    require(limits.max_storage_bytes >= fixed &&
+            table_count <= (limits.max_storage_bytes - fixed) / sizeof(InventoryTable) &&
+            table_count <= pending.tables.max_size(), "inventory table storage limit exceeded");
+    pending.accounted_storage_bytes = fixed + table_count * sizeof(InventoryTable);
+    pending.tables.resize(static_cast<std::size_t>(table_count));
+    std::size_t next = 0;
+    for (std::size_t i = 0; i < sections.size(); ++i) {
+        const Section& s = sections[i];
+        if (!relocation_section(s.type)) continue;
+        InventoryTable& t = pending.tables[next++];
+        t.load_segment = file_provenance(s, loads);
+        uint64_t load_ordinal = 0;
+        for (uint64_t ph = 0; ph < r.word(56, 2); ++ph) {
+            if (r.word(r.word(32, 8) + ph * 56, 4) != 1) continue;
+            if (load_ordinal++ == t.load_segment) { t.load_program_header = ph; break; }
+        }
+        t.section = i; t.section_type = s.type; t.address = s.address;
+        t.file_offset = s.offset; t.encoded_size = s.size; t.entry_size = s.entry_size;
+        t.symbol_table = s.link; t.association_count = 0; t.decoded_count = 0;
+        const bool aps = s.type == 0x60000002;
+        const bool relr = s.type == 19 || s.type == 0x6fffff00;
+        t.encoding = aps ? InventoryEncoding::AndroidAps2Rela : s.type == 19
+            ? InventoryEncoding::StandardRelr : relr ? InventoryEncoding::AndroidRelr
+            : s.type == 4 ? InventoryEncoding::Rela : InventoryEncoding::Rel;
+        entries(s, aps ? 1 : relr ? 8 : s.type == 4 ? 24 : 16);
+        t.encoded_count = s.size / s.entry_size;
+        if (relr) require(!s.link, "inventory RELR symbol link unsupported");
+        else if (!aps || s.link) {
+            const Section& syms = linked(sections, s);
+            require(syms.type == 2 || syms.type == 11, "inventory invalid linked symbol table");
+            entries(syms, 24);
+        }
+        for (std::size_t j = 0; j < i; ++j) {
+            const Section& old = sections[j];
+            if (!relocation_section(old.type) || !s.size || !old.size) continue;
+            require(s.offset >= add(old.offset, old.size) || old.offset >= add(s.offset, s.size),
+                    "inventory overlapping table file ranges");
+            require(s.address >= add(old.address, old.size) || old.address >= add(s.address, s.size),
+                    "inventory overlapping table virtual ranges");
+        }
+    }
+    if (tags.section && tags.has(5)) {
+        const Section& strings = linked(sections, *tags.section);
+        require(strings.type == 3 && strings.address == tags.value(5) && strings.size == tags.value(10),
+            "inventory dynamic section string linkage mismatch");
+    }
+    // Bind complete pointer/size/stride families to exactly one numeric section.
+    const uint64_t ptrs[] = {7, 17, 23, 0x60000011, 0x6fffe000, 36, 5, 6};
+    const uint64_t sizes[] = {8, 18, 2, 0x60000012, 0x6fffe001, 35, 10, 0};
+    const uint64_t strides[] = {9, 19, 0, 9, 0x6fffe003, 37, 0, 11};
+    for (unsigned f = 0; f < 8; ++f) {
+        const uint64_t ptr = ptrs[f], sz = sizes[f], stride = strides[f];
+        if (!tags.has(ptr)) {
+            require(!sz || !tags.has(sz), "inventory size without pointer");
+            if (f == 4 || f == 5 || f == 7)
+                require(!stride || !tags.has(stride), "inventory stride without pointer");
+            continue;
+        }
+        const uint64_t address = tags.value(ptr);
+        const uint64_t size = sz ? tags.value(sz) : 0;
+        uint32_t type = f == 0 ? 4 : f == 1 ? 9 : f == 3 ? 0x60000002
+            : f == 4 ? 0x6fffff00 : f == 5 ? 19 : f == 6 ? 3 : 11;
+        uint64_t entry_tag = stride;
+        if (f == 2) {
+            const uint64_t kind = tags.value(20);
+            require(kind == 7 || kind == 17, "inventory invalid DT_PLTREL");
+            type = kind == 7 ? 4 : 9;
+            // The ABI PLT family is JMPREL/PLTRELSZ/PLTREL. REL[A]ENT is
+            // mandatory for a main REL[A] family, but optional for PLT-only.
+            // Section stride remains mandatory; validate any supplied ENT.
+            const uint64_t optional_entry = kind == 7 ? 9 : 19;
+            entry_tag = tags.has(optional_entry) ? optional_entry : 0;
+        }
+        if (entry_tag) require(tags.value(entry_tag) ==
+            (type == 9 ? 16 : type == 19 || type == 0x6fffff00 ? 8 : 24),
+            "inventory invalid dynamic stride");
+        uint64_t matches = 0, section_index = 0;
+        for (std::size_t i = 0; i < sections.size(); ++i) {
+            const Section& s = sections[i];
+            if (s.type == type && s.address == address && (!sz || s.size == size)) {
+                ++matches; section_index = i; file_provenance(s, loads);
+            }
+        }
+        require(matches == 1, "inventory dynamic family missing unique section");
+        if (f == 7) {
+            const Section& syms = sections[section_index];
+            const Section& strings = linked(sections, syms);
+            require(strings.type == 3 && strings.address == tags.value(5) &&
+                strings.size == tags.value(10), "inventory dynamic symbol/string linkage mismatch");
+            file_provenance(strings, loads);
+        }
+        if (f >= 6) continue;
+        for (InventoryTable& t : pending.tables) if (t.section == section_index) {
+            require(!t.association_count, "inventory conflicting table aliases");
+            tags.associate(t, ptr); tags.associate(t, sz);
+            if (entry_tag) tags.associate(t, entry_tag);
+            if (f == 2) tags.associate(t, 20);
+            if (type != 19 && type != 0x6fffff00)
+                require(sections[t.symbol_table].type == 11 &&
+                        sections[t.symbol_table].address == tags.value(6),
+                        "inventory dynamic relocation symbol linkage mismatch");
+        }
+    }
+    require(!tags.has(20) || tags.has(23), "inventory PLTREL without pointer");
+    if (tags.has(9)) require(tags.value(9) == 24 && (tags.has(7) || tags.has(0x60000011) ||
+        (tags.has(23) && tags.value(20) == 7)), "inventory orphan/invalid RELAENT");
+    if (tags.has(19)) require(tags.value(19) == 16 && (tags.has(17) ||
+        (tags.has(23) && tags.value(20) == 17)), "inventory orphan/invalid RELENT");
+
+    for (InventoryTable& t : pending.tables) {
+        const Section& s = sections[t.section];
+        const bool aps = t.encoding == InventoryEncoding::AndroidAps2Rela;
+        const bool relr = t.encoding == InventoryEncoding::AndroidRelr ||
+                          t.encoding == InventoryEncoding::StandardRelr;
+        const uint64_t remaining = limits.max_storage_bytes - pending.accounted_storage_bytes;
+        const uint64_t records = limits.max_records - pending.decoded_count;
+        if (aps) {
+            Aps2RelaLimits dl; dl.max_records = records; dl.max_storage_bytes = remaining;
+            decode_android_aps2_rela(r.bytes.data() + s.offset, s.size, t.aps2, dl);
+            t.decoded_count = t.aps2.records.size();
+            if (t.decoded_count || t.association_count || s.link) {
+                const Section& syms = linked(sections, s);
+                require(syms.type == 2 || syms.type == 11, "inventory invalid APS2 linked symbol table");
+                entries(syms, 24);
+            }
+            if (!t.association_count) {
+                const uint8_t canonical[] = {'A','P','S','2',0,0};
+                require(!t.decoded_count && !t.aps2.initial_offset && s.size == 6 &&
+                    std::equal(canonical, canonical + 6, r.bytes.data() + s.offset),
+                    "inventory noncanonical/nonempty orphan APS2");
+            }
+            pending.accounted_storage_bytes += sizeof(Aps2RelaResult) +
+                t.decoded_count * sizeof(Aps2RelaRecord);
+            for (const Aps2RelaRecord& a : t.aps2.records) {
+                require(a.symbol_index() < sections[s.link].size / 24, "inventory invalid APS2 symbol index");
+                inventory_target(a.offset, bias, false, loads);
+            }
+        } else if (relr) {
+            require(t.association_count != 0, "inventory orphan RELR section");
+            RelrLimits dl; dl.max_records = records; dl.max_storage_bytes = remaining;
+            decode_relr(r.bytes.data() + s.offset, s.size,
+                t.encoding == InventoryEncoding::AndroidRelr ? RelrEncoding::Android : RelrEncoding::Standard,
+                t.relr, dl);
+            t.decoded_count = t.relr.records.size();
+            pending.accounted_storage_bytes += sizeof(RelrResult) + sizeof(std::vector<uint64_t>) +
+                t.decoded_count * (sizeof(RelrRecord) + sizeof(uint64_t));
+            for (const RelrRecord& a : t.relr.records) inventory_target(a.offset, bias, true, loads);
+        } else {
+            t.decoded_count = s.size / s.entry_size;
+            require(t.decoded_count <= records &&
+                t.decoded_count <= remaining / sizeof(InventoryOrdinaryRecord) &&
+                t.decoded_count <= t.ordinary.max_size(), "inventory ordinary record/storage limit exceeded");
+            pending.accounted_storage_bytes += t.decoded_count * sizeof(InventoryOrdinaryRecord);
+            t.ordinary.resize(static_cast<std::size_t>(t.decoded_count));
+            for (uint64_t i = 0; i < t.decoded_count; ++i) {
+                const uint64_t p = s.offset + i * s.entry_size;
+                InventoryOrdinaryRecord a = {r.word(p, 8), r.word(p + 8, 8),
+                    s.type == 4 ? r.word(p + 16, 8) : 0, i, i * s.entry_size};
+                require((a.info >> 32) < sections[s.link].size / 24, "inventory invalid ordinary symbol index");
+                inventory_target(a.offset, bias, false, loads);
+                t.ordinary[static_cast<std::size_t>(i)] = a;
+            }
+        }
+        pending.decoded_count += t.decoded_count;
+    }
+    output.tables.swap(pending.tables);
+    output.decoded_count = pending.decoded_count;
+    output.accounted_storage_bytes = pending.accounted_storage_bytes;
+}
+
 } // namespace
 
 ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha256,
                         uint64_t load_bias, uint64_t memory_limit) {
+    return load_impl(path, expected_sha256, load_bias, memory_limit, NULL);
+}
+
+ElfImage ElfImage::load_inventory_only(const std::string& path, const std::string& hash,
+    uint64_t bias, const InventoryLimits& limits, uint64_t memory_limit) {
+    return load_impl(path, hash, bias, memory_limit, &limits);
+}
+
+ElfImage ElfImage::load_impl(const std::string& path, const std::string& expected_sha256,
+    uint64_t load_bias, uint64_t memory_limit, const InventoryLimits* inventory_limits) {
     require(expected_sha256.size() == 64 &&
             expected_sha256.find_first_not_of("0123456789abcdef") == std::string::npos,
             "expected SHA-256 must be 64 lowercase hexadecimal characters");
@@ -173,10 +447,24 @@ ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha
     r.range(shoff, shnum * 64);
 
     ElfImage image;
+    image.inventory_only_ = inventory_limits != NULL;
     image.bias_ = load_bias;
     image.sha256_ = hash.str();
     uint64_t allocated = 0;
     std::vector<std::pair<uint64_t, uint64_t> > dynamic_ranges;
+    uint64_t inventory_structural_storage = 0;
+    if (inventory_limits) {
+        inventory_structural_storage = add(sizeof(Section) * shnum,
+            phnum * (2 * sizeof(ImageSegment) + sizeof(std::pair<uint64_t, uint64_t>)));
+        inventory_structural_storage = add(inventory_structural_storage,
+            sizeof(std::vector<Section>) + sizeof(dynamic_ranges) +
+            2 * sizeof(std::vector<ImageSegment>) + 2 * sizeof(ImageSymbol));
+        require(inventory_structural_storage <= inventory_limits->max_storage_bytes,
+            "inventory structural storage limit exceeded");
+        dynamic_ranges.reserve(static_cast<std::size_t>(phnum));
+        image.segments_.reserve(static_cast<std::size_t>(phnum));
+        image.relro_.reserve(static_cast<std::size_t>(phnum));
+    }
     for (uint64_t i = 0; i < phnum; ++i) {
         const uint64_t p = phoff + i * 56;
         const uint64_t kind = r.word(p, 4);
@@ -245,6 +533,7 @@ ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha
     }
 
     std::vector<Section> sections;
+    if (inventory_limits) sections.reserve(static_cast<std::size_t>(shnum));
     for (uint64_t i = 0; i < shnum; ++i) {
         const uint64_t p = shoff + i * 64;
         Section s;
@@ -265,16 +554,43 @@ ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha
             if (s.type == 6 && s.offset == range.first && s.size == range.second) found = true;
         require(found, "PT_DYNAMIC missing matching section inventory");
     }
+    if (inventory_limits) {
+        require(dynamic_ranges.size() <= 1, "inventory multiple PT_DYNAMIC headers unsupported");
+        // Bound temporary name/reason strings used by shared symbol validation.
+        // Names cannot exceed their string section; reserve two whole maximum
+        // string-table sizes plus a bounded diagnostic reason allowance.
+        uint64_t largest_strings = 0;
+        for (const Section& s : sections) if (s.type == 3)
+            largest_strings = std::max(largest_strings, s.size);
+        inventory_structural_storage = add(inventory_structural_storage, add(add(largest_strings,
+            largest_strings), 512));
+        require(inventory_structural_storage <= inventory_limits->max_storage_bytes,
+            "inventory validation string storage limit exceeded");
+        for (uint64_t i = 0; i < phnum; ++i) {
+            const uint64_t p = phoff + i * 56;
+            if (r.word(p, 4) != 2) continue;
+            unsigned matches = 0;
+            for (const Section& s : sections)
+                if (s.type == 6 && s.offset == r.word(p + 8, 8) && s.size == r.word(p + 32, 8) &&
+                    s.address == r.word(p + 16, 8) && s.size == r.word(p + 40, 8)) ++matches;
+            require(matches == 1, "inventory PT_DYNAMIC structure mismatch");
+        }
+    }
+    if (inventory_limits)
+        build_inventory(r, sections, image.segments_, load_bias, *inventory_limits, image.inventory_, inventory_structural_storage);
     for (std::size_t table = 0; table < sections.size(); ++table) {
         const Section& s = sections[table];
         if (s.type != 2 && s.type != 11) continue;
         entries(s, 24);
-        for (uint64_t i = 0; i < s.size / 24; ++i)
-            image.symbols_.push_back(read_symbol(r, sections, static_cast<uint32_t>(table),
-                                                 static_cast<uint32_t>(i)));
+        for (uint64_t i = 0; i < s.size / 24; ++i) {
+            if (inventory_limits)
+                (void)read_symbol(r, sections, static_cast<uint32_t>(table), static_cast<uint32_t>(i));
+            else image.symbols_.push_back(read_symbol(r, sections, static_cast<uint32_t>(table),
+                                                       static_cast<uint32_t>(i)));
+        }
     }
     for (const Section& s : sections) {
-        if (s.type == 11) { // SHT_DYNSYM: every named undefined symbol stays unresolved.
+        if (!inventory_limits && s.type == 11) { // SHT_DYNSYM: every named undefined symbol stays unresolved.
             entries(s, 24);
             for (uint64_t i = 0; i < s.size / 24; ++i) {
                 const uint64_t p = s.offset + i * 24;
@@ -289,7 +605,7 @@ ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha
                     image.imports_.push_back(entry);
                 }
             }
-        } else if (s.type == 4 || s.type == 9) { // SHT_RELA / SHT_REL, initially unresolved.
+        } else if (!inventory_limits && (s.type == 4 || s.type == 9)) { // SHT_RELA / SHT_REL, initially unresolved.
             const uint64_t stride = s.type == 4 ? 24 : 16;
             entries(s, stride);
             const Section& symbols = linked(sections, s);
@@ -306,7 +622,7 @@ ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha
                 entry.unresolved_reason = relocation_reason(entry);
                 image.relocations_.push_back(entry);
             }
-        } else if (s.type == 6) { // SHT_DYNAMIC: DT_NEEDED only, no initialization.
+        } else if (!inventory_limits && s.type == 6) { // SHT_DYNAMIC: DT_NEEDED only, no initialization.
             entries(s, 16);
             bool terminated = false;
             std::map<uint64_t, uint64_t> tags;
@@ -351,7 +667,7 @@ ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha
             require(!tags.count(19) || tags.at(19) == 16, "invalid DT_RELENT");
             require(!tags.count(11) || tags.at(11) == 24, "invalid DT_SYMENT");
         }
-        require(s.type != 19 && s.type != 0x60000001 && s.type != 0x60000002,
+        require(inventory_limits || (s.type != 19 && s.type != 0x60000001 && s.type != 0x60000002),
                 "unsupported packed ELF relocation section");
     }
     // Publish mappings only after validating headers and the entire inventory.
@@ -363,6 +679,7 @@ ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha
 }
 
 void ElfImage::seal_relro(uint64_t guest_page_size) {
+    require(!inventory_only_, "inventory-only: RELRO phase unsupported");
     require(guest_page_size && !(guest_page_size & (guest_page_size - 1)),
             "guest page size must be an explicit power of two");
     if (relro_sealed_) {
@@ -404,6 +721,7 @@ void ElfImage::apply_symbol_relocations() { apply_relocation_batch(false, true);
 void ElfImage::apply_relocations() { apply_relocation_batch(true, true); }
 
 void ElfImage::apply_relocation_batch(bool relative, bool symbols) {
+    require(!inventory_only_, "inventory-only: application-not-supported");
     relative = relative && !relative_applied_;
     symbols = symbols && !symbols_applied_;
     if (!relative && !symbols) return;
