@@ -446,3 +446,14 @@ has no application API: existing native RELA transactions and sealing retain the
 previous contracts, and `ready_to_execute` remains false. External provider
 selection is limited to the documented explicit synthetic scope; it supplies no
 Android dependency file, bridge or function dispatch.
+
+## Dependency evidence manifest
+
+The read-only manifest in `tools/audit_dependencies.py` adds no native loader
+capabilities or relocation phase. Each explicitly named file is independently
+hash-verified through the existing captured-byte audit and isolated preparation.
+Composition cannot mutate image bytes, permissions, applied/unresolved state or
+sealing. Missing dependencies are successful inventory data; any supplied-file
+hash/native/metadata or manifest validation failure prevents publication.
+See [DEPENDENCY_EVIDENCE.md](DEPENDENCY_EVIDENCE.md) for explicit associations,
+platform evidence envelopes and the unchanged original-input baseline.

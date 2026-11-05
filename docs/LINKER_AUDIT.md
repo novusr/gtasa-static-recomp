@@ -229,3 +229,16 @@ unresolved, with sealed RELRO and readiness false. Build, all four CTest cases,
 all 103 Python tests and the four existing bounded differential commands passed.
 See the planner document for the new synthetic tests and limits; none of these
 results establishes original dependency availability or Android startup readiness.
+
+## Completed dependency evidence manifest milestone
+
+The 2026-11-06 [dependency evidence manifest](DEPENDENCY_EVIDENCE.md) extends the
+read-only evidence layer with explicit file instances and per-DT_NEEDED edge
+attribution, retaining all native audit inventories. The original-input run has
+one verified file and 11 missing dependencies, with Android process evidence
+unknown. It preserves exactly 5,252 RELATIVE applied, 21,458 unresolved (21,072
+preemptible and 386 undefined), 274 unresolved imports, sealed RELRO and readiness
+false. No additional fixup or provider selection occurs. All four CTest cases,
+114 Python tests and four bounded semantic regressions passed. The next milestone
+is obtaining exact missing files and process/device evidence before extending
+scope/version policy; no dependency is claimed resolved.

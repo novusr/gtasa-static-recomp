@@ -243,3 +243,15 @@ binding; missing strong/weak and unsupported semantics remain diagnostic data.
 Selection applies no fixup and supplies no implementation, bridge or execution
 permission. See [RESOLUTION_PLAN.md](RESOLUTION_PLAN.md) for the profile, evidence
 and tests. This scope is caller policy, not an inferred Android process scope.
+
+## Read-only dependency evidence
+
+`tools/audit_dependencies.py` reuses captured-byte native audits for explicitly
+supplied file instances, then purely composes a dependency evidence manifest.
+Every DT_NEEDED retains section/index/order provenance. File associations are
+explicit caller evidence; SONAME/name equality never creates one. Missing files,
+cycles and unknown Android process facts remain report data. Each object is an
+isolated inventory, not a jointly mapped process or lookup scope. All symbol,
+version, relocation and RELRO inventories remain intact, with no additional
+fixup, symbol selection or guest call. See [DEPENDENCY_EVIDENCE.md](DEPENDENCY_EVIDENCE.md)
+for the schema, validation/publication boundary and next evidence milestone.

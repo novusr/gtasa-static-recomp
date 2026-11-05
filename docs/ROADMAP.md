@@ -77,9 +77,15 @@ The read-only two-object resolution-plan milestone is implemented for synthetic
 unversioned ordinary symbols under an explicit scope. It preserves instance/table/
 index provenance, tests preemption and visibility, separates missing strong/weak
 from unsupported requirements, and changes no image state. See
-[RESOLUTION_PLAN.md](RESOLUTION_PLAN.md). The next bounded step is verified
-Android process/dependency evidence and a separately tested scope/version and
-weak-definition policy; transactional plan application follows later.
+[RESOLUTION_PLAN.md](RESOLUTION_PLAN.md). Read-only dependency evidence collection
+is now implemented with explicit file/hash/bias instances and DT_NEEDED edges;
+see [DEPENDENCY_EVIDENCE.md](DEPENDENCY_EVIDENCE.md). The original audit has one
+verified file, 11 missing dependencies and unknown Android process evidence.
+The next bounded step is acquiring and attributing those exact dependency files
+and API/device/target/namespace/main/preload/load-order observations. The observed
+libc/libm version requirements then need verified provider exports before a
+separately tested scope/version/weak-definition policy can be designed.
+Transactional plan application follows later.
 
 - Extend the bounded PT_LOAD/BSS loader with Android linker requirements,
   relocation target validation, further RELRO/platform layouts and any required

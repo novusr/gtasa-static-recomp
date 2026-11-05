@@ -202,3 +202,14 @@ The original input was re-audited at bias `0x100000000`, guest page size `0x1000
 false. Independent assertions reconciled the ignored original audit and the
 synthetic plan. No original dependency is claimed resolved. Original metadata,
 fixtures and generated output remain outside Git.
+
+## Dependency evidence collection before policy expansion
+
+The next evidence step is now supported by the read-only
+[dependency manifest](DEPENDENCY_EVIDENCE.md). This does not extend the planner's
+two-object synthetic scope or symbol/version rules. The original-file inventory
+finds 11 missing dependency files and no supplied Android process/API/namespace
+evidence, while retaining the original relocation/import baseline. Therefore
+acquiring and attributing these inputs remains the next milestone before any
+policy expansion or planning of original dependencies. The manifest itself
+selects no symbols and applies no plan.

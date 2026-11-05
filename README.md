@@ -241,3 +241,11 @@ the synthetic demo with `uv run python tests/make_resolution_demo.py`, then run
 See [the resolution-plan contract](docs/RESOLUTION_PLAN.md) for eligibility,
 preemption/visibility, failure publication rules and remaining Android work.
 Implementations and bridges remain unknown; readiness stays false.
+
+A read-only dependency evidence manifest is available in
+`tools/audit_dependencies.py`. Explicit file instances require path, expected
+SHA-256 and load bias; DT_NEEDED associations require explicit per-entry edges.
+Missing dependencies are valid report data, and unknown Android process evidence
+is retained without inventing a scope or selecting import providers. See
+[DEPENDENCY_EVIDENCE.md](docs/DEPENDENCY_EVIDENCE.md) for the input contract,
+reproduction, official sources, verified baseline and evidence-driven next step.
