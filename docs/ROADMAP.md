@@ -73,12 +73,13 @@ These milestones do not mean the game can start or that arbitrary ARM64 can run.
 
 ## Next: ELF image and ABI runtime
 
-The next bounded linker milestone is a read-only two-object resolution plan for
-synthetic unversioned ordinary symbols under an explicit lookup scope. It must
-preserve object/table/index provenance, distinguish missing strong/weak references,
-verify preemption/visibility, reject unsupported requirements, leave bytes and
-permissions untouched, and keep readiness false. Exact acceptance criteria and
-the separate platform-bridge work are in [LINKER_AUDIT.md](LINKER_AUDIT.md).
+The read-only two-object resolution-plan milestone is implemented for synthetic
+unversioned ordinary symbols under an explicit scope. It preserves instance/table/
+index provenance, tests preemption and visibility, separates missing strong/weak
+from unsupported requirements, and changes no image state. See
+[RESOLUTION_PLAN.md](RESOLUTION_PLAN.md). The next bounded step is verified
+Android process/dependency evidence and a separately tested scope/version and
+weak-definition policy; transactional plan application follows later.
 
 - Extend the bounded PT_LOAD/BSS loader with Android linker requirements,
   relocation target validation, further RELRO/platform layouts and any required

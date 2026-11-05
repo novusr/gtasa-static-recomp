@@ -210,3 +210,22 @@ Ignored reports are `generated/linker-audit.json` and
 `generated/linker-audit-16k.json`; they contain original-input metadata and are
 not committed. Passing these tests establishes the reported bounded tooling
 behavior, not dependency availability, a complete Android linker or game startup.
+
+## Completed bounded resolution-plan milestone
+
+The next-small-milestone paragraph above is now implemented by
+`tools/plan_resolution.py`; [RESOLUTION_PLAN.md](RESOLUTION_PLAN.md) specifies the
+exact two-instance contract, supported symbols, trace/status schema, explicit
+scope assumptions and conservative exclusions. It reuses validated audit snapshots,
+including additive section-header facts, and never applies its symbol selections.
+The synthetic plan is `generated/resolution-plan.json`; original dependencies
+remain unaudited and unresolved. Scope/version policy and transactional application
+remain separate future milestones, with platform implementations still unknown.
+
+The 2026-11-06 planner validation reran the original audit with explicit 4 KiB
+guest pages and bias `0x100000000`. The baseline remains 5,252 RELATIVE applied,
+21,458 unresolved (21,072 preemptible, 386 undefined), and all 274 imports
+unresolved, with sealed RELRO and readiness false. Build, all four CTest cases,
+all 103 Python tests and the four existing bounded differential commands passed.
+See the planner document for the new synthetic tests and limits; none of these
+results establishes original dependency availability or Android startup readiness.

@@ -434,3 +434,15 @@ unresolved groups without mutating an existing image or implementing resolution.
 Its validation is additional audit tooling; it does not expand the native
 loader's accepted resolution subset. See [LINKER_AUDIT.md](LINKER_AUDIT.md) for
 reproduction, original-input findings, official references and remaining work.
+
+## Read-only two-object plan
+
+The separate [resolution planner](RESOLUTION_PLAN.md) reuses the hash-verified
+native audit preparation, then makes symbol selections over immutable snapshots.
+The audit additionally exposes section headers needed for definition eligibility.
+Neither planning nor a `planned` result changes the loader's applied/unresolved
+inventories, unresolved imports, bytes, permissions or RELRO state. This prototype
+has no application API: existing native RELA transactions and sealing retain their
+previous contracts, and `ready_to_execute` remains false. External provider
+selection is limited to the documented explicit synthetic scope; it supplies no
+Android dependency file, bridge or function dispatch.

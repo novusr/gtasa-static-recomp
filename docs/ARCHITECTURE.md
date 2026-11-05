@@ -231,3 +231,15 @@ phases remain no-ops, and new writes require current PF_W permissions. Sealing
 has separate state and leaves imports/unresolved relocations and execution
 readiness unchanged. See [ELF loading](ELF_LOADING.md#explicit-pt_gnu_relro-sealing)
 for official sources, alignment, rounding, bounded input policy and verification.
+
+## Read-only symbol planning
+
+`tools/plan_resolution.py` composes two hash-verified native audit snapshots under
+an explicitly supplied scope. Preparation retains the existing RELA and RELRO
+operations; pure planning receives no mutable image handle. Object instance ID,
+table section and symbol index form identity. Ordinary unversioned GLOBAL dynamic
+FUNC/OBJECT lookup supports preemption, with exact internal LOCAL and visibility
+binding; missing strong/weak and unsupported semantics remain diagnostic data.
+Selection applies no fixup and supplies no implementation, bridge or execution
+permission. See [RESOLUTION_PLAN.md](RESOLUTION_PLAN.md) for the profile, evidence
+and tests. This scope is caller policy, not an inferred Android process scope.

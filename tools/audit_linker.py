@@ -262,6 +262,9 @@ def compose_report(data, native):
                       policy='Android RELRO page rounding intersected with exact PT_LOAD mappings',
                       device_compatibility='unknown'),
                   dynamic=dynamic, symbol_versions=versions, unresolved_relocations=unresolved,
+                  section_headers=[dict(index=i, type=s[1], flags=s[2], address=s[3],
+                                        size=s[5], link=s[6])
+                                   for i, s in enumerate(metadata.sections)],
                   preemptible_definitions=preemptible, special_requirements=special,
                   dependencies=[dict(name=name, provider='unknown', implementation='unknown',
                                      evidence='DT_NEEDED; dependency file not inspected')

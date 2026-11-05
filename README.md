@@ -231,3 +231,13 @@ DT_NEEDED and validated symbol-version metadata. Providers and implementations
 remain unknown; no import or IFUNC resolver is called. Reports stay ignored in
 `generated/`. See [the linker audit](docs/LINKER_AUDIT.md) for the reconciled
 baseline and the next bounded resolution-plan milestone.
+
+A bounded read-only two-object symbol planner is available in
+`tools/plan_resolution.py`. It uses explicit instance IDs and caller-ordered
+scope, preserves object/table/index provenance, and reports supported selections,
+strong/weak misses and unsupported requirements without applying fixups. Generate
+the synthetic demo with `uv run python tests/make_resolution_demo.py`, then run
+`uv run python tools/plan_resolution.py --config generated/resolution-demo/config.json`.
+See [the resolution-plan contract](docs/RESOLUTION_PLAN.md) for eligibility,
+preemption/visibility, failure publication rules and remaining Android work.
+Implementations and bridges remain unknown; readiness stays false.
