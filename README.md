@@ -6,8 +6,8 @@ It replaces the byte-matching workflow on `main`; it does not require manually
 reconstructing every function before executing translated code.
 
 **Current state: a tested leaf-function prototype, not a playable GTA executable.**
-The supported subset recompiles the original `CrossProduct` and `Multiply3x3`
-instructions. The next stages are control-flow recovery, a broader instruction
+The supported subset recompiles the original `CrossProduct`, `Multiply3x3` and
+five integer leaves selected in the configuration. The next stages are control-flow recovery, a broader instruction
 backend, ELF relocation/loading, guest-to-host ABI bridges and platform services.
 
 ## What is here
@@ -21,6 +21,8 @@ backend, ELF relocation/loading, guest-to-host ABI bridges and platform services
 - `tests/`: synthetic ELF/lifter checks and a native semantic smoke executable.
 - `tools/verify_leaf.py`: differential comparison with original ARM64 instructions
   using Unicorn as a test oracle. Unicorn is not used by the host runtime.
+- `tools/verify_integer.py`: fresh C++11 native runner versus original integer
+  leaves, with boundary/random register inputs and an evidence report.
 - `docs/ARCHITECTURE.md`: contracts, limits and platform boundaries.
 - `docs/ROADMAP.md`: remaining work towards a game executable.
 
@@ -47,6 +49,7 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 uv run python -m unittest discover -s tests -p 'test_*.py'
 uv run python tools/verify_leaf.py
+uv run python tools/verify_integer.py
 ```
 
 `build/recomp_leaf_smoke` executes generated native functions. It checks 2,048
@@ -54,6 +57,30 @@ calls and memory bounds. The separate oracle compares 6,144 binary32 result word
 against execution of the original instructions. These use deterministic finite,
 integer-valued inputs; they are not proof of every floating-point corner case.
 The native executable runs without opening `libGTASA.so`, Ghidra or Python.
+
+The integer backend supports W/X register moves, MOVZ/MOVN constants, SP copies,
+and non-flag-setting ADD/SUB immediate or LSL register operands. W/WSP writes
+zero-extend; arithmetic wraps at the guest register width. Encoding determines
+whether register 31 means SP or ZR. See the exact forms and exclusions in
+`docs/ARCHITECTURE.md`.
+
+The Python suite includes 244 synthetic integer leaves/sequences, tested against
+explicit expected register states and Unicorn over 152 inputs each (37,088
+calls). It covers overflow/underflow, upper-half clearing, SP versus ZR,
+discarded ZR writes, overlapping registers, immediate/shift boundaries and all
+16 NZCV patterns. Rejection tests keep unsupported forms blocked in both scan
+and lift. These tests require `c++` on PATH and compile a temporary C++11 runner.
+
+`verify_integer.py` separately checks five original leaves from the hash-validated
+binary: `_rwCPUHaveMMX`, `png_access_version_number`, `GetMaxStorage`,
+`RpMTEffectGetName`, and `CCamera::GetGameCamPosition`. It lifts the non-FP
+configuration selections afresh, compiles a temporary executable and compares
+760 calls, including all represented registers and unchanged NZCV. Evidence is
+written to ignored `generated/integer-verification.json` with input hash,
+backend and exact symbol ranges. The fresh executable does not use Unicorn or
+read guest bytes at runtime. These real leaves exercise MOV and ADD; SUB evidence
+currently comes from the synthetic corpus. Constant returns here reproduce the
+original instructions; they are not replacements for unresolved imports.
 
 Unsupported instructions, incomplete decoding, unsafe load forms and code
 relocations are rejected before translation output is written. A failed lift
@@ -88,7 +115,7 @@ every import `unresolved`: no ABI/platform bridge is implemented, and the scan
 does not infer call targets or attribute imports to particular functions.
 Zero-sized symbols and code without function symbols are outside this scan.
 
-**Translatable means accepted by `scalar-leaf-v1`, not semantically verified.**
+**Translatable means accepted by `scalar-leaf-v2`, not semantically verified.**
 Every scan entry has `semantic_verification: not_verified`; scanning does not
 run or import differential-test results. Successful translation/build and symbol
 counts are not proof of correctness or game completion. The backend's FP/state

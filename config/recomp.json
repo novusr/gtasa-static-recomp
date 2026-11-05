@@ -12,6 +12,26 @@
     {
       "symbol": "_Z11Multiply3x3RK7CMatrixRK7CVector",
       "output": "multiply3x3"
+    },
+    {
+      "symbol": "_Z13_rwCPUHaveMMXv",
+      "output": "cpu_have_mmx"
+    },
+    {
+      "symbol": "png_access_version_number",
+      "output": "png_version"
+    },
+    {
+      "symbol": "_Z13GetMaxStoragev",
+      "output": "max_storage"
+    },
+    {
+      "symbol": "_Z17RpMTEffectGetNameP10RpMTEffect",
+      "output": "effect_name"
+    },
+    {
+      "symbol": "_ZN7CCamera18GetGameCamPositionEv",
+      "output": "camera_position"
     }
   ]
 }

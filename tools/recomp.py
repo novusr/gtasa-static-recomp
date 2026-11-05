@@ -18,6 +18,7 @@ from elftools.elf.relocation import RelocationSection
 from elftools.common.exceptions import ELFError
 
 ROOT = Path(__file__).resolve().parents[1]
+BACKEND = 'scalar-leaf-v2'
 
 
 class RecompError(ValueError):
@@ -139,6 +140,59 @@ def load_statement(insn):
             for i, r in enumerate(registers)]
 
 
+def integer_statement(insn):
+    """Validate encoding classes, so register 31 means SP or ZR unambiguously.
+
+    No flag-setting forms: State has no NZCV. MOV aliases are accepted only
+    for ORR (unshifted register), ADD (SP copy), and MOVZ/MOVN encodings.
+    """
+    word = int.from_bytes(insn.bytes, 'little')
+    width = 64 if word >> 31 else 32
+    rd, rn, rm = word & 31, (word >> 5) & 31, (word >> 16) & 31
+    sp = False
+
+    def read(reg, allow_sp=False):
+        value = ('state.sp' if allow_sp else 'UINT64_C(0)') if reg == 31 else f'state.x[{reg}]'
+        return value if width == 64 else f'static_cast<uint32_t>({value})'
+
+    if insn.mnemonic == 'mov' and word & 0x7FE0FFE0 == 0x2A0003E0:
+        expression = read(rm)
+    elif insn.mnemonic in ('mov', 'movz', 'movn') and word & 0x7F800000 in (0x52800000, 0x12800000):
+        shift = ((word >> 21) & 3) * 16
+        if shift >= width:
+            raise InstructionError('operand_form', 'move-wide shift exceeds register width')
+        value = ((word >> 5) & 0xFFFF) << shift
+        if word & 0x7F800000 == 0x12800000:
+            value = ~value
+        expression = f'UINT64_C({value & ((1 << width) - 1)})'
+    elif insn.mnemonic in ('mov', 'add', 'sub') and word & 0x3F800000 == 0x11000000:
+        # ADD/SUB immediate: Rn and Rd == 31 denote SP, including WSP.
+        if insn.mnemonic == 'mov' and (word & 0x40000000 or (word >> 10) & 0xFFF):
+            raise InstructionError('operand_form', 'MOV SP copy requires ADD immediate zero')
+        sp = True
+        immediate = ((word >> 10) & 0xFFF) << (12 if word & (1 << 22) else 0)
+        operator = '-' if word & (1 << 30) else '+'
+        expression = f'(uint64_t({read(rn, True)}) {operator} UINT64_C({immediate}))'
+    elif insn.mnemonic in ('add', 'sub', 'neg') and word & 0x3F200000 == 0x0B000000:
+        # Shifted-register forms use ZR, never SP. Only LSL is supported.
+        shift, amount = (word >> 22) & 3, (word >> 10) & 63
+        if shift != 0 or amount >= width:
+            raise InstructionError('operand_form', 'integer register arithmetic supports only LSL below register width')
+        operator = '-' if word & (1 << 30) else '+'
+        expression = f'(uint64_t({read(rn)}) {operator} (uint64_t({read(rm)}) << {amount}))'
+    else:
+        raise InstructionError('operand_form', 'unsupported integer encoding (expected MOV register/wide/SP or ADD/SUB immediate/LSL register)')
+    if rd == 31 and not sp:
+        # An architectural ZR write is discarded; this instruction has no other effects.
+        return []
+    destination = 'state.sp' if rd == 31 else f'state.x[{rd}]'
+    # Unsigned arithmetic wraps modulo 2^64; narrowing wraps modulo 2^32 and
+    # assignment to x[]/sp zero-extends every W/WSP write.
+    if width == 32:
+        expression = f'static_cast<uint32_t>({expression})'
+    return [f'{destination} = {expression};']
+
+
 def translate_instruction(insn, index, count):
     mnemonic = insn.mnemonic
     if mnemonic == 'ret':
@@ -149,6 +203,8 @@ def translate_instruction(insn, index, count):
         emitted = []
     elif mnemonic in ('ldr', 'ldp'):
         emitted = load_statement(insn)
+    elif mnemonic in ('mov', 'movz', 'movn', 'add', 'sub', 'neg'):
+        emitted = integer_statement(insn)
     elif mnemonic in ('fmul', 'fmadd', 'fnmsub'):
         expected = 3 if mnemonic == 'fmul' else 4
         if len(insn.operands) != expected:
@@ -292,7 +348,7 @@ def scan(image):
                 entry['count'] += blocker['count']
                 entry['function_ranges'] += 1
         functions.append({**fn, **ranges[key]})
-    return {'input_sha256': inventory['sha256'], 'backend': 'scalar-leaf-v1',
+    return {'input_sha256': inventory['sha256'], 'backend': BACKEND,
             'scope': 'defined nonzero-sized STT_FUNC symbols; aliases preserved',
             'semantic_verification': 'not_verified',
             'summary': {'function_symbols': len(functions), 'unique_function_ranges': len(ranges),
@@ -314,7 +370,7 @@ def write_lift(out, results, digest):
         implementation += [declaration + ' {', '    (void)state;', '    (void)memory;', fn['body'], '}']
     declarations.append('}')
     implementation.append('}')
-    provenance = {'input_sha256': digest, 'backend': 'scalar-leaf-v1',
+    provenance = {'input_sha256': digest, 'backend': BACKEND,
                   'functions': [{k: v for k, v in f.items() if k != 'body'} for f in results]}
     for name, content in [('lifted.h', '\n'.join(declarations) + '\n'),
                           ('lifted.cpp', '\n'.join(implementation) + '\n'),

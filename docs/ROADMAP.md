@@ -10,6 +10,9 @@
 - Synthetic analyzer tests, native semantic checks and an ARM64 oracle comparison.
 - Backend scan of defined function ranges with grouped instruction/addressing
   blockers, unresolved imports and a separate, unverified semantic status.
+- W/X MOV and non-flag-setting ADD/SUB subset, with explicit SP/ZR semantics,
+  modular arithmetic, native/Unicorn synthetic tests and five original integer
+  leaves compared against ARM64 execution.
 
 These milestones do not mean the game can start or that arbitrary ARM64 can run.
 
@@ -18,7 +21,8 @@ These milestones do not mean the game can start or that arbitrary ARM64 can run.
 - Select a production-capable lifting strategy (evaluate Remill rather than
   expanding a small handwritten decoder without a validation strategy).
 - Recover CFGs, branch tables, indirect calls, tails, veneers and symbol-less code.
-- Implement/validate integer instructions, flags, NEON, full FP state, atomics and TLS.
+- Broaden the tested integer subset; implement/validate flags, NEON, full FP
+  state, atomics and TLS.
 - Preserve guest register aliases and exception behavior.
 - Extend the current translatable/blocked scan to recovered CFGs and attach
   explicit semantic evidence; never infer completion from symbol counts or
