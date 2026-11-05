@@ -181,7 +181,11 @@ structures, HFAs, callbacks, variadic calls and return values all need explicit
 rules. Reusing host libc with guest pointer values is invalid.
 
 The data loader now maps PT_LOAD data and BSS with an explicit bias, but never
-reports execution readiness. A full loader must apply AArch64 relocations in guest memory,
+reports execution readiness. Its explicit, transactional RELA RELATIVE phase
+writes bias plus signed addend modulo 2^64 through checked guest memory, requiring
+aligned targets wholly inside existing PF_W mappings. Applied and unresolved
+entries are separate; repeat application is a no-op. Other types and all imports
+remain unresolved. A full loader must apply further AArch64 relocations in guest memory,
 initialize TLS and constructors, and dispatch guest addresses to compiled entry
 points. ELF segments must never be executed directly by the x86_64 host.
 

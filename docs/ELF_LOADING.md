@@ -46,6 +46,61 @@ its boundary behavior are preserved. The image owns storage; callers may pass
 `image.memory()` to compatible generated functions after separately establishing
 that the function's data and runtime requirements are satisfied.
 
+## Explicit RELA RELATIVE application
+
+Loading still leaves every relocation unresolved. After a successful verified
+load, `image.apply_relative_relocations()` applies only SHT_RELA entries of type
+1027 (`R_AARCH64_RELATIVE`), moving them to `applied_relocations()` and removing
+them from `unresolved_relocations()`. Imports are unaffected. This operation
+never invokes guest code, even when the resulting pointer identifies code or
+an initializer array. `ready_to_execute()` remains false.
+
+The normative reference is Arm's [AAELF64](https://github.com/ARM-software/abi-aa/blob/2026Q3/aaelf64/aaelf64.rst),
+sections **Relocation operations**, **Dynamic relocations**, **RELATIVE
+relocation**, and **Idempotency**, together with the base ELF64 signed
+`Elf64_Sxword` definition for `Elf64_Rela.r_addend` in the
+[generic ABI](https://gabi.xinuos.com/elf/06-reloc.html).
+The stored value is `(load_bias + signed r_addend) mod 2^64`, at checked
+`load_bias + r_offset`, encoded as eight little-endian bytes. AAELF64 calls the
+bias Delta: the adjustment from link to load addresses. The explicit addend is
+a signed two's-complement 64-bit integer; unsigned addition of its raw bits
+computes the reduced result without signed C++ overflow or implementation-defined
+unsigned-to-signed conversion. A negative sum or sum exceeding UINT64_MAX wraps
+to the target width; it is not treated as an overflowing mapping calculation.
+Target address addition, by contrast, must not overflow. The pointer value itself
+need not designate mapped storage (for example, it may be a sentinel).
+
+Targets must be 8-byte aligned, use symbol index zero, and fit entirely within
+one existing mapping. Every full 8-byte write is validated through checked
+`Memory::region` with write permission. **Permission policy: require the original
+PT_LOAD PF_W bit.** Read permission is not required; write-only mappings stay
+write-only. Read-only and executable/read-only mappings are rejected; no global
+write window, permission override, host mapping or guest-pointer cast is used.
+PF_X remains metadata. PT_GNU_RELRO sealing is still unimplemented: data in a
+PF_W load segment is writable during and after this phase; this change does not
+claim final linker permissions or execution readiness. Supporting a read-only
+relocation target later requires an explicit bounded policy, not an automatic
+permission bypass.
+
+All selected entries, symbol constraints, alignment, mapping ranges, permissions
+and duplicate targets are validated before any write. Supported targets shared
+with any other inventory entry are rejected because relocation composition is outside this phase. Separate
+applied/unresolved reports and the write plan are fully allocated before commit;
+validation/allocation failure leaves image bytes and statuses unchanged. Commit
+uses checked little-endian stores and swaps the prepared reports. Callers must
+provide exclusive access during application, as for other mutable Memory access.
+A successful invocation records completion; subsequent calls are no-ops, including
+when no supported entries existed. It never reads the old pointer as an addend,
+so bias cannot accumulate. A failed invocation may be retried after correcting
+external memory state; no entries have been consumed.
+
+REL RELATIVE remains unresolved, without reading its implicit addend. All other
+ordinary relocation types (including NONE, ABS64, GLOB_DAT, JUMP_SLOT, TLS and
+IRELATIVE) remain unresolved, with no resolver calls, host dlsym or success
+stubs. Packed formats retain the existing explicit rejection. The full unresolved
+inventory is retained for further linker work; applying this subset is not a
+complete link operation.
+
 ## Unresolved work inventory
 
 `unresolved_imports()` records every named undefined SHT_DYNSYM symbol, including
@@ -54,7 +109,8 @@ records SHT_REL/SHT_RELA entries with biased target addresses, numeric types,
 symbol indices/names and explicit addend bits when present. REL addends remain
 implicit and are not read/applied. Unknown ordinary relocation types remain
 unresolved report entries. No symbol is assigned a fake implementation and no
-relocation changes guest memory. DT_NEEDED libraries are listed separately.
+relocation changes guest memory during load. Only the explicit operation above
+changes supported targets. DT_NEEDED libraries are listed separately.
 
 This first inventory implementation requires section headers. Sectionless ELF,
 extended numbering, Android packed relocations and RELR are rejected. A
@@ -62,8 +118,8 @@ PT_DYNAMIC must have a matching SHT_DYNAMIC file range; dynamic symbol, string
 and relocation table pointers/sizes must match inventoried sections. Malformed
 links, entry sizes, strings and symbol references are rejected. This is not a
 complete Android linker or a declaration that all dynamic tags are implemented.
-Relocation widths, target suitability, symbol versions, visibility/resolution,
-TLS, dependencies, constructors and ABI requirements still need validation in
+Widths and target suitability for unsupported relocations, symbol versions,
+visibility/resolution, TLS, dependencies, constructors and ABI requirements still need validation in
 a future linker/startup stage. An empty unresolved inventory alone cannot
 establish execution readiness.
 
@@ -93,17 +149,42 @@ remain in place.
 CTest's `original_image_load` uses the configured path/hash, supplies an explicit
 nonzero bias, compares every readable file-backed byte and every readable BSS
 byte, probes holes and segment permissions, and writes `build/image-load.json`.
-The manual command writes the full unresolved report to ignored `generated/`.
+The manual command writes separate applied and unresolved inventories to ignored
+`generated/`.
+Before fixups the native probe retains all existing file/BSS, hole and permission
+checks. It snapshots readable image bytes, applies the supported subset, checks
+every resulting pointer and little-endian byte, calls application again, and
+compares the entire readable image against the expected patched snapshot.
+`tools/load_image.py` separately verifies the input hash and decodes RELA from
+the original file using Python `struct` and signed arbitrary-precision arithmetic;
+it compares every applied address, addend, value and byte with the native report.
 Failure returns nonzero without publishing a new report; an old report may still
 exist. It never calls any function from the guest image.
 
 For the configured GTA:SA input, the smoke test checks 8,908,241 file bytes and
-4,908,543 BSS bytes in two PT_LOAD mappings, with 274 imports and 26,710
-relocations remaining unresolved. These counts describe loading, not game
-completion or instruction-backend coverage.
+4,908,543 BSS bytes in two PT_LOAD mappings, with SHA-256
+`12527bfdb63889c02d24366629e808cb446d354a2b380348bd661da4edc6af11`
+and explicit bias `0x100000000`. Verification on 2026-11-05 applied and independently
+checked 5,252 RELATIVE entries, leaving 21,458 relocations and all 274 imports
+unresolved. The report records `relative_values_checked=5252` and readiness false.
+These counts describe loading, not game completion or instruction-backend coverage.
 
-Next implement tested relocation application (including target-width and
-permission/RELRO policy), dependency and symbol resolution, explicit guest/host
+Synthetic relocation checks cover zero/nonzero/high bias, positive/zero/negative
+addends including INT64_MIN/MAX, modular result overflow/underflow, exact pointer
+values/bytes, unmapped/unaligned targets, target-address overflow, writes across
+mapping ends (including adjacent mappings), original PF_W policy and retained
+read denial on write-only segments, duplicate/symbol rejection, failure without
+partial byte/status mutations, repeat application, mixed-type composition rejection,
+and unsupported REL/types.
+
+The 2026-11-05 validation run passed the C++11 build, all four CTest tests
+(including the original-image check), all 55 Python regression tests (17 loader
+cases), and the existing leaf/integer/memory/control-flow differential commands.
+No game startup, constructors, JNI_OnLoad or initializer execution is part of
+the image smoke test.
+
+Next implement symbol-dependent relocations with dependency and symbol resolution,
+RELRO sealing and further format support as required, explicit guest/host
 ABI bridges and compiled-address dispatch. TLS, stack/thread state and platform
 services must precede controlled initializer execution. Unsupported requirements
 must reject startup; no interpreter, JIT, or success-stub fallback is implied.

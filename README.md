@@ -10,8 +10,9 @@ The supported subset recompiles the original `CrossProduct`, `Multiply3x3`,
 five register-only integer leaves, eight integer-memory leaves, and five
 control-flow functions with branches/multiple RETs selected in the configuration.
 The next stages are cyclic control-flow (loops), switch/jump tables, a broader
-instruction backend, ELF relocation, guest-to-host ABI bridges and platform services.
-PT_LOAD/BSS data loading is now available; it does not authorize initialization or execution.
+instruction backend, further ELF relocation support, guest-to-host ABI bridges
+and platform services. PT_LOAD/BSS data loading and explicit RELA RELATIVE
+fixups are now available; these do not authorize initialization or execution.
 
 ## What is here
 
@@ -21,8 +22,9 @@ PT_LOAD/BSS data loading is now available; it does not authorize initialization 
 - `include/recomp/runtime.h`, `src/runtime.cpp`: explicit guest register state,
   checked little-endian guest memory and scalar FP operations.
 - `include/recomp/elf_image.h`, `src/elf_image.cpp`: hash-verified PT_LOAD/BSS
-  loading with explicit bias, checked segment storage and unresolved inventories.
-- `tools/load_image.py`: original-image data smoke test and unresolved report.
+  loading with explicit bias, checked segment storage, transactional RELA RELATIVE
+  fixups and separate applied/unresolved inventories.
+- `tools/load_image.py`: original-image data/RELATIVE smoke test and applied/unresolved report.
 - `docs/ELF_LOADING.md`: loader contracts, verification and remaining linker work.
 - `CMakeLists.txt`: host C++11 build, independent of the Android NDK.
 - `tests/`: synthetic ELF/lifter checks, control-flow semantics and native smoke tests.
@@ -205,8 +207,9 @@ aliases. These totals are not decompilation percentages.
 
 Generated C++, inventory, original binaries and assets are local ignored files.
 The native image loader verifies the configured hash again, copies PT_LOAD file
-data and zeroes BSS at explicit biased guest addresses. It reports all ordinary
-REL/RELA relocations and dynamic imports as unresolved and always reports
+data and zeroes BSS at explicit biased guest addresses. It can explicitly apply
+RELA `R_AARCH64_RELATIVE` to existing writable guest mappings after validating the complete batch; other relocations and all imports
+remain unresolved. Applied entries are reported separately. It always reports
 `ready_to_execute=false`. It never invokes constructors, JNI_OnLoad or game entry
 points. See [ELF loading](docs/ELF_LOADING.md) for its bounded input support.
 

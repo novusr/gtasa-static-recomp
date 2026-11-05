@@ -27,6 +27,12 @@
   checked disjoint guest ranges and permissions, unresolved import/REL/RELA
   inventories, synthetic malformed/overflow tests and an original-image byte
   smoke test. No initializer or guest entry is executed; readiness remains false.
+- Explicit transactional RELA R_AARCH64_RELATIVE application with signed addend
+  semantics reduced to 64 bits, aligned checked PF_W targets, separate applied and
+  unresolved status, repeat-call protection and synthetic rejection/atomicity
+  tests. Original-image smoke independently verifies 5,252 applied entries at
+  bias 0x100000000; 21,458 relocations and all 274 imports remain unresolved.
+  Readiness stays false and no guest code or initializer is invoked.
 
 These milestones do not mean the game can start or that arbitrary ARM64 can run.
 
@@ -45,7 +51,8 @@ These milestones do not mean the game can start or that arbitrary ARM64 can run.
 
 - Extend the bounded PT_LOAD/BSS loader with Android linker requirements,
   relocation target validation, RELRO policy and any required packed-table support.
-- Apply RELATIVE, ABS64, GLOB_DAT, JUMP_SLOT and TLS relocations as encountered;
+- Extend relocation support beyond RELA RELATIVE to ABS64, GLOB_DAT, JUMP_SLOT
+  and TLS relocations as encountered;
   unrecognized relocation types must fail startup.
 - Implement address-to-entry dispatch and guest stack/call/callback conventions.
 - Handle initialization, allocation, C++ exceptions/unwinding and threading.

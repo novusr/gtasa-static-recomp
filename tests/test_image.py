@@ -45,18 +45,41 @@ class ImageTests(unittest.TestCase):
                         str(ROOT / 'src/elf_image.cpp'), str(ROOT / 'tests/image_smoke.cpp'),
                         '-lcrypto', '-o', str(cls.runner)], check=True, capture_output=True)
 
+        # A write-only mapping must permit fixups without granting read access.
+        probe = cls.directory / 'write-only.cpp'
+        probe.write_text(r'''#include "recomp/elf_image.h"
+#include <stdexcept>
+int main(int argc, char** argv) {
+    if (argc != 3) return 1;
+    recomp::ElfImage image = recomp::ElfImage::load(argv[1], argv[2], 0);
+    image.apply_relative_relocations();
+    image.apply_relative_relocations();
+    if (image.applied_relocations().size() != 1 || image.ready_to_execute()) return 2;
+    try { image.memory().load64(0x9000); }
+    catch (const std::out_of_range&) { return 0; }
+    return 3;
+}
+''')
+        cls.write_only_runner = cls.directory / 'write-only'
+        subprocess.run(['c++', '-std=c++11', '-Wall', '-Wextra', '-Wpedantic', '-Werror',
+                        '-I', str(ROOT / 'include'), str(ROOT / 'src/runtime.cpp'),
+                        str(ROOT / 'src/elf_image.cpp'), str(probe), '-lcrypto',
+                        '-o', str(cls.write_only_runner)], check=True, capture_output=True)
+
     @classmethod
     def tearDownClass(cls):
         cls.temp.cleanup()
 
-    def run_image(self, data=None, bias=0x100000000, digest=None, limit=None):
+    def run_image(self, data=None, bias=0x100000000, digest=None, limit=None, relocate=False):
         if data is None:
             data = fixture()
         path = self.directory / 'fixture.elf'
         path.write_bytes(data)
         args = [str(self.runner), str(path), digest or hashlib.sha256(data).hexdigest(), str(bias)]
-        if limit is not None:
-            args.append(str(limit))
+        if limit is not None or relocate:
+            args.append(str(limit if limit is not None else 536870912))
+        if relocate:
+            args.append("--relocate")
         return subprocess.run(args, capture_output=True, text=True)
 
     def test_mapping_bss_permissions_holes_and_inventory(self):
@@ -197,6 +220,114 @@ class ImageTests(unittest.TestCase):
         self.assertEqual(report['imports'], [])
         self.assertEqual(report['relocations'], [])
         self.assertFalse(report['ready_to_execute'])
+
+    def test_relative_values_bytes_and_reapplication(self):
+        for bias in (0, 0x100000000, 0xFFFFFFFFFFFF0000):
+            for addend in (0, 0x9010, -4, -(1 << 63), (1 << 63) - 1):
+                with self.subTest(bias=bias, addend=addend):
+                    data = fixture()
+                    struct.pack_into('<q', data, 0x410, addend)
+                    result = self.run_image(data, bias=bias, relocate=True)
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    report = json.loads(result.stdout)
+                    value = (bias + addend) % (1 << 64)
+                    self.assertEqual(report['applied_relocations'], [dict(
+                        address=bias + 0x9000, addend_bits=addend % (1 << 64),
+                        value=value, bytes=list(value.to_bytes(8, 'little')), status='applied')])
+                    self.assertEqual(len(report['relocations']), 1)
+                    self.assertEqual(report['relocations'][0]['type'], 1025)
+                    self.assertEqual(len(report['imports']), 1)
+                    self.assertFalse(report['ready_to_execute'])
+
+    def test_relative_batch_rejection_is_atomic(self):
+        # First write is valid; failure at the second entry must preserve all bytes
+        # and both status inventories. The native probe checks this before rethrowing.
+        for target, message in ((0xA000, 'unmapped'), (0x8000, 'permission'),
+                                (0x9011, 'aligned'), (0x9018, 'unmapped'),
+                                (0x9000, 'duplicate')):
+            with self.subTest(target=target):
+                data = fixture()
+                struct.pack_into('<QQq', data, 0x418, target, 1027, 123)
+                if target == 0x9018:
+                    struct.pack_into('<Q', data, 160, 28) # 8-byte write crosses end.
+                result = self.run_image(data, relocate=True)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertIn(message, result.stderr)
+                self.assertNotIn('partial', result.stderr)
+                self.assertEqual(result.stdout, '')
+        data = fixture()
+        struct.pack_into('<Q', data, 0x420, (1 << 32) | 1027)
+        result = self.run_image(data, relocate=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('symbol index zero', result.stderr)
+
+    def test_shared_target_with_unsupported_type_rejects_composition(self):
+        data = fixture()
+        struct.pack_into('<Q', data, 0x418, 0x9000)
+        result = self.run_image(data, relocate=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('composition unsupported', result.stderr)
+        self.assertNotIn('partial', result.stderr)
+
+    def test_relative_cannot_span_adjacent_mappings(self):
+        data = fixture()
+        # First segment directly follows a shortened second segment.
+        struct.pack_into('<Q', data, 80, 0x900C)
+        struct.pack_into('<Q', data, 112, 1)
+        struct.pack_into('<Q', data, 160, 12)
+        struct.pack_into('<QQq', data, 0x418, 0x9008, 1027, 12)
+        result = self.run_image(data, bias=0, relocate=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('unmapped', result.stderr)
+
+    def test_relative_permission_policy_and_unmapped_result(self):
+        # The stored value need not itself designate mapped memory. Only the
+        # relocation's write range requires mapping and PF_W (not PF_R/PF_X).
+        for flags in (4, 5, 0, 1):
+            data = fixture()
+            struct.pack_into('<I', data, 124, flags)
+            result = self.run_image(data, relocate=True)
+            self.assertNotEqual(result.returncode, 0)
+            self.assertIn('permission', result.stderr)
+        data = fixture()
+        struct.pack_into('<q', data, 0x410, 0x12345678)
+        self.assertEqual(self.run_image(data, relocate=True).returncode, 0)
+
+    def test_write_only_mapping_remains_write_only(self):
+        data = fixture()
+        struct.pack_into('<I', data, 124, 2)
+        path = self.directory / 'write-only.elf'
+        path.write_bytes(data)
+        result = subprocess.run([str(self.write_only_runner), str(path),
+                                 hashlib.sha256(data).hexdigest()], capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_biased_relocation_target_overflow_is_rejected(self):
+        data = fixture()
+        struct.pack_into('<Q', data, 0x400, (1 << 64) - 8)
+        result = self.run_image(data, relocate=True)
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn('address/size overflow', result.stderr)
+        self.assertEqual(result.stdout, '')
+
+    def test_unsupported_relocations_remain_unresolved_after_application(self):
+        for kind in (257, 1025, 1026, 1032, 0, 0xFFFFFFFF):
+            data = fixture()
+            struct.pack_into('<Q', data, 0x408, kind)
+            result = self.run_image(data, relocate=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            report = json.loads(result.stdout)
+            self.assertEqual(report['applied_relocations'], [])
+            self.assertEqual(len(report['relocations']), 2)
+        data = fixture()
+        struct.pack_into('<I', data, 0x5C4, 9)
+        struct.pack_into('<Q', data, 0x5E0, 16)
+        struct.pack_into('<Q', data, 0x5F8, 16)
+        result = self.run_image(data, relocate=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        report = json.loads(result.stdout)
+        self.assertEqual(report['applied_relocations'], [])
+        self.assertFalse(report['relocations'][0]['has_addend'])
 
 
 if __name__ == '__main__':

@@ -190,7 +190,7 @@ ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha
                     image.imports_.push_back(entry);
                 }
             }
-        } else if (s.type == 4 || s.type == 9) { // SHT_RELA / SHT_REL, not applied.
+        } else if (s.type == 4 || s.type == 9) { // SHT_RELA / SHT_REL, initially unresolved.
             const uint64_t stride = s.type == 4 ? 24 : 16;
             entries(s, stride);
             const Section& symbols = linked(sections, s);
@@ -259,6 +259,38 @@ ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha
                           r.bytes.data() + s.file_offset, static_cast<std::size_t>(s.file_size));
     }
     return image;
+}
+
+void ElfImage::apply_relative_relocations() {
+    if (relative_applied_) return;
+    std::vector<ImageRelocation> applied, unresolved;
+    std::map<uint64_t, uint64_t> writes;
+    std::map<uint64_t, std::size_t> target_counts;
+    for (const ImageRelocation& r : relocations_) ++target_counts[r.address];
+    // Allocate reports and validate every write before touching guest bytes.
+    for (const ImageRelocation& r : relocations_) {
+        if (r.type != 1027 || !r.has_addend) {
+            unresolved.push_back(r);
+            continue;
+        }
+        require(r.symbol_index == 0, "RELA RELATIVE requires symbol index zero");
+        require(r.address % 8 == 0, "RELA RELATIVE target must be 8-byte aligned");
+        require(target_counts.at(r.address) == 1,
+                "duplicate RELA RELATIVE target (composition unsupported)");
+        memory_.region(r.address, 8, true); // checked complete range and PF_W
+        // AAELF64: Delta + signed A, reduced to the 64-bit target field.
+        // Unsigned addition of the two's-complement bits implements this exactly
+        // without signed overflow or implementation-defined signed conversions.
+        writes.insert(std::make_pair(r.address, bias_ + r.addend_bits));
+        applied.push_back(r);
+    }
+    // No allocation or permission changes occur during commit. With exclusive
+    // access to this image, every checked store is now guaranteed to succeed.
+    for (const std::pair<const uint64_t, uint64_t>& write : writes)
+        memory_.store64(write.first, write.second);
+    applied_.swap(applied);
+    relocations_.swap(unresolved);
+    relative_applied_ = true;
 }
 
 } // namespace recomp

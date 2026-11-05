@@ -32,12 +32,17 @@ struct ImageRelocation {
     bool has_addend;
 };
 
-// Data loading only. No relocations, import bridges, initializer calls, entry
-// dispatch, dlopen, host executable mappings or ARM64 execution are provided.
+// Data loading and explicit RELA RELATIVE fixups only. No import bridges,
+// initializer calls, entry dispatch, dlopen, host executable mappings or ARM64
+// execution are provided.
 class ElfImage {
 public:
     static ElfImage load(const std::string& path, const std::string& expected_sha256,
                          uint64_t load_bias, uint64_t memory_limit = UINT64_C(536870912));
+    // Validate the complete batch, then write only to existing PF_W mappings.
+    // Subsequent calls are no-ops; REL/other types remain unresolved.
+    void apply_relative_relocations();
+    const std::vector<ImageRelocation>& applied_relocations() const { return applied_; }
     Memory& memory() { return memory_; }
     const Memory& memory() const { return memory_; }
     const std::vector<ImageSegment>& segments() const { return segments_; }
@@ -49,13 +54,15 @@ public:
     // Even an image with empty inventories has no runtime startup support yet.
     bool ready_to_execute() const { return false; }
 private:
-    ElfImage() : memory_(0, 0), bias_(0) {}
+    ElfImage() : memory_(0, 0), bias_(0), relative_applied_(false) {}
     Memory memory_;
     uint64_t bias_;
+    bool relative_applied_;
     std::string sha256_;
     std::vector<ImageSegment> segments_;
     std::vector<ImageImport> imports_;
     std::vector<ImageRelocation> relocations_;
+    std::vector<ImageRelocation> applied_;
     std::vector<std::string> needed_;
 };
 
