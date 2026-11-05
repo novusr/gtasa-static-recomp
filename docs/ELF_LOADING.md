@@ -424,3 +424,13 @@ CTest's `build/image-load.json`. No game, constructor, JNI_OnLoad, initializer
 or IFUNC resolver was invoked. Shared-page load layouts, Android padding/compat
 modes, dependency/version/preemption resolution, remaining relocation forms and
 platform startup remain future work; readiness remains false.
+
+
+## Read-only linker audit
+
+`tools/audit_linker.py` consumes the native prepared-image inventory and adds
+validated dynamic/version metadata, full table/index import identities and
+unresolved groups without mutating an existing image or implementing resolution.
+Its validation is additional audit tooling; it does not expand the native
+loader's accepted resolution subset. See [LINKER_AUDIT.md](LINKER_AUDIT.md) for
+reproduction, original-input findings, official references and remaining work.

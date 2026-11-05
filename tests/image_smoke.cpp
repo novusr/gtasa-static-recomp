@@ -313,6 +313,14 @@ int main(int argc, char** argv) {
             symbol_json(r.definition);
             std::cout << '}';
         }
+        // Additive complete inventory for read-only linker audit consumers.
+        std::cout << "],\"symbols\":[";
+        first = true;
+        for (const recomp::ImageSymbol& s : image.symbols()) {
+            if (!first) std::cout << ',';
+            first = false;
+            symbol_json(s);
+        }
         std::cout << "]}\n";
         return 0;
     } catch (const std::exception& e) {

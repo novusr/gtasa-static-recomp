@@ -27,6 +27,9 @@ removal are now available; these do not authorize initialization or execution.
   and internal-symbol fixups, separate applied/unresolved inventories and explicit
   guest-page RELRO sealing.
 - `tools/load_image.py`: original-image data/relocation/RELRO smoke test and applied/unresolved report.
+- `tools/audit_linker.py`: read-only dependency/symbol/version audit using the
+  native prepared-image inventory, with table/index identities and unresolved groups.
+- `docs/LINKER_AUDIT.md`: verified findings, official ABI/platform sources and resolver milestones.
 - `docs/ELF_LOADING.md`: loader contracts, verification and remaining linker work.
 - `CMakeLists.txt`: host C++11 build, independent of the Android NDK.
 - `tests/`: synthetic ELF/lifter checks, control-flow semantics and native smoke tests.
@@ -64,6 +67,7 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 uv run python -m unittest discover -s tests -p 'test_*.py'
 python3 tools/load_image.py --load-bias 0x100000000 --guest-page-size 0x1000 --output generated/image-load.json
+python3 tools/audit_linker.py --load-bias 0x100000000 --guest-page-size 0x1000 --output generated/linker-audit.json
 uv run python tools/verify_leaf.py
 uv run python tools/verify_integer.py
 uv run python tools/verify_memory.py
@@ -219,3 +223,11 @@ points. See [ELF loading](docs/ELF_LOADING.md) for its bounded input support.
 
 Native output is expected to differ from ARM64 bytes: semantic equivalence and
 runtime correctness are the validation goals for this branch.
+
+The linker audit verifies the input hash and reuses the native data-only loading,
+supported relocation and explicit RELRO preparation in an isolated image. Its
+read-only report preserves applied/unresolved status, every symbol table/index,
+DT_NEEDED and validated symbol-version metadata. Providers and implementations
+remain unknown; no import or IFUNC resolver is called. Reports stay ignored in
+`generated/`. See [the linker audit](docs/LINKER_AUDIT.md) for the reconciled
+baseline and the next bounded resolution-plan milestone.
