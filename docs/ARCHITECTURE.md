@@ -17,7 +17,7 @@ identifiers, not host addresses or permission to dereference a host pointer.
 
 ## Current supported subset
 
-The `integer-flags-v1` backend accepts acyclic control-flow functions ending with
+The `integer-bne-v1` backend accepts acyclic control-flow functions ending with
 `ret` through x30 on all paths. It retains the v1 FP instructions (`nop`, scalar
 `ldr` and `ldp` into S registers using X-register base plus constant offset
 without writeback/indexing, `fmul`, `fmadd`, `fnmsub`) and v3 integer memory
@@ -38,6 +38,7 @@ emitting native C++:
 | CBZ (`cbz <Rt>, <target>`) | Jump if register is zero; W (32-bit) or X (64-bit) | Rt=31 denotes WZR/XZR (value 0, branch taken) | Fallthrough (PC+4), Target |
 | CBNZ (`cbnz <Rt>, <target>`) | Jump if register is nonzero; W (32-bit) or X (64-bit) | Rt=31 denotes WZR/XZR (value 0, branch not taken) | Fallthrough (PC+4), Target |
 | TBNZ (`tbnz <Rt>, #bit, <target>`) | Jump if bit 0..63 is set; signed imm14 (* 4) PC offset | Rt=31 is ZR; bit 0..31 uses W view, 32..63 uses X view; NZCV unchanged | Fallthrough (PC+4), Target |
+| B.NE (`b.ne <target>`) | Jump if explicit guest NZCV.Z is clear; signed imm19 (* 4) PC offset | Ordinary B.cond encoding only, condition=1 and bit4=0; flags preserved | Fallthrough (PC+4), Target |
 | RET (`ret [x30]`) | Subroutine return | Only x30 is supported (register 30) | Terminal (none) |
 
 Validation rules enforced equally by `scan` and `lift`:
@@ -51,8 +52,9 @@ Validation rules enforced equally by `scan` and `lift`:
    from the entry point.
 5. **Rejected control flow**: Subroutine calls (`bl`, `blr`), indirect branches (`br`),
    indirect returns (`ret xn` where `n != 30`), test-and-branch-zero (`tbz`), and
-   conditional branches requiring condition flags (`b.cond`: `b.eq`, `b.ne`, etc.)
-   are rejected. NZCV is represented for CMP/CINC; B.cond remains unsupported.
+   other flag conditions (`b.eq`, `b.lo`, etc.) and BC.cond
+   are rejected. The [clock-countdown milestone](CLOCK_BEEP.md) adds only B.NE
+   consuming explicit guest NZCV; all CFG gates also apply to this branch.
 6. **Register width accuracy**: CBZ/CBNZ on W registers (`sf=0`) strictly evaluates
    bits 31:0 (`static_cast<uint32_t>(state.x[rt])`), correctly ignoring any dirty
    upper bits 63:32. X registers (`sf=1`) evaluate all 64 bits.

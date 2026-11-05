@@ -18,7 +18,7 @@ from elftools.elf.relocation import RelocationSection
 from elftools.common.exceptions import ELFError
 
 ROOT = Path(__file__).resolve().parents[1]
-BACKEND = 'integer-flags-v1'
+BACKEND = 'integer-bne-v1'
 
 
 class RecompError(ValueError):
@@ -305,6 +305,13 @@ def get_branch_target(insn):
         imm19 = (word >> 5) & 0x7FFFF
         offset = ((imm19 - (1 << 19)) << 2) if (imm19 & (1 << 18)) else (imm19 << 2)
         return (insn.address + offset) & 0xFFFFFFFFFFFFFFFF
+    elif insn.mnemonic == 'b.ne':
+        # B.cond only: bit 4 distinguishes the unsupported BC.cond encoding.
+        if insn.size != 4 or word & 0xFF000010 != 0x54000000 or word & 15 != 1:
+            raise InstructionError('operand_form', 'B.NE requires B.cond encoding with condition NE', insn)
+        immediate = (word >> 5) & 0x7FFFF
+        offset = (immediate - (1 << 19) if immediate & (1 << 18) else immediate) * 4
+        return (insn.address + offset) & 0xFFFFFFFFFFFFFFFF
     elif insn.mnemonic == 'tbnz':
         if word & 0x7F000000 != 0x37000000:
             raise InstructionError('operand_form', 'unsupported test-bit branch encoding', insn)
@@ -319,6 +326,8 @@ def branch_statement(insn):
     target = get_branch_target(insn)
     if insn.mnemonic == 'b':
         return [f'goto loc_{target:#x};']
+    if insn.mnemonic == 'b.ne':
+        return [f'if (condition_holds(state.nzcv, 1)) goto loc_{target:#x};']
     if insn.mnemonic == 'tbnz':
         rt = word & 31
         bit = ((word >> 31) << 5) | ((word >> 19) & 31)
@@ -342,7 +351,7 @@ def analyze_cfg(instructions, address, size):
 
     branch_targets = set()
     for insn in instructions:
-        if insn.mnemonic in ('b', 'cbz', 'cbnz', 'tbnz'):
+        if insn.mnemonic in ('b', 'cbz', 'cbnz', 'tbnz', 'b.ne'):
             target = get_branch_target(insn)
             if target < fn_start or target >= fn_end:
                 raise InstructionError('control_flow', f'branch target {target:#x} is outside function range [{fn_start:#x}, {fn_end:#x})', insn)
@@ -352,7 +361,7 @@ def analyze_cfg(instructions, address, size):
 
     leaders = {fn_start}
     for insn in instructions:
-        if insn.mnemonic in ('b', 'cbz', 'cbnz', 'tbnz'):
+        if insn.mnemonic in ('b', 'cbz', 'cbnz', 'tbnz', 'b.ne'):
             leaders.add(get_branch_target(insn))
             if insn.address + 4 < fn_end:
                 leaders.add(insn.address + 4)
@@ -374,7 +383,7 @@ def analyze_cfg(instructions, address, size):
             succs[l_start] = []
         elif last.mnemonic == 'b':
             succs[l_start] = [get_branch_target(last)]
-        elif last.mnemonic in ('cbz', 'cbnz', 'tbnz'):
+        elif last.mnemonic in ('cbz', 'cbnz', 'tbnz', 'b.ne'):
             fallthrough = last.address + 4
             if fallthrough >= fn_end:
                 raise InstructionError('control_flow', f'block at {l_start:#x} falls through outside function', last)
@@ -419,10 +428,10 @@ def translate_instruction(insn, index=None, count=None):
         emitted = ['return;']
     elif mnemonic == 'nop':
         emitted = []
-    elif mnemonic in ('b', 'cbz', 'cbnz', 'tbnz'):
+    elif mnemonic in ('b', 'cbz', 'cbnz', 'tbnz', 'b.ne'):
         emitted = branch_statement(insn)
     elif mnemonic.startswith('b.'):
-        raise InstructionError('control_flow', f'conditional branch {mnemonic} requires NZCV branch support which is not implemented', insn)
+        raise InstructionError('control_flow', f'conditional branch {mnemonic} is not supported; only B.NE is implemented', insn)
     elif mnemonic in ('bl', 'blr'):
         raise InstructionError('control_flow', f'subroutine call {mnemonic} is not supported in leaf functions', insn)
     elif mnemonic == 'br':

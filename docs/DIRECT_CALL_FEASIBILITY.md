@@ -1,5 +1,9 @@
 # Direct-call AOT feasibility, 2026-11-06
 
+Latest follow-up: the [clock-countdown audit and candidate matrix](CLOCK_BEEP.md)
+rechecks the post-CountMembers backend and adds only an original B.NE leaf.
+The non-leaf objective remains incomplete. Counts below remain historical.
+
 Follow-up: the proposed [CountMembers leaf milestone](COUNT_MEMBERS.md) is now
 implemented with a newer backend. This document preserves the historical
 `control-flow-v1` audit and its results; its original non-leaf objective remains

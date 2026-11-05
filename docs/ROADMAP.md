@@ -67,6 +67,12 @@ ARM64 and independent results over 2,816 cases, covering all 23 RET exits and
 both outcomes of 22 TBNZ instructions. Synthetic semantic and rejection tests
 cover the added forms. This does not implement calls or expand the loader.
 
+The [clock-countdown milestone](CLOCK_BEEP.md) adds only ordinary B.NE and the
+original `COnscreenTimer::SetClockBeepCountdownSecs` leaf at
+`[0x3db37c,0x3db390)`. A fresh post-CountMembers audit still finds zero
+eligible non-leaf closures, even when B.cond and audited memory forms are
+optimistically forgiven. Direct calls remain blocked.
+
 ## Next: general instruction and control-flow backend
 
 The [direct-call AOT feasibility audit](DIRECT_CALL_FEASIBILITY.md) examined all
@@ -77,9 +83,12 @@ jump tables and flags. The non-leaf milestone remains incomplete; no call backen
 or semantic evidence was added. Loader/relocation development stays frozen for
 this AOT stage. The proposed `CLoadedCarGroup::CountMembers` leaf is now verified
 as described above. Its non-leaf callers still require additional instruction
-and loop support. A next bounded AOT step is CMP-driven B.cond for acyclic
-integer functions, using the represented NZCV state and retaining cycle/call
-rejection. For example, the original `PickLeastUsedModel` caller contains CMP
+and loop support. B.NE is now implemented; the next bounded proposal is B.HI
+for original
+`GLDepthFuncFromRQ` `[0x264cd0,0x264ce8)`, a six-instruction register-only
+acyclic leaf with two RET exits. It requires separate condition/outcome tests
+and a fresh oracle before acceptance. Other B.cond conditions remain rejected.
+For example, the original `PickLeastUsedModel` caller contains CMP
 and B.lt/B.le/B.ne as well as a loop, signed-byte loads and other blockers;
 flag branches alone would not make that caller or a non-leaf closure supported.
 

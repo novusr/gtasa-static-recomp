@@ -87,8 +87,8 @@ class LifterTests(unittest.TestCase):
         self.assertEqual(count, {'b': 1, 'ret': 1})
 
     def test_unsupported_branch_is_rejected(self):
-        # b.eq requires NZCV
-        with self.assertRaisesRegex(recomp.RecompError, 'requires NZCV'):
+        # B.EQ remains outside the narrow B.NE milestone.
+        with self.assertRaises(recomp.RecompError):
             recomp.lift_body(bytes.fromhex('40000054c0035fd6'), 0x8000)
         # bl subroutine call
         with self.assertRaisesRegex(recomp.RecompError, 'subroutine call'):

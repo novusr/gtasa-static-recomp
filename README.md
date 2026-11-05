@@ -11,9 +11,13 @@ eligible original non-leaf closure within a bounded BL/stack extension, even
 under an optimistic memory-form screen. BL remains rejected; no new call
 semantic verification is claimed. The audit records exact candidate ranges and
 the recursion, PLT and broader-backend obstructions without changing the loader.
+The [clock-countdown milestone](docs/CLOCK_BEEP.md) adds only B.NE using explicit
+guest NZCV and verifies an original five-instruction conditional-store leaf.
+Other B.cond conditions and direct calls remain rejected.
 The supported subset recompiles the original `CrossProduct`, `Multiply3x3`,
-five register-only integer leaves, eight integer-memory leaves, `CLoadedCarGroup::CountMembers`, and five
-control-flow functions with branches/multiple RETs selected in the configuration.
+five register-only integer leaves, eight integer-memory leaves,
+`CLoadedCarGroup::CountMembers`, `COnscreenTimer::SetClockBeepCountdownSecs`,
+and five control-flow functions with branches/multiple RETs selected in the configuration.
 The next stages are cyclic control-flow (loops), switch/jump tables, a broader
 instruction backend, further ELF relocation support, guest-to-host ABI bridges
 and platform services. PT_LOAD/BSS data loading, explicit RELA RELATIVE and bounded internal-symbol
@@ -57,6 +61,8 @@ removal are now available; these do not authorize initialization or execution.
   including both taken and fallthrough branch paths, multiple RETs, and memory mutations.
 - `tools/verify_count_members.py`: fresh original signed-halfword/TBNZ/CMP/CINC
   AOT versus ARM64 and independent results, including NZCV and full sandbox bytes.
+- `tools/verify_clock_beep.py`: fresh conditional-store AOT versus ARM64 and independent expectations.
+- `docs/CLOCK_BEEP.md`: candidate matrix, exact B.NE subset and verification limits.
 - `docs/COUNT_MEMBERS.md`: exact instruction forms, runtime state layout,
   original-function corpus, coverage, results and limits.
 - `docs/ARCHITECTURE.md`: contracts, limits and platform boundaries.
@@ -91,6 +97,7 @@ uv run python tools/verify_integer.py
 uv run python tools/verify_memory.py
 uv run python tools/verify_control_flow.py
 uv run python tools/verify_count_members.py
+uv run python tools/verify_clock_beep.py
 ```
 
 `build/recomp_leaf_smoke` executes generated native functions. It checks 2,048
@@ -160,7 +167,7 @@ alignment checks disabled. Host bounds exceptions do not implement guest data
 aborts, permissions, tagged memory or MMIO. Passing these bounded corpora does
 not establish correctness for every machine state or make the game runnable.
 
-Intrafunction control flow (`control-flow-v1`) adds direct unconditional `b`,
+Historical intrafunction control flow (`control-flow-v1`) adds direct unconditional `b`,
 `cbz`, and `cbnz` for W and X registers, along with support for multiple `ret`
 instructions in a single function. Acyclic basic block CFGs are constructed by
 finding leaders at entry, branch targets, and instruction fallthroughs. The CFG
@@ -172,6 +179,8 @@ indirect branches (`br`), indirect returns (`ret xn` where `n != 30`), and
 flag-dependent branches (`b.cond`) are strictly rejected. Native C++ control flow
 is emitted as labeled blocks and `goto`/`if` statements; no runtime instruction
 dispatcher or interpreter is created.
+The later `integer-bne-v1` backend additionally accepts ordinary B.NE only;
+see [the exact subset and fresh original oracle](docs/CLOCK_BEEP.md).
 
 `verify_control_flow.py` validates five original control-flow leaves from `libGTASA.so`
 (`RxPipelineClusterGetCreationAttributes`, `RxPipelineClusterSetCreationAttributes`,
@@ -213,7 +222,7 @@ every import `unresolved`: no ABI/platform bridge is implemented, and the scan
 does not infer call targets or attribute imports to particular functions.
 Zero-sized symbols and code without function symbols are outside this scan.
 
-**Translatable means accepted by `integer-flags-v1`, not semantically verified.**
+**Translatable means accepted by the report's backend (`integer-bne-v1` currently), not semantically verified.**
 Every scan entry has `semantic_verification: not_verified`; scanning does not
 run or import differential-test results. Successful translation/build and symbol
 counts are not proof of correctness or game completion. The backend's FP/state

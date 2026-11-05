@@ -248,17 +248,16 @@ class ControlFlowRejectionTests(unittest.TestCase):
         code2 = pack_words(make_b(2), 0xD503201F) + RET
         self.assert_rejected(code2, 'unreachable')
 
-    def test_conditional_branches_requiring_nzcv_rejected(self):
-        # b.eq, b.ne, b.lt, b.gt
+    def test_conditional_branches_outside_ne_subset_rejected(self):
+        # B.NE is supported; other B.cond conditions remain outside this milestone.
         b_conds = [
             0x54000040,  # b.eq #+8
-            0x54000041,  # b.ne #+8
             0x5400004B,  # b.lt #+8
             0x5400004C,  # b.gt #+8
         ]
         for cond in b_conds:
             code = pack_words(cond) + RET
-            self.assert_rejected(code, 'requires NZCV')
+            self.assert_rejected(code)
 
     def test_subroutine_calls_and_indirect_branches_rejected(self):
         # BL #+4

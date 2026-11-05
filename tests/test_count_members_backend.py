@@ -223,7 +223,7 @@ class BackendRejectionTests(unittest.TestCase):
             'SUBS result': 0xEB020020, 'CMN': 0xAB02003F,
             'CSINC unequal': 0x9A820420, 'CSET': 0x1A9F07E0,
             'CSINC AL': 0x9A81E420, 'CSINV': 0xDA810020,
-            'B.cond': 0x54000020, 'TBZ': 0x36000020,
+            'B.EQ outside NE subset': 0x54000020, 'TBZ': 0x36000020,
             'BL': 0x94000001, 'BLR': 0xD63F0000,
             'reserved MOV N for W': 0x324003E0,
             'reserved MOV all ones': 0xB240FFE0,

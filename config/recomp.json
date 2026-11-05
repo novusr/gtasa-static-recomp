@@ -6,6 +6,12 @@
   "ghidra_image_base": 1048576,
   "functions": [
     {
+      "symbol": "_ZN14COnscreenTimer25SetClockBeepCountdownSecsEjj",
+      "output": "clock_beep_countdown",
+      "verification": "clock_beep",
+      "pointer_registers": [0]
+    },
+    {
       "symbol": "_ZN15CLoadedCarGroup12CountMembersEv",
       "output": "count_members",
       "verification": "count_members",

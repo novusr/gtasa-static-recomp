@@ -1,5 +1,9 @@
 # CountMembers AOT milestone
 
+Follow-up: [clock countdown](CLOCK_BEEP.md) adds B.NE in `integer-bne-v1`.
+The subset/rejection and scan descriptions below document `integer-flags-v1`;
+other B.cond conditions and calls remain rejected.
+
 `CLoadedCarGroup::CountMembers` (`_ZN15CLoadedCarGroup12CountMembersEv`) now
 lifts from the original hash-verified ELF and runs as native Linux x86_64 C++11.
 The isolated native runner agreed with original ARM64 execution in Unicorn and
