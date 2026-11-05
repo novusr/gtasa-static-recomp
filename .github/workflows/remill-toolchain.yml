@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 60
     env:
-      CI_WORK_ROOT: ${{ runner.temp }}/remill-proof
+      CI_WORK_ROOT: /tmp/remill-proof
       CI_PREFIX: /home/novusr/Documents/gtasa-static-recomp/generated/backend-proof/prefix-ci
     steps:
       - name: Checkout toolchain scripts only
@@ -50,7 +50,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: remill-llvm21-toolchain
-          path: ${{ runner.temp }}/remill-proof/artifacts/
+          path: /tmp/remill-proof/artifacts/
           if-no-files-found: error
           retention-days: 1
           compression-level: 0
@@ -59,6 +59,6 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: remill-llvm21-build-logs
-          path: ${{ runner.temp }}/remill-proof/logs/
+          path: /tmp/remill-proof/logs/
           if-no-files-found: warn
           retention-days: 1
