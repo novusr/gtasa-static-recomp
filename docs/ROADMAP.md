@@ -17,14 +17,19 @@
   generated memory interface, checked little-endian accesses at all four widths,
   native fault/bounds tests and register-plus-memory ARM64 differential tests
   for synthetic code and eight original leaves.
+- Intrafunction acyclic control flow (`control-flow-v1`): direct unconditional B,
+  W/X CBZ and CBNZ with width-accurate register reads, multiple RETs per function,
+  basic block formation and CFG validation (rejecting cycles, out-of-bounds/unaligned
+  targets, non-RET fallthrough, unreachable blocks, BL/BLR, BR and flag-dependent B.cond),
+  native C++ goto/if emission, and differential register/memory verification against
+  Unicorn for synthetic suites and five real GTA:SA functions.
 
 These milestones do not mean the game can start or that arbitrary ARM64 can run.
 
 ## Next: general instruction and control-flow backend
 
-- Select a production-capable lifting strategy (evaluate Remill rather than
-  expanding a small handwritten decoder without a validation strategy).
-- Recover CFGs, branch tables, indirect calls, tails, veneers and symbol-less code.
+- Support cyclic CFGs (loops: while, for, do-while) and loop termination analysis.
+- Support indirect branches, switch tables, jump tables, and tail calls.
 - Broaden the tested integer subset; implement/validate flags, NEON, full FP
   state, atomics and TLS.
 - Preserve guest register aliases and exception behavior.

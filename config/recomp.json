@@ -99,6 +99,46 @@
       "pointer_registers": [
         0
       ]
+    },
+    {
+      "symbol": "_Z38RxPipelineClusterGetCreationAttributesP17RxPipelineCluster",
+      "output": "cluster_get_attributes",
+      "verification": "control_flow",
+      "pointer_registers": [
+        0
+      ]
+    },
+    {
+      "symbol": "_Z38RxPipelineClusterSetCreationAttributesP17RxPipelineClusterj",
+      "output": "cluster_set_attributes",
+      "verification": "control_flow",
+      "pointer_registers": [
+        0
+      ]
+    },
+    {
+      "symbol": "_Z24SetPedAtomicVisibilityCBP8RwObjectPv",
+      "output": "ped_atomic_visibility",
+      "verification": "control_flow",
+      "pointer_registers": [
+        0
+      ]
+    },
+    {
+      "symbol": "_ZN11CAutomobile17ReduceHornCounterEv",
+      "output": "reduce_horn_counter",
+      "verification": "control_flow",
+      "pointer_registers": [
+        0
+      ]
+    },
+    {
+      "symbol": "_ZNK12CTaskManager13GetActiveTaskEv",
+      "output": "get_active_task",
+      "verification": "control_flow",
+      "pointer_registers": [
+        0
+      ]
     }
   ]
 }

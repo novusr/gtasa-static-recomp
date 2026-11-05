@@ -17,11 +17,46 @@ identifiers, not host addresses or permission to dereference a host pointer.
 
 ## Current supported subset
 
-The `scalar-leaf-v3` backend accepts straight-line functions ending with a single
-`ret` through x30. It retains the v1 instructions: `nop`, scalar `ldr`
-and `ldp` into S registers using X-register base plus constant offset without
-writeback/indexing, `fmul`, `fmadd` and `fnmsub` on S registers. Every instruction
-must decode and pass validation. Unsupported instructions fail the whole request.
+The `control-flow-v1` backend accepts acyclic control-flow functions ending with
+`ret` through x30 on all paths. It retains the v1 FP instructions (`nop`, scalar
+`ldr` and `ldp` into S registers using X-register base plus constant offset
+without writeback/indexing, `fmul`, `fmadd`, `fnmsub`) and v3 integer memory
+instructions (`ldr`, `str`, `ldrb`, `strb`, `ldrh`, `strh` unsigned scaled
+immediate). Every instruction must decode and pass validation. Unsupported
+instructions or malformed control flow fail the whole request.
+
+### Control flow subset (Phase 1: Acyclic CFG)
+
+The backend forms basic blocks and validates intrafunction control flow before
+emitting native C++:
+
+| Form | Semantics and width | Register 31 / Operands | Successors |
+| --- | --- | --- | --- |
+| Direct B (`b <target>`) | Unconditional intrafunction jump | None; signed imm26 (* 4) PC offset | Single target block |
+| CBZ (`cbz <Rt>, <target>`) | Jump if register is zero; W (32-bit) or X (64-bit) | Rt=31 denotes WZR/XZR (value 0, branch taken) | Fallthrough (PC+4), Target |
+| CBNZ (`cbnz <Rt>, <target>`) | Jump if register is nonzero; W (32-bit) or X (64-bit) | Rt=31 denotes WZR/XZR (value 0, branch not taken) | Fallthrough (PC+4), Target |
+| RET (`ret [x30]`) | Subroutine return | Only x30 is supported (register 30) | Terminal (none) |
+
+Validation rules enforced equally by `scan` and `lift`:
+1. **Target alignment and bounds**: Every branch target must be within `[fn_start, fn_end)`
+   and align exactly to a successfully decoded 4-byte instruction start.
+2. **Path termination**: Every path from the entry block must terminate with `ret`.
+   Fallthrough exiting the function boundary without `ret` is rejected.
+3. **Acyclic graph**: Directed cycle detection via DFS rejects loops and backward
+   cycles.
+4. **No dead/unreachable code**: Every basic block in the function must be reachable
+   from the entry point.
+5. **Rejected control flow**: Subroutine calls (`bl`, `blr`), indirect branches (`br`),
+   indirect returns (`ret xn` where `n != 30`), test-and-branch (`tbz`, `tbnz`), and
+   conditional branches requiring condition flags (`b.cond`: `b.eq`, `b.ne`, etc.)
+   are rejected. State has no NZCV flags.
+6. **Register width accuracy**: CBZ/CBNZ on W registers (`sf=0`) strictly evaluates
+   bits 31:0 (`static_cast<uint32_t>(state.x[rt])`), correctly ignoring any dirty
+   upper bits 63:32. X registers (`sf=1`) evaluate all 64 bits.
+
+Native C++ control flow is emitted directly using labeled blocks (`loc_<address>:`)
+and direct `goto loc_<target>;` or `if (<cond>) goto loc_<target>;` statements.
+No runtime interpreter loop, instruction dispatcher, or switch statement is created.
 
 The integer extension validates encoding fields rather than inferring SP/ZR
 semantics from disassembler text. The supported forms are:

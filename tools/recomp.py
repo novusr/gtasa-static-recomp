@@ -18,7 +18,7 @@ from elftools.elf.relocation import RelocationSection
 from elftools.common.exceptions import ELFError
 
 ROOT = Path(__file__).resolve().parents[1]
-BACKEND = 'scalar-leaf-v3'
+BACKEND = 'control-flow-v1'
 
 
 class RecompError(ValueError):
@@ -26,9 +26,10 @@ class RecompError(ValueError):
 
 
 class InstructionError(RecompError):
-    def __init__(self, kind, message):
+    def __init__(self, kind, message, insn=None):
         super().__init__(message)
         self.kind = kind
+        self.insn = insn
 
 
 class Image:
@@ -218,14 +219,133 @@ def integer_statement(insn):
     return [f'{destination} = {expression};']
 
 
-def translate_instruction(insn, index, count):
+def get_branch_target(insn):
+    word = int.from_bytes(insn.bytes, 'little')
+    if insn.mnemonic == 'b':
+        if word & 0xFC000000 != 0x14000000:
+            raise InstructionError('operand_form', 'unsupported unconditional branch encoding', insn)
+        imm26 = word & 0x03FFFFFF
+        offset = ((imm26 - (1 << 26)) << 2) if (imm26 & (1 << 25)) else (imm26 << 2)
+        return (insn.address + offset) & 0xFFFFFFFFFFFFFFFF
+    elif insn.mnemonic in ('cbz', 'cbnz'):
+        if word & 0x7E000000 != 0x34000000:
+            raise InstructionError('operand_form', 'unsupported compare-and-branch encoding', insn)
+        imm19 = (word >> 5) & 0x7FFFF
+        offset = ((imm19 - (1 << 19)) << 2) if (imm19 & (1 << 18)) else (imm19 << 2)
+        return (insn.address + offset) & 0xFFFFFFFFFFFFFFFF
+    raise InstructionError('control_flow', f'{insn.mnemonic} is not a supported branch', insn)
+
+
+def branch_statement(insn):
+    word = int.from_bytes(insn.bytes, 'little')
+    target = get_branch_target(insn)
+    if insn.mnemonic == 'b':
+        return [f'goto loc_{target:#x};']
+    sf = (word >> 31) & 1
+    rt = word & 31
+    if rt == 31:
+        val = 'UINT32_C(0)' if sf == 0 else 'UINT64_C(0)'
+    else:
+        val = f'static_cast<uint32_t>(state.x[{rt}])' if sf == 0 else f'state.x[{rt}]'
+    op = '==' if insn.mnemonic == 'cbz' else '!='
+    return [f'if ({val} {op} 0) goto loc_{target:#x};']
+
+
+def analyze_cfg(instructions, address, size):
+    fn_start = address
+    fn_end = address + size
+    insn_map = {insn.address: insn for insn in instructions}
+    valid_addrs = set(insn_map.keys())
+
+    branch_targets = set()
+    for insn in instructions:
+        if insn.mnemonic in ('b', 'cbz', 'cbnz'):
+            target = get_branch_target(insn)
+            if target < fn_start or target >= fn_end:
+                raise InstructionError('control_flow', f'branch target {target:#x} is outside function range [{fn_start:#x}, {fn_end:#x})', insn)
+            if target not in valid_addrs:
+                raise InstructionError('control_flow', f'branch target {target:#x} does not land on an instruction boundary', insn)
+            branch_targets.add(target)
+
+    leaders = {fn_start}
+    for insn in instructions:
+        if insn.mnemonic in ('b', 'cbz', 'cbnz'):
+            leaders.add(get_branch_target(insn))
+            if insn.address + 4 < fn_end:
+                leaders.add(insn.address + 4)
+        elif insn.mnemonic == 'ret':
+            if insn.address + 4 < fn_end:
+                leaders.add(insn.address + 4)
+
+    sorted_leaders = sorted(leaders)
+    blocks = {}
+    succs = {}
+
+    for idx, l_start in enumerate(sorted_leaders):
+        l_end = sorted_leaders[idx + 1] if idx + 1 < len(sorted_leaders) else fn_end
+        block_insns = [insn_map[a] for a in range(l_start, l_end, 4)]
+        blocks[l_start] = block_insns
+        last = block_insns[-1]
+
+        if last.mnemonic == 'ret':
+            succs[l_start] = []
+        elif last.mnemonic == 'b':
+            succs[l_start] = [get_branch_target(last)]
+        elif last.mnemonic in ('cbz', 'cbnz'):
+            fallthrough = last.address + 4
+            if fallthrough >= fn_end:
+                raise InstructionError('control_flow', f'block at {l_start:#x} falls through outside function', last)
+            succs[l_start] = [fallthrough, get_branch_target(last)]
+        else:
+            fallthrough = last.address + 4
+            if fallthrough >= fn_end:
+                raise InstructionError('control_flow', f'function at {last.address:#x} falls through outside function without RET', last)
+            succs[l_start] = [fallthrough]
+
+    visited = {}
+    def dfs(u):
+        visited[u] = 1
+        for v in succs[u]:
+            if visited.get(v, 0) == 1:
+                raise InstructionError('control_flow', f'control flow graph contains a cycle involving block {v:#x}', insn_map.get(v))
+            elif visited.get(v, 0) == 0:
+                dfs(v)
+        visited[u] = 2
+
+    dfs(fn_start)
+
+    unreachable = [l for l in sorted_leaders if visited.get(l, 0) == 0]
+    if unreachable:
+        raise InstructionError('control_flow', f'function contains unreachable basic block at {unreachable[0]:#x}', insn_map.get(unreachable[0]))
+
+    return {
+        'leaders': sorted_leaders,
+        'blocks': blocks,
+        'successors': succs,
+        'branch_targets': branch_targets
+    }
+
+
+def translate_instruction(insn, index=None, count=None):
+    del index, count
     mnemonic = insn.mnemonic
     if mnemonic == 'ret':
-        if index != count - 1 or insn.op_str not in ('', 'x30'):
-            raise InstructionError('control_flow', 'only a final RET through x30 is supported')
+        word = int.from_bytes(insn.bytes, 'little')
+        if word & 0xFFFFFC1F != 0xD65F0000 or ((word >> 5) & 31) != 30 or insn.op_str not in ('', 'x30'):
+            raise InstructionError('control_flow', 'only RET through x30 is supported', insn)
         emitted = ['return;']
     elif mnemonic == 'nop':
         emitted = []
+    elif mnemonic in ('b', 'cbz', 'cbnz'):
+        emitted = branch_statement(insn)
+    elif mnemonic.startswith('b.'):
+        raise InstructionError('control_flow', f'conditional branch {mnemonic} requires NZCV flags which are not modeled', insn)
+    elif mnemonic in ('bl', 'blr'):
+        raise InstructionError('control_flow', f'subroutine call {mnemonic} is not supported in leaf functions', insn)
+    elif mnemonic == 'br':
+        raise InstructionError('control_flow', 'indirect branch BR is not supported', insn)
+    elif mnemonic in ('tbz', 'tbnz'):
+        raise InstructionError('control_flow', f'test and branch {mnemonic} is not supported', insn)
     elif mnemonic == 'ldp' or (mnemonic == 'ldr' and int.from_bytes(insn.bytes, 'little') & (1 << 26)):
         emitted = load_statement(insn)
     elif mnemonic in ('ldr', 'str', 'ldrb', 'strb', 'ldrh', 'strh'):
@@ -246,7 +366,7 @@ def translate_instruction(insn, index, count):
             expression = f'{helper}(state.s[{a}], state.s[{b}], state.s[{c}])'
         emitted = [f'state.s[{dst}] = {expression};']
     else:
-        raise InstructionError('unsupported_instruction', f'unsupported instruction {mnemonic}')
+        raise InstructionError('unsupported_instruction', f'unsupported instruction {mnemonic}', insn)
     return emitted
 
 
@@ -258,14 +378,16 @@ def lift_body(code, address):
     instructions = list(decoder.disasm(code, address))
     if sum(i.size for i in instructions) != len(code):
         raise RecompError('instruction decoding did not cover the complete function')
-    if instructions[-1].mnemonic != 'ret':
-        raise RecompError('leaf function must end with RET')
+    cfg = analyze_cfg(instructions, address, len(code))
+    branch_targets = cfg['branch_targets']
     lines = []
     opcodes = Counter()
     for index, insn in enumerate(instructions):
         try:
             mnemonic = insn.mnemonic
             opcodes[mnemonic] += 1
+            if insn.address in branch_targets:
+                lines.append(f'loc_{insn.address:#x}:')
             lines.append(f'    // Guest {insn.address:#x}: {mnemonic} {insn.op_str}')
             emitted = translate_instruction(insn, index, len(instructions))
             lines += ['    ' + line for line in emitted]
@@ -321,13 +443,15 @@ def scan_body(code, address):
     # AArch64 skipdata advances one 4-byte word, without treating it as executable.
     decoder.skipdata = True
     covered = 0
-    last = None
+    instructions = []
+    has_decode_error = False
     for index, insn in enumerate(decoder.disasm(code, address)):
         covered += insn.size
-        last = insn
         if insn.id == 0:
             record('decode', 'undecodable instruction bytes', insn)
+            has_decode_error = True
             continue
+        instructions.append(insn)
         opcodes[insn.mnemonic] += 1
         try:
             translate_instruction(insn, index, len(code) // 4)
@@ -335,8 +459,19 @@ def scan_body(code, address):
             record(getattr(exc, 'kind', 'operand_form'), str(exc), insn)
     if covered != len(code):
         record('decode', 'instruction decoding did not cover the complete function')
-    if last is None or last.mnemonic != 'ret':
-        record('control_flow', 'leaf function must end with RET')
+        has_decode_error = True
+
+    if not has_decode_error and len(instructions) == len(code) // 4 and len(instructions) > 0:
+        try:
+            analyze_cfg(instructions, address, len(code))
+        except InstructionError as exc:
+            record(exc.kind, str(exc), exc.insn)
+        except RecompError as exc:
+            record('control_flow', str(exc))
+    elif not instructions or instructions[-1].mnemonic != 'ret':
+        if not any(b[0] == 'control_flow' for b in blockers):
+            record('control_flow', 'all execution paths must terminate with RET')
+
     return {'opcodes': dict(opcodes), 'decoded_instruction_count': sum(opcodes.values()),
             'blockers': list(blockers.values())}
 

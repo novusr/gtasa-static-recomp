@@ -5,27 +5,30 @@ This branch translates selected instructions from the Android ARM64
 It replaces the byte-matching workflow on `main`; it does not require manually
 reconstructing every function before executing translated code.
 
-**Current state: a tested leaf-function prototype, not a playable GTA executable.**
+**Current state: a tested leaf-function and intrafunction control-flow prototype, not a playable GTA executable.**
 The supported subset recompiles the original `CrossProduct`, `Multiply3x3`,
-five register-only integer leaves and eight integer-memory leaves selected in
-the configuration. The next stages are control-flow recovery, a broader instruction
-backend, ELF relocation/loading, guest-to-host ABI bridges and platform services.
+five register-only integer leaves, eight integer-memory leaves, and five
+control-flow functions with branches/multiple RETs selected in the configuration.
+The next stages are cyclic control-flow (loops), switch/jump tables, a broader
+instruction backend, ELF relocation/loading, guest-to-host ABI bridges and platform services.
 
 ## What is here
 
 - `tools/recomp.py`: SHA-256 validation, ELF64 inventory, backend capability scan
-  and strict leaf lifting.
+  and strict AOT lifting with basic block formation and CFG validation.
 - `config/recomp.json`: exact input identity, target and selected symbols.
 - `include/recomp/runtime.h`, `src/runtime.cpp`: explicit guest register state,
   checked little-endian guest memory and scalar FP operations.
 - `CMakeLists.txt`: host C++11 build, independent of the Android NDK.
-- `tests/`: synthetic ELF/lifter checks and a native semantic smoke executable.
+- `tests/`: synthetic ELF/lifter checks, control-flow semantics and native smoke tests.
 - `tools/verify_leaf.py`: differential comparison with original ARM64 instructions
   using Unicorn as a test oracle. Unicorn is not used by the host runtime.
 - `tools/verify_integer.py`: fresh C++11 native runner versus original integer
   leaves, with boundary/random register inputs and an evidence report.
 - `tools/verify_memory.py`: compares integer-memory leaves against ARM64,
   including all represented registers and every byte of the guest sandbox.
+- `tools/verify_control_flow.py`: compares control-flow leaves with Unicorn ARM64,
+  including both taken and fallthrough branch paths, multiple RETs, and memory mutations.
 - `docs/ARCHITECTURE.md`: contracts, limits and platform boundaries.
 - `docs/ROADMAP.md`: remaining work towards a game executable.
 
@@ -54,6 +57,7 @@ uv run python -m unittest discover -s tests -p 'test_*.py'
 uv run python tools/verify_leaf.py
 uv run python tools/verify_integer.py
 uv run python tools/verify_memory.py
+uv run python tools/verify_control_flow.py
 ```
 
 `build/recomp_leaf_smoke` executes generated native functions. It checks 2,048
@@ -122,6 +126,26 @@ alignment checks disabled. Host bounds exceptions do not implement guest data
 aborts, permissions, tagged memory or MMIO. Passing these bounded corpora does
 not establish correctness for every machine state or make the game runnable.
 
+Intrafunction control flow (`control-flow-v1`) adds direct unconditional `b`,
+`cbz`, and `cbnz` for W and X registers, along with support for multiple `ret`
+instructions in a single function. Acyclic basic block CFGs are constructed by
+finding leaders at entry, branch targets, and instruction fallthroughs. The CFG
+validator enforces that all branch targets lie within the function bounds and
+land on 4-byte decoded instruction boundaries, that all execution paths terminate
+with `ret`, and that no block falls through outside the function. Cycles (loops),
+out-of-bounds branches, unreachable dead blocks, subroutine calls (`bl`, `blr`),
+indirect branches (`br`), indirect returns (`ret xn` where `n != 30`), and
+flag-dependent branches (`b.cond`) are strictly rejected. Native C++ control flow
+is emitted as labeled blocks and `goto`/`if` statements; no runtime instruction
+dispatcher or interpreter is created.
+
+`verify_control_flow.py` validates five original control-flow leaves from `libGTASA.so`
+(`RxPipelineClusterGetCreationAttributes`, `RxPipelineClusterSetCreationAttributes`,
+`SetPedAtomicVisibilityCB`, `CAutomobile::ReduceHornCounter`, and
+`CTaskManager::GetActiveTask`) across 760 differential trials against Unicorn ARM64,
+verifying both taken and fallthrough branches, multiple RET exits, register state,
+and guest memory modifications. Evidence is recorded in `generated/control-flow-verification.json`.
+
 Unsupported instructions, incomplete decoding, unsafe load forms and code
 relocations are rejected before translation output is written. A failed lift
 returns nonzero; any previous generated files still describe the earlier input.
@@ -155,7 +179,7 @@ every import `unresolved`: no ABI/platform bridge is implemented, and the scan
 does not infer call targets or attribute imports to particular functions.
 Zero-sized symbols and code without function symbols are outside this scan.
 
-**Translatable means accepted by `scalar-leaf-v3`, not semantically verified.**
+**Translatable means accepted by `control-flow-v1`, not semantically verified.**
 Every scan entry has `semantic_verification: not_verified`; scanning does not
 run or import differential-test results. Successful translation/build and symbol
 counts are not proof of correctness or game completion. The backend's FP/state

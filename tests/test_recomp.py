@@ -81,9 +81,27 @@ class LifterTests(unittest.TestCase):
         self.assertIn('return;', body)
         self.assertEqual(count, {'ret': 1})
 
+    def test_direct_branch_is_accepted(self):
+        body, count = recomp.lift_body(bytes.fromhex('01000014c0035fd6'), 0x8000)
+        self.assertIn('goto loc_0x8004;', body)
+        self.assertEqual(count, {'b': 1, 'ret': 1})
+
     def test_unsupported_branch_is_rejected(self):
-        with self.assertRaisesRegex(recomp.RecompError, 'unsupported instruction b'):
-            recomp.lift_body(bytes.fromhex('01000014c0035fd6'), 0x8000)
+        # b.eq requires NZCV
+        with self.assertRaisesRegex(recomp.RecompError, 'requires NZCV'):
+            recomp.lift_body(bytes.fromhex('40000054c0035fd6'), 0x8000)
+        # bl subroutine call
+        with self.assertRaisesRegex(recomp.RecompError, 'subroutine call'):
+            recomp.lift_body(bytes.fromhex('01000094c0035fd6'), 0x8000)
+        # br indirect branch
+        with self.assertRaisesRegex(recomp.RecompError, 'indirect branch'):
+            recomp.lift_body(bytes.fromhex('00001fd6c0035fd6'), 0x8000)
+        # branch out of range
+        with self.assertRaisesRegex(recomp.RecompError, 'outside function range'):
+            recomp.lift_body(bytes.fromhex('02000014c0035fd6'), 0x8000)
+        # cycle
+        with self.assertRaisesRegex(recomp.RecompError, 'cycle'):
+            recomp.lift_body(bytes.fromhex('00000014c0035fd6'), 0x8000)
 
     def test_no_early_or_alternative_return(self):
         for code in ('c0035fd6c0035fd6', '00005fd6'):
@@ -233,8 +251,8 @@ class ScanTests(unittest.TestCase):
                     self.assertEqual(not report['blockers'], accepted)
 
     def test_scan_collects_multiple_failures_and_resumes_after_decode_gap(self):
-        # B; undecodable word; indexed load; post-indexed load; SP load; FMUL D; RET.
-        code = bytes.fromhex('01000014ffffffff006861bc001440bce00340bd0008601ec0035fd6')
+        # MUL; undecodable word; indexed load; post-indexed load; SP load; FMUL D; RET.
+        code = bytes.fromhex('007c019bffffffff006861bc001440bce00340bd0008601ec0035fd6')
         report = recomp.scan_body(code, 0x8000)
         kinds = Counter(b['kind'] for b in report['blockers'])
         self.assertEqual(kinds, {'unsupported_instruction': 1, 'decode': 1,
@@ -258,7 +276,7 @@ class ScanTests(unittest.TestCase):
             def read(self, address, size, executable=False):
                 if address == 0xA000:
                     raise recomp.RecompError('not file-backed')
-                return bytes.fromhex('01000014c0035fd6' if size == 8 else 'c0035fd6')
+                return bytes.fromhex('007c019bc0035fd6' if size == 8 else 'c0035fd6')
 
         report = recomp.scan(ScanImage())
         self.assertEqual(report['summary']['symbol_status_counts'], {'blocked': 4})
@@ -273,7 +291,7 @@ class ScanTests(unittest.TestCase):
         self.assertEqual(report['imports'], [{'symbol': 'service', 'status': 'unresolved'}])
 
     def test_repeated_blockers_have_bounded_examples_and_complete_counts(self):
-        report = recomp.scan_body(bytes.fromhex('01000014') * 20 + bytes.fromhex('c0035fd6'), 0)
+        report = recomp.scan_body(bytes.fromhex('007c019b') * 20 + bytes.fromhex('c0035fd6'), 0)
         blocker, = report['blockers']
         self.assertEqual(blocker['count'], 20)
         self.assertEqual(len(blocker['examples']), 3)
