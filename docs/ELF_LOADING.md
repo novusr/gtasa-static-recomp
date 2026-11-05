@@ -478,3 +478,26 @@ GTASA data-only smoke/audit preserves 5,252 applied RELATIVE, 21,458 unresolved
 (21,072 preemptible / 386 undefined), 274 unresolved imports, sealed RELRO and
 false readiness. Next implement the pure RELR decoder, before any inventory
 integration or additional fixup work.
+
+## Standalone RELR decoder follow-up, 2026-11-06
+
+[Pure RELR decoding](RELR.md) now supports ELF64 little-endian Android and
+standard payloads in a separate C++11 library. Stream-order target records retain
+implicit-addend and word/bit provenance; aligned unique-target policy, expansion
+and temporary validation storage limits, and atomic failure are tested. No ELF
+loader, audit, planner, rejection guard or application behavior changed.
+
+All eleven device pins were rechecked unchanged: libc remains accepted and the
+ten packed inputs remain rejected. Separate ignored pure decoding matched 3,684
+RELR targets in nine streams; this is diagnostic evidence, not successful audit
+acceptance. The fresh original three-file audit is structurally identical to its
+historical report: GTASA retains 5,252 RELATIVE applied; 21,458 unresolved
+(21,072 preemptible / 386 undefined); 274 unresolved imports; RELRO sealed;
+readiness false. Three selected data-only CTests and 78 Python data-only methods
+passed, including unchanged APS2 tests; RELR also passed UBSan. No guest code or
+device operation ran. See the decoder document for exact scope and limits.
+
+Next propose APS2 + RELR inventory-only integration for separate review, including
+structural binding and cumulative per-object budgets, without application.
+Original-dependency resolution, scope/version policy and platform work remain
+unchanged. No commit or push was made.

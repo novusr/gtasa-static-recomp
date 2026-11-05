@@ -27,6 +27,13 @@ add_executable(recomp_aps2_rela_test tests/aps2_rela_test.cpp)
 target_link_libraries(recomp_aps2_rela_test PRIVATE recomp_aps2_rela)
 target_compile_options(recomp_aps2_rela_test PRIVATE -Wall -Wextra -Wpedantic -Werror)
 
+add_library(recomp_relr STATIC src/relr.cpp)
+target_include_directories(recomp_relr PUBLIC include)
+target_compile_options(recomp_relr PRIVATE -Wall -Wextra -Wpedantic -Werror)
+add_executable(recomp_relr_test tests/relr_test.cpp)
+target_link_libraries(recomp_relr_test PRIVATE recomp_relr)
+target_compile_options(recomp_relr_test PRIVATE -Wall -Wextra -Wpedantic -Werror)
+
 add_library(recomp_lifted STATIC "${RECOMP_GENERATED_DIR}/lifted.cpp")
 target_include_directories(recomp_lifted PUBLIC "${RECOMP_GENERATED_DIR}")
 target_link_libraries(recomp_lifted PUBLIC recomp_runtime)
@@ -50,6 +57,7 @@ target_compile_options(recomp_image_smoke PRIVATE -Wall -Wextra -Wpedantic -Werr
 
 include(CTest)
 if(BUILD_TESTING)
+    add_test(NAME relr_data_only COMMAND recomp_relr_test)
     add_test(NAME aps2_rela_data_only COMMAND recomp_aps2_rela_test)
     find_package(Python3 REQUIRED COMPONENTS Interpreter)
     add_test(NAME original_image_load COMMAND "${Python3_EXECUTABLE}"

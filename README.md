@@ -34,6 +34,9 @@ removal are now available; these do not authorize initialization or execution.
 - `include/recomp/aps2_rela.h`, `src/aps2_rela.cpp`: standalone bounded APS2
   RELA byte decoder with atomic results and decoding provenance; no loader/audit
   format acceptance or fixup support. See [APS2_RELA.md](docs/APS2_RELA.md).
+- `include/recomp/relr.h`, `src/relr.cpp`: standalone ELF64 little-endian RELR
+  decoder with explicit Android/standard provenance, bounded expansion and atomic
+  results; no loader/audit acceptance or application. See [RELR.md](docs/RELR.md).
 - `CMakeLists.txt`: host C++11 build, independent of the Android NDK.
 - `tests/`: synthetic ELF/lifter checks, control-flow semantics and native smoke tests.
 - `tools/verify_leaf.py`: differential comparison with original ARM64 instructions

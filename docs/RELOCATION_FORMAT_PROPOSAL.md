@@ -338,3 +338,22 @@ exact-consumption profile. Nonnegative initial offset and nonwrapping offset/
 addend arithmetic are conservative limits rather than Bionic modular behavior.
 The prior diagnosis and its local script remain historical evidence, not the
 production decoder. See APS2_RELA.md for the implemented API and checks.
+
+## Contract review for the pure RELR implementation, 2026-11-06
+
+Review starts from clean HEAD `f335573`. The Generic ABI section 6.2 and
+Bionic android-16.0.0_r1 `relocate_relr` and elf.h linked above were retrieved
+again. Address/bitmap semantics agree, including advancing 504 bytes for word
+1 and consecutive bitmaps. Bionic confirms Android and standard encodings differ
+only in constants. Bionic's unchecked modular cursor arithmetic is intentionally
+excluded: this decoder rejects every cursor/target overflow, even after the last
+word. Bitmap-before-anchor rejects as required by the ABI sequence.
+
+Clarification of the earlier contract: the pure decoder accepts a caller-selected
+encoding identity, not ELF sections/tags or an entry-size parameter. Eight-byte
+alignment and duplicate/overlapping slots are conservative per-stream policy,
+not general Generic ABI restrictions. Aligned eight-byte slots can overlap only
+by having equal starts; a sorted temporary address vector detects this without
+changing stream order. Its complete storage is included in the per-call budget.
+Biased addresses, mapped extents, permissions, symbols, cross-table overlap and
+aggregate per-object budgets belong to later integration. See [RELR.md](RELR.md).
