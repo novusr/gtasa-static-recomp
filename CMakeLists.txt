@@ -26,7 +26,12 @@ add_executable(recomp_leaf_smoke tests/leaf_smoke.cpp)
 target_link_libraries(recomp_leaf_smoke PRIVATE recomp_lifted)
 target_compile_options(recomp_leaf_smoke PRIVATE -Wall -Wextra -Wpedantic -Werror -ffp-contract=off -fno-fast-math)
 
+add_executable(recomp_memory_smoke tests/memory_smoke.cpp)
+target_link_libraries(recomp_memory_smoke PRIVATE recomp_runtime)
+target_compile_options(recomp_memory_smoke PRIVATE -Wall -Wextra -Wpedantic -Werror)
+
 include(CTest)
 if(BUILD_TESTING)
     add_test(NAME lifted_leaf_semantics COMMAND recomp_leaf_smoke)
+    add_test(NAME guest_memory_accesses COMMAND recomp_memory_smoke)
 endif()

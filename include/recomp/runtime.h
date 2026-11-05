@@ -25,10 +25,18 @@ static_assert(sizeof(float) == 4 && std::numeric_limits<float>::is_iec559,
 class Memory {
 public:
     Memory(uint64_t base, std::size_t size);
+    uint8_t load8(uint64_t address) const;
+    uint16_t load16(uint64_t address) const;
     uint32_t load32(uint64_t address) const;
+    uint64_t load64(uint64_t address) const;
+    void store8(uint64_t address, uint8_t value);
+    void store16(uint64_t address, uint16_t value);
     void store32(uint64_t address, uint32_t value);
+    void store64(uint64_t address, uint64_t value);
 private:
-    std::size_t offset(uint64_t address) const;
+    std::size_t offset(uint64_t address, std::size_t size) const;
+    uint64_t load(uint64_t address, std::size_t size) const;
+    void store(uint64_t address, uint64_t value, std::size_t size);
     uint64_t base_;
     std::vector<uint8_t> bytes_;
 };

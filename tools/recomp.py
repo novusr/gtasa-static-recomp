@@ -18,7 +18,7 @@ from elftools.elf.relocation import RelocationSection
 from elftools.common.exceptions import ELFError
 
 ROOT = Path(__file__).resolve().parents[1]
-BACKEND = 'scalar-leaf-v2'
+BACKEND = 'scalar-leaf-v3'
 
 
 class RecompError(ValueError):
@@ -140,6 +140,31 @@ def load_statement(insn):
             for i, r in enumerate(registers)]
 
 
+def integer_memory_statement(insn):
+    """Integer unsigned imm12 scaled offset only; no writeback or register index."""
+    word = int.from_bytes(insn.bytes, 'little')
+    if word & (1 << 26):
+        raise InstructionError('operand_form', 'only integer W/X transfers are supported')
+    if word & 0x3F000000 != 0x39000000:
+        raise InstructionError('addressing_mode', 'integer memory requires unsigned scaled immediate without writeback')
+    size, opc = (word >> 30) & 3, (word >> 22) & 3
+    if opc not in (0, 1):
+        raise InstructionError('operand_form', 'only zero-extending integer loads and plain stores are supported')
+    rt, rn = word & 31, (word >> 5) & 31
+    bits = 8 << size
+    displacement = ((word >> 10) & 0xFFF) << size
+    base = 'state.sp' if rn == 31 else f'state.x[{rn}]'
+    # Unsigned guest address arithmetic wraps modulo 2^64. Memory validates
+    # the resulting entire access; an access crossing UINT64_MAX never wraps.
+    address = f'({base} + UINT64_C({displacement}))'
+    if opc == 1:
+        value = f'memory.load{bits}({address})'
+        # Even a discarded load must perform bounds validation and may trap.
+        return [f'(void){value};' if rt == 31 else f'state.x[{rt}] = {value};']
+    value = 'UINT64_C(0)' if rt == 31 else f'state.x[{rt}]'
+    return [f'memory.store{bits}({address}, static_cast<uint{bits}_t>({value}));']
+
+
 def integer_statement(insn):
     """Validate encoding classes, so register 31 means SP or ZR unambiguously.
 
@@ -201,8 +226,10 @@ def translate_instruction(insn, index, count):
         emitted = ['return;']
     elif mnemonic == 'nop':
         emitted = []
-    elif mnemonic in ('ldr', 'ldp'):
+    elif mnemonic == 'ldp' or (mnemonic == 'ldr' and int.from_bytes(insn.bytes, 'little') & (1 << 26)):
         emitted = load_statement(insn)
+    elif mnemonic in ('ldr', 'str', 'ldrb', 'strb', 'ldrh', 'strh'):
+        emitted = integer_memory_statement(insn)
     elif mnemonic in ('mov', 'movz', 'movn', 'add', 'sub', 'neg'):
         emitted = integer_statement(insn)
     elif mnemonic in ('fmul', 'fmadd', 'fnmsub'):
@@ -365,7 +392,7 @@ def write_lift(out, results, digest):
     declarations = ['#pragma once', '#include "recomp/runtime.h"', 'namespace recomp {']
     implementation = ['#include "lifted.h"', 'namespace recomp {']
     for fn in results:
-        declaration = f'void {fn["output"]}(State& state, const Memory& memory)'
+        declaration = f'void {fn["output"]}(State& state, Memory& memory)'
         declarations.append(declaration + ';')
         implementation += [declaration + ' {', '    (void)state;', '    (void)memory;', fn['body'], '}']
     declarations.append('}')

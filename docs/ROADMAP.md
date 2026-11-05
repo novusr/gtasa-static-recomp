@@ -13,6 +13,10 @@
 - W/X MOV and non-flag-setting ADD/SUB subset, with explicit SP/ZR semantics,
   modular arithmetic, native/Unicorn synthetic tests and five original integer
   leaves compared against ARM64 execution.
+- Unsigned-immediate W/X and byte/halfword integer load/store subset, mutable
+  generated memory interface, checked little-endian accesses at all four widths,
+  native fault/bounds tests and register-plus-memory ARM64 differential tests
+  for synthetic code and eight original leaves.
 
 These milestones do not mean the game can start or that arbitrary ARM64 can run.
 

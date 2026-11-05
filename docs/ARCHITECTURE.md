@@ -17,7 +17,7 @@ identifiers, not host addresses or permission to dereference a host pointer.
 
 ## Current supported subset
 
-The `scalar-leaf-v2` backend accepts straight-line functions ending with a single
+The `scalar-leaf-v3` backend accepts straight-line functions ending with a single
 `ret` through x30. It retains the v1 instructions: `nop`, scalar `ldr`
 and `ldp` into S registers using X-register base plus constant offset without
 writeback/indexing, `fmul`, `fmadd` and `fnmsub` on S registers. Every instruction
@@ -47,8 +47,51 @@ integer oracle reports only the tested input corpus and exact original ranges;
 the synthetic suite also compares against explicit arithmetic expectations.
 It checks all x[], SP, low S[] and preservation of guest NZCV; it does not model
 additional architectural state or prove all possible inputs. The original
-integer selections currently contain MOV and ADD, while SUB is tested with
-synthetic encodings. See README for reproducible commands and corpus sizes.
+register-only selections contain MOV and ADD; SUB is tested with synthetic
+encodings and original `ShaderSort` in the memory oracle below. See README for
+reproducible commands and corpus sizes.
+
+### Integer memory subset
+
+V3 adds integer LDR/STR W/X, LDRB/STRB and LDRH/STRH in the unsigned scaled
+immediate encoding only: `Rt, [Xn|SP, #imm12 * access_size]`, no writeback.
+The encoding's V bit must be zero and opc must specify a plain store or
+zero-extending load. Rn=31 means SP; Rt=31 means ZR, never SP. Loads into W,
+including byte/halfword loads, zero-extend into the stored 64-bit X register.
+Stores write only the low 8/16/32/64 source bits. A load to ZR discards the
+value but still performs the checked access. Non-writeback Rn/Rt aliases are
+valid: the address uses the old base before a load assigns its destination.
+
+Literal, register-offset, LDUR/STUR (including signed immediates), pre/post-index,
+sign-extending loads, integer pairs, exclusive/acquire/release and SIMD memory
+forms remain unsupported. Existing scalar S-register FP LDR/LDP support remains
+unchanged. The instruction emitter used by both scan and lift enforces these
+boundaries before publishing translation output.
+
+Generated declarations and definitions use `void fn(State&, Memory&)`. Integer
+and FP readers still work with the same interface; stores mutate the checked
+guest sandbox. `Memory` has unsigned load/store8/16/32/64 methods, reconstructs
+values little-endian and checks the entire width before any byte access.
+No wide host dereference, guest-pointer cast or unchecked fast path is used.
+Failed individual stores leave all bytes untouched; failed loads leave their
+destination unchanged. This does not roll back earlier successful instructions.
+
+Effective addresses wrap modulo 2^64 during unsigned base-plus-offset arithmetic.
+The subsequent access may not cross UINT64_MAX or a sandbox boundary. Range
+checks use subtraction, so even an 8-byte access ending at UINT64_MAX can be
+represented without overflowing an exclusive-end calculation. Unaligned normal
+memory is supported, assuming alignment/SP-alignment checking disabled; memory
+permissions, devices, tags, guest data aborts and exception delivery are not
+modeled. A host bounds exception is a runtime rejection, not an emulated abort.
+
+The native memory smoke test covers all widths, small/empty buffers, every
+alignment, high addresses, unchanged bytes after failed stores and bytewise
+endian expectations. Synthetic differential tests compare explicit expected
+registers and memory with native C++11 and Unicorn; separate compiled generated
+fault tests check atomic failure of loads/stores including ZR and base aliases.
+The original-memory oracle uses hash-validated code and explicit test pointer
+arguments, compares all x[], SP, low S[], complete sandbox bytes and preservation
+of NZCV. Its evidence report is separate from scan's `not_verified` status.
 
 `fmul` rounds separately. Fused operations use binary32 `std::fma`; `fnmsub`
 computes the product minus the addend. Native compilation disables implicit FP
@@ -118,5 +161,6 @@ References:
 - Capstone operand API: https://www.capstone-engine.org/lang_python
 - Arm A64 instruction reference (MOV SP alias of ADD immediate): https://support.arm.com/documentation/ddi0602/2025-03/Base-Instructions/MOV--to-from-SP---Move-register-value-to-or-from-SP--an-alias-of-ADD--immediate--
 - Arm instruction set reference guide (ADD/SUB and MOV encodings): https://documentation-service.arm.com/static/6245c734b059dc5ff9a8bdab
+- Arm A64 LDR immediate addressing and scaling: https://support.arm.com/documentation/100069/0608/A64-Data-Transfer-Instructions/LDR--immediate-
 - Remill: https://github.com/lifting-bits/remill
 - Unicorn test oracle: https://www.unicorn-engine.org/

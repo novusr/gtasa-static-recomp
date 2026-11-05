@@ -32,6 +32,73 @@
     {
       "symbol": "_ZN7CCamera18GetGameCamPositionEv",
       "output": "camera_position"
+    },
+    {
+      "symbol": "_Z16_rwCPUGetCPUNamePc",
+      "output": "cpu_name",
+      "verification": "memory",
+      "pointer_registers": [
+        0
+      ]
+    },
+    {
+      "symbol": "_Z15emu_ArraysGetIDy",
+      "output": "arrays_get_id",
+      "verification": "memory",
+      "pointer_registers": [
+        0
+      ]
+    },
+    {
+      "symbol": "_Z10ShaderSortPKvS0_",
+      "output": "shader_sort",
+      "verification": "memory",
+      "pointer_registers": [
+        0,
+        1
+      ]
+    },
+    {
+      "symbol": "_Z16RpMTEffectAddRefP10RpMTEffect",
+      "output": "effect_add_ref",
+      "verification": "memory",
+      "pointer_registers": [
+        0
+      ]
+    },
+    {
+      "symbol": "_Z17RwRasterGetOffsetP8RwRasterPsS1_",
+      "output": "raster_offsets",
+      "verification": "memory",
+      "pointer_registers": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "symbol": "_Z18RxClusterSetStrideP9RxClusteri",
+      "output": "cluster_stride",
+      "verification": "memory",
+      "pointer_registers": [
+        0
+      ]
+    },
+    {
+      "symbol": "_Z26RtDictSchemaSetCurrentDictP12RtDictSchemaP6RtDict",
+      "output": "schema_set_dict",
+      "verification": "memory",
+      "pointer_registers": [
+        0
+      ]
+    },
+    {
+      "symbol": "_ZN10FlowScreen13IsPauseScreenEv",
+      "output": "is_pause_screen",
+      "verification": "memory",
+      "pointer_registers": [
+        0
+      ]
     }
   ]
 }
