@@ -128,3 +128,15 @@ captures, followed only by read-only validation of explicitly authorized inputs.
 
 Original textures, maps, models, scripts and audio remain separate local inputs.
 No assets or original game executables belong in Git.
+
+## Device format proposal, 2026-11-06
+
+The later connected-device capture supplies candidates for all 11 requested
+names; it supersedes the earlier pending-acquisition status for those candidates,
+not unknown game-process associations. libc passes existing validators, while
+ten files remain rejected. The [format proposal](RELOCATION_FORMAT_PROPOSAL.md)
+finds APS2 RELA in all ten and Android-numbered RELR in nine. The next bounded
+format implementation is pure decoding followed by a separately identified
+inventory-only path with atomic failure and synthetic rejection tests. This
+proposal implements no decoder or fixup and expands no scope/version policy.
+Original dependency resolution, initialization and platform work remain pending.

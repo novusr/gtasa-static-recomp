@@ -265,3 +265,8 @@ file/build evidence from external process captures. The local worksheet is
 `generated/dependency-platform-evidence-template.json`, not an audit manifest.
 Rechecking the three inputs against unchanged old pins preserves the baseline;
 further auditing awaits explicitly supplied and authorized inputs.
+
+The [device relocation diagnosis and proposal](docs/RELOCATION_FORMAT_PROPOSAL.md)
+identifies APS2 RELA in all ten rejected device candidates and Android-numbered
+RELR in nine, including empty unreferenced APS2 sections. It proposes bounded
+decoding and inventory only; existing validators and fixup support are unchanged.

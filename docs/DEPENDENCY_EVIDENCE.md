@@ -484,3 +484,17 @@ unresolved, non-executable state. Ignore coverage and `git diff --check` passed.
 No tracked source changed, so build/full CTest/Python and separate semantic
 commands were not rerun; their prior results remain historical. No commit or
 push was made for this capture.
+
+## Read-only relocation diagnosis and proposal, 2026-11-06
+
+The [format diagnosis](RELOCATION_FORMAT_PROPOSAL.md) rechecks all 11 acquisition
+pins without refreshing identities and reproduces all ten native section
+rejections. All ten contain SHT_ANDROID_RELA/APS2, four with zero entries and no
+packed dynamic tags; nine additionally contain Android-numbered RELR. libdl has
+only an empty APS2 section and no RELR. Official Android 16 source revisions,
+per-file table evidence and a staged decoder/inventory proposal are recorded
+there. No acceptance rule, fixup, dependency association or scope/version policy
+changed; rejected files remain unsupported. The separate original three-file
+audit is structurally identical to the historical report and preserves the
+complete GTASA baseline. Existing acquisition notes and ignored records remain
+intact; no device operation, guest execution, commit or push occurred.

@@ -457,3 +457,12 @@ sealing. Missing dependencies are successful inventory data; any supplied-file
 hash/native/metadata or manifest validation failure prevents publication.
 See [DEPENDENCY_EVIDENCE.md](DEPENDENCY_EVIDENCE.md) for explicit associations,
 platform evidence envelopes and the unchanged original-input baseline.
+
+## Proposed device format inventory, 2026-11-06
+
+The [read-only diagnosis and implementation proposal](RELOCATION_FORMAT_PROPOSAL.md)
+records the exact APS2/Android RELR sections and dynamic tags in ten rejected
+device files, including four empty APS2 streams. Current section/dynamic rejection
+and all application APIs remain unchanged. Future pure decoding and inventory
+need separate provenance, bounds, expansion limits and atomic publication tests;
+normalized RELA fields must not silently authorize application of packed entries.

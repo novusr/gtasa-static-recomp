@@ -211,3 +211,8 @@ device candidates, while original dependency associations remain unknown.
 The earlier matrix and empty worksheet remain the historical request baseline;
 the separate ignored device ledger records the new acquisition and validation
 status. No old pin or unknown game-process fact was overwritten.
+
+The subsequent [relocation diagnosis and proposal](RELOCATION_FORMAT_PROPOSAL.md)
+distinguishes APS2 RELA from Android-numbered RELR using the unchanged local
+pins and official source revisions. It proposes inventory support and synthetic
+acceptance gates without implementing support or attributing dependencies.
