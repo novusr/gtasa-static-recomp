@@ -1,15 +1,16 @@
-# Binaries and game files (Never commit copyright game files)
+# Original game files, assets and signing material stay local.
 *.so
 *.apk
 *.obb
-libGTASA.so
-GTASA-2.10-v34.apk
 inputs/
 signing/
 
-# Build artifacts
+# Generated instruction translations and reports are not source inputs.
+generated/
 build/
 expected/
+.decomp-wtf/
+.wb/
 *.o
 *.bin
 *.s
@@ -17,14 +18,10 @@ expected/
 *.sqlite
 *.sqlite3
 
-# Python cache
+.venv/
 __pycache__/
 *.pyc
-*.pyo
-.venv/
 .pytest_cache/
-
-# Editor and OS files
 .DS_Store
 Thumbs.db
 *.swp
@@ -32,7 +29,3 @@ Thumbs.db
 *~
 .idea/
 .vscode/
-
-# decompdecomp / workbench internal state
-.decomp-wtf/
-.wb/

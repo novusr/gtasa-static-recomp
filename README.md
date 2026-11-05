@@ -1,106 +1,76 @@
-# GTA: San Andreas 2.10 (v34) Android ARM64 1:1 Byte-Matching Decompilation
+# GTA:SA 2.10 — Static Recompilation for Linux x86_64
 
-This repository is dedicated to the exact 1:1 byte-for-byte binary matching decompilation of `libGTASA.so` from Grand Theft Auto: San Andreas v2.10 (v34) Android ARM64 (`arm64-v8a`).
+This branch translates selected instructions from the Android ARM64
+`libGTASA.so` into C++ ahead of time and builds native Linux x86_64 code.
+It replaces the byte-matching workflow on `main`; it does not require manually
+reconstructing every function before executing translated code.
 
-Every decompiled C++ function is compiled with the game's original compiler toolchain and verified against the original binary using `objdiff`. A function is considered complete only when its compiled machine code is 100% identical in byte layout, instruction selection, register allocation, and scheduling.
+**Current state: a tested leaf-function prototype, not a playable GTA executable.**
+The supported subset recompiles the original `CrossProduct` and `Multiply3x3`
+instructions. The next stages are control-flow recovery, a broader instruction
+backend, ELF relocation/loading, guest-to-host ABI bridges and platform services.
 
----
+## What is here
 
-## Target Binary
+- `tools/recomp.py`: SHA-256 validation, ELF64 inventory and strict leaf lifting.
+- `config/recomp.json`: exact input identity, target and selected symbols.
+- `include/recomp/runtime.h`, `src/runtime.cpp`: explicit guest register state,
+  checked little-endian guest memory and scalar FP operations.
+- `CMakeLists.txt`: host C++11 build, independent of the Android NDK.
+- `tests/`: synthetic ELF/lifter checks and a native semantic smoke executable.
+- `tools/verify_leaf.py`: differential comparison with original ARM64 instructions
+  using Unicorn as a test oracle. Unicorn is not used by the host runtime.
+- `docs/ARCHITECTURE.md`: contracts, limits and platform boundaries.
+- `docs/ROADMAP.md`: remaining work towards a game executable.
 
-* **File**: `libGTASA.so`
-* **Format**: ELF 64-bit LSB shared object, ARM aarch64, version 1 (SYSV), dynamically linked, unstripped
-* **Size**: 49,784,160 bytes
-* **SHA-256**: `12527bfdb63889c02d24366629e808cb446d354a2b380348bd661da4edc6af11`
-* **SHA-1**: `397e4c6984cc2c8641c17b7502c621f45d6ae3d4`
-* **Debug Info**: Native DWARF 4 and complete `.symtab` symbol table (24,061 total symbols).
+The old objdiff configuration, per-class stubs, matcher, symbol grouping and
+Android matching Makefile have been removed from this branch. They remain on
+`main` and in Git history. This worktree does not run decompdecomp agents.
 
----
+## Build and verify
 
-## Toolchain & Requirements
+Requirements: Linux x86_64, CMake 3.20+, Ninja, a C++11 compiler, and `uv`.
+Python dependencies and the test oracle are pinned in `uv.lock`.
 
-### 1. Matching Compiler
-The original binary was compiled with Android Clang 5.0 on Windows/Linux (NVIDIA Nsight / NDK r16b). To reproduce exact machine instructions:
-* **Toolchain**: **Android NDK r16b** (`r16b-linux-x86_64`)
-* **Compiler**: Clang `5.0.300080` (`$NDK/toolchains/llvm/prebuilt/linux-x86_64/bin/clang++`)
-* **Assembler**: GNU as 2.27 (`$NDK/toolchains/aarch64-linux-android-4.9/prebuilt/linux-x86_64/bin/aarch64-linux-android-as`)
+Place the original `libGTASA.so` in `inputs/` (a local symlink also works).
+The configured SHA-256 is checked before analysis or lifting. File paths in the
+config are resolved relative to the project root, not the shell's working directory.
 
-### 2. Verified Compiler Flags
-The following compiler flags have been calibrated and proven to produce 100.0% binary matching output:
 ```bash
-clang++ \
-  -target aarch64-linux-android \
-  -std=c++11 \
-  -O3 \
-  -ffp-contract=fast \
-  -fno-math-errno \
-  -fno-strict-aliasing \
-  -fno-exceptions \
-  -fno-rtti \
-  -fPIC \
-  -Iinclude
-```
-* `-ffp-contract=fast`: Crucial. Enables fusing `fmul` and `fsub`/`fadd` into ARM64 `fnmsub` and `fmadd` instructions.
-* `-fno-math-errno`: Crucial. Prevents Clang from generating `bl sqrtf` fallback branches and stack frames for floating point math functions like `sqrtf`.
-
-### 3. Verification & Analysis Tools
-* **`objdiff-cli`** (v3.8.3+): Standalone tool used to compare compiled object files against original binary slices.
-* **Ghidra**: Running instance with MCP/HTTP REST server on `http://127.0.0.1:8089` for instant (<20ms) decompiler output and disassembly queries.
-
----
-
-## Repository Structure
-
-```text
-├── .gitignore
-├── AGENTS.md             # Guidelines and rules for AI agents and human contributors
-├── README.md             # Project overview and setup instructions
-├── docs/                 # Detailed architectural and compiler documentation
-│   ├── ARCHITECTURE.md   # ABI, struct layouts, and RenderWare types
-│   ├── COMPILER.md       # Clang 5.0 flags and code-generation quirks
-│   ├── PROGRESS.md       # Verified matched functions log
-│   └── WORKFLOW.md       # Step-by-step matching guide
-├── include/              # Clean C++11 header definitions
-│   ├── CMatrix.h
-│   └── CVector.h
-├── src/                  # Decompiled C++ source files
-│   ├── CrossProduct.cpp
-│   ├── Multiply3x3.cpp
-│   └── Normalise.cpp
-└── tools/                # Automation and matching utilities
-    └── matcher.py        # Workbench tool connecting Ghidra, NDK r16b, and objdiff
+uv sync --locked
+uv run python tools/recomp.py inspect --output generated/inventory.json
+uv run python tools/recomp.py lift --output generated
+cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+cmake --build build
+ctest --test-dir build --output-on-failure
+uv run python -m unittest discover -s tests -p 'test_*.py'
+uv run python tools/verify_leaf.py
 ```
 
----
+`build/recomp_leaf_smoke` executes generated native functions. It checks 2,048
+calls and memory bounds. The separate oracle compares 6,144 binary32 result words
+against execution of the original instructions. These use deterministic finite,
+integer-valued inputs; they are not proof of every floating-point corner case.
+The native executable runs without opening `libGTASA.so`, Ghidra or Python.
 
-## Quickstart
+Unsupported instructions, incomplete decoding, unsafe load forms and code
+relocations are rejected before translation output is written. A failed lift
+returns nonzero; any previous generated files still describe the earlier input.
+Do not build after a failed generation step. No interpreter fallback or Android
+service stubs are provided.
 
-### 1. Fetching Function Details
-To query Ghidra for a function's decompiled C++ draft and assembly instructions:
-```bash
-python3 tools/matcher.py fetch 006390c8
-```
+## Source of truth
 
-### 2. Testing & Diffing a Function
-To slice the original bytes from `libGTASA.so`, compile your C++ implementation, and diff with `objdiff-cli`:
-```bash
-python3 tools/matcher.py test 006390c8 --symbol _ZN7CVector9NormaliseEv
-```
+`inputs/libGTASA.so` is the guest executable input, not something loaded with
+host `dlopen`. ELF virtual addresses are translated through `PT_LOAD` offsets;
+BSS is never mistaken for file-backed code. The configured Ghidra image base is
+an analysis coordinate only and is never added to guest runtime pointers.
 
-### 3. Generating Progress Report
-To run a full progress check across all configured units:
-```bash
-objdiff-cli report generate -p . -o -
-```
+The inventory includes defined function symbols from both `.symtab` and
+`.dynsym`, preserves aliases, and separately reports unique addresses. Its totals
+will differ from the old decomp queue, which used only `.dynsym` and collapsed
+aliases. These totals are not decompilation percentages.
 
----
-
-## Progress
-
-| Class / Unit | Function | Address | Size | Status |
-| :--- | :--- | :--- | :--- | :--- |
-| `CVector` | `CrossProduct(const CVector&, const CVector&)` | `0x00538ec4` | 44 B | **100.0% MATCH** |
-| `CMatrix` | `Multiply3x3(const CMatrix&, const CVector&)` | `0x00538ef0` | 72 B | **100.0% MATCH** |
-| `CVector` | `CVector::Normalise()` | `0x005390c8` | 76 B | **100.0% MATCH** |
-
-Total Verified Code: **192 bytes (100.0% match across 3 functions)**.
+Generated C++, inventory, original binaries and assets are local ignored files.
+Native output is expected to differ from ARM64 bytes: semantic equivalence and
+runtime correctness are the validation goals for this branch.

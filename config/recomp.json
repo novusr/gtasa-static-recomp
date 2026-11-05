@@ -1,0 +1,17 @@
+{
+  "input": "inputs/libGTASA.so",
+  "sha256": "12527bfdb63889c02d24366629e808cb446d354a2b380348bd661da4edc6af11",
+  "guest": "aarch64-linux-android",
+  "host": "x86_64-linux",
+  "ghidra_image_base": 1048576,
+  "functions": [
+    {
+      "symbol": "_Z12CrossProductRK7CVectorS1_",
+      "output": "cross_product"
+    },
+    {
+      "symbol": "_Z11Multiply3x3RK7CMatrixRK7CVector",
+      "output": "multiply3x3"
+    }
+  ]
+}

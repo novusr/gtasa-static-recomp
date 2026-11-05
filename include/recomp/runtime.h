@@ -1,0 +1,42 @@
+#pragma once
+
+#include <cstddef>
+#include <cstdint>
+#include <limits>
+#include <vector>
+
+namespace recomp {
+
+// Scalar leaf subset only: s[] contains the low 32 bits of each FP register.
+// Full SIMD lanes, FPCR/FPSR, flags and control flow require an extended backend.
+struct State {
+    uint64_t x[31];
+    uint64_t sp;
+    uint32_t s[32];
+};
+static_assert(sizeof(State) == 0x180, "Invalid State size");
+static_assert(offsetof(State, x) == 0, "Invalid State::x offset");
+static_assert(offsetof(State, sp) == 0xF8, "Invalid State::sp offset");
+static_assert(offsetof(State, s) == 0x100, "Invalid State::s offset");
+static_assert(sizeof(float) == 4 && std::numeric_limits<float>::is_iec559,
+              "The scalar runtime requires IEEE-754 binary32");
+
+// Guest-addressed sandbox for the leaf demo, not an Android process loader.
+class Memory {
+public:
+    Memory(uint64_t base, std::size_t size);
+    uint32_t load32(uint64_t address) const;
+    void store32(uint64_t address, uint32_t value);
+private:
+    std::size_t offset(uint64_t address) const;
+    uint64_t base_;
+    std::vector<uint8_t> bytes_;
+};
+
+uint32_t float_bits(float value);
+float bits_float(uint32_t value);
+uint32_t fp_mul(uint32_t a, uint32_t b);
+uint32_t fp_madd(uint32_t a, uint32_t b, uint32_t c);
+uint32_t fp_nmsub(uint32_t a, uint32_t b, uint32_t c);
+
+} // namespace recomp
