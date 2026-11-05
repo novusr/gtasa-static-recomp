@@ -11,17 +11,18 @@ mapfile -t ghidra_patches < <(find "$src/sleigh/src/patches/HEAD" -name '*.patch
 mapfile -t remill_patches < <(find "$src/remill/dependencies/sleigh_patches" -name '*.patch' -print | sort)
 git -C "$src/ghidra" -c user.name='Toolchain CI' -c user.email='toolchain-ci@users.noreply.github.com' am --ignore-space-change --ignore-whitespace --no-gpg-sign "${ghidra_patches[@]}" "${remill_patches[@]}"
 git -C "$src/ghidra" log --format='%H %s' --max-count=16 > "$CI_WORK_ROOT/logs/ghidra-patched-history.txt"
-common=(-G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$CI_PREFIX" -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_PREFIX_PATH="$CI_PREFIX" -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF)
+common=(-G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$CI_PREFIX" -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_PREFIX_PATH="$CI_PREFIX;$CI_PREFIX/xed" -DCMAKE_POSITION_INDEPENDENT_CODE=ON -DBUILD_SHARED_LIBS=OFF)
 cmake -S "$src/gflags" -B "$bld/gflags" "${common[@]}" -DBUILD_TESTING=OFF -DBUILD_STATIC_LIBS=ON
 cmake --build "$bld/gflags" --parallel 2
 cmake --install "$bld/gflags"
 cmake -S "$src/glog" -B "$bld/glog" "${common[@]}" -DBUILD_TESTING=OFF -DWITH_UNWIND=OFF -DWITH_GFLAGS=ON
 cmake --build "$bld/glog" --parallel 2
 cmake --install "$bld/glog"
-# XED's own builder uses the sibling mbuild checkout; no CMake superbuild.
-(cd "$src/xed" && python3 mfile.py install --install-dir="$CI_PREFIX" --cc="$CC" --cxx="$CXX" --compiler=clang --static --extra-ccflags=-fPIC --extra-cxxflags=-fPIC -j2)
-mkdir -p "$CI_PREFIX/lib/cmake/XED"
-cp "$src/remill/dependencies/XEDConfig.cmake.in" "$CI_PREFIX/lib/cmake/XED/XEDConfig.cmake"
+# XED replaces its kit destination; isolate it from the other dependencies.
+# Its own builder uses the sibling mbuild checkout; no CMake superbuild.
+(cd "$src/xed" && python3 mfile.py install --install-dir="$CI_PREFIX/xed" --cc="$CC" --cxx="$CXX" --compiler=clang --static --extra-ccflags=-fPIC --extra-cxxflags=-fPIC -j2)
+mkdir -p "$CI_PREFIX/xed/lib/cmake/XED"
+cp "$src/remill/dependencies/XEDConfig.cmake.in" "$CI_PREFIX/xed/lib/cmake/XED/XEDConfig.cmake"
 # FetchContent is supplied complete local source overrides. Network is disabled
 # for this entire script; no superbuild or automatic source acquisition runs.
 cmake -S "$src/remill" -B "$bld/remill" "${common[@]}" \
