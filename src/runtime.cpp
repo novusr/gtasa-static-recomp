@@ -118,4 +118,42 @@ uint32_t fp_nmsub(uint32_t a, uint32_t b, uint32_t c) {
     return float_bits(std::fma(bits_float(a), bits_float(b), -bits_float(c)));
 }
 
+template <typename UInt>
+static uint32_t subtraction_flags(UInt a, UInt b) {
+    const UInt result = static_cast<UInt>(a - b);
+    const UInt sign = UInt(1) << (sizeof(UInt) * 8 - 1);
+    return ((result & sign) ? UINT32_C(0x80000000) : 0) |
+           (result == 0 ? UINT32_C(0x40000000) : 0) |
+           (a >= b ? UINT32_C(0x20000000) : 0) |
+           (((a ^ b) & (a ^ result) & sign) ? UINT32_C(0x10000000) : 0);
+}
+
+uint32_t cmp_flags32(uint32_t a, uint32_t b) { return subtraction_flags(a, b); }
+uint32_t cmp_flags64(uint64_t a, uint64_t b) { return subtraction_flags(a, b); }
+
+bool condition_holds(uint32_t nzcv, uint32_t condition) {
+    const bool n = (nzcv & UINT32_C(0x80000000)) != 0;
+    const bool z = (nzcv & UINT32_C(0x40000000)) != 0;
+    const bool c = (nzcv & UINT32_C(0x20000000)) != 0;
+    const bool v = (nzcv & UINT32_C(0x10000000)) != 0;
+    bool result;
+    switch (condition >> 1) {
+    case 0: result = z; break;
+    case 1: result = c; break;
+    case 2: result = n; break;
+    case 3: result = v; break;
+    case 4: result = c && !z; break;
+    case 5: result = n == v; break;
+    case 6: result = n == v && !z; break;
+    default: throw std::invalid_argument("condition must be EQ through LE");
+    }
+    return (condition & 1) ? !result : result;
+}
+
+uint64_t sign_extend_halfword(uint16_t value, bool to_x) {
+    const uint64_t extended = uint64_t(value) |
+        ((value & UINT16_C(0x8000)) ? UINT64_C(0xFFFFFFFFFFFF0000) : UINT64_C(0));
+    return to_x ? extended : static_cast<uint32_t>(extended);
+}
+
 } // namespace recomp

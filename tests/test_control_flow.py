@@ -269,9 +269,9 @@ class ControlFlowRejectionTests(unittest.TestCase):
         self.assert_rejected(pack_words(0xD61F0000) + RET, 'indirect branch')
         # RET x0 (indirect return)
         self.assert_rejected(pack_words(0xD65F0000), 'only RET through x30')
-        # TBZ / TBNZ
+        # TBZ remains outside this milestone; TBNZ must still obey CFG bounds.
         self.assert_rejected(pack_words(0x36000040) + RET, 'test and branch')
-        self.assert_rejected(pack_words(0x37000040) + RET, 'test and branch')
+        self.assert_rejected(pack_words(0x37000040) + RET, 'outside function range')
 
 
 class ScanAndLiftAgreementTests(unittest.TestCase):

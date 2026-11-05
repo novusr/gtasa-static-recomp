@@ -99,7 +99,7 @@ class MemoryTests(unittest.TestCase):
             'LDR register offset': 0xF8626820, 'STRB register offset': 0x38226820,
             'LDRH post-index': 0x78402420, 'STRH pre-index': 0x78002C20,
             'LDR literal': 0x58000020, 'LDUR': 0xF85FF020, 'STUR': 0xF81FF020,
-            'LDRSB': 0x39800020, 'LDRSH': 0x79800020, 'LDRSW': 0xB9800020,
+            'LDRSB': 0x39800020, 'LDRSH indexed': 0x78A26820, 'LDRSW': 0xB9800020,
             'LDP integer': 0xA9400820, 'STP integer': 0xA9000820,
             'LDAR': 0xC8DFFC20, 'STLR': 0xC89FFC20,
             'LDR vector': 0x3DC00020, 'STR FP': 0xBD000020,

@@ -12,7 +12,7 @@ under an optimistic memory-form screen. BL remains rejected; no new call
 semantic verification is claimed. The audit records exact candidate ranges and
 the recursion, PLT and broader-backend obstructions without changing the loader.
 The supported subset recompiles the original `CrossProduct`, `Multiply3x3`,
-five register-only integer leaves, eight integer-memory leaves, and five
+five register-only integer leaves, eight integer-memory leaves, `CLoadedCarGroup::CountMembers`, and five
 control-flow functions with branches/multiple RETs selected in the configuration.
 The next stages are cyclic control-flow (loops), switch/jump tables, a broader
 instruction backend, further ELF relocation support, guest-to-host ABI bridges
@@ -55,6 +55,10 @@ removal are now available; these do not authorize initialization or execution.
   including all represented registers and every byte of the guest sandbox.
 - `tools/verify_control_flow.py`: compares control-flow leaves with Unicorn ARM64,
   including both taken and fallthrough branch paths, multiple RETs, and memory mutations.
+- `tools/verify_count_members.py`: fresh original signed-halfword/TBNZ/CMP/CINC
+  AOT versus ARM64 and independent results, including NZCV and full sandbox bytes.
+- `docs/COUNT_MEMBERS.md`: exact instruction forms, runtime state layout,
+  original-function corpus, coverage, results and limits.
 - `docs/ARCHITECTURE.md`: contracts, limits and platform boundaries.
 - `docs/ROADMAP.md`: remaining work towards a game executable.
 
@@ -86,6 +90,7 @@ uv run python tools/verify_leaf.py
 uv run python tools/verify_integer.py
 uv run python tools/verify_memory.py
 uv run python tools/verify_control_flow.py
+uv run python tools/verify_count_members.py
 ```
 
 `build/recomp_leaf_smoke` executes generated native functions. It checks 2,048
@@ -121,9 +126,10 @@ original instructions; they are not replacements for unresolved imports.
 
 Integer memory support adds LDR/STR W/X, LDRB/STRB and LDRH/STRH using the
 unsigned scaled imm12 encoding with an X/SP base and no writeback. Literal,
-register-offset, unscaled/signed-offset, pre/post-index, sign-extending, pair,
+register-offset, other unscaled/signed-offset, pre/post-index, other sign-extending, pair,
 atomic and SIMD memory forms remain rejected (the earlier scalar FP load subset
-is preserved). Memory provides checked little-endian 8/16/32/64-bit accesses;
+is preserved). The later [CountMembers extension](docs/COUNT_MEMBERS.md) adds
+LDRSH/LDURSH without writeback. Memory provides checked little-endian 8/16/32/64-bit accesses;
 every operation validates its whole range before touching bytes. Generated
 functions now take `Memory&` so stores can modify guest bytes. No guest address
 is converted into a host pointer.
@@ -207,7 +213,7 @@ every import `unresolved`: no ABI/platform bridge is implemented, and the scan
 does not infer call targets or attribute imports to particular functions.
 Zero-sized symbols and code without function symbols are outside this scan.
 
-**Translatable means accepted by `control-flow-v1`, not semantically verified.**
+**Translatable means accepted by `integer-flags-v1`, not semantically verified.**
 Every scan entry has `semantic_verification: not_verified`; scanning does not
 run or import differential-test results. Successful translation/build and symbol
 counts are not proof of correctness or game completion. The backend's FP/state

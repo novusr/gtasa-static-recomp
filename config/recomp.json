@@ -6,6 +6,12 @@
   "ghidra_image_base": 1048576,
   "functions": [
     {
+      "symbol": "_ZN15CLoadedCarGroup12CountMembersEv",
+      "output": "count_members",
+      "verification": "count_members",
+      "pointer_registers": [0]
+    },
+    {
       "symbol": "_Z12CrossProductRK7CVectorS1_",
       "output": "cross_product"
     },

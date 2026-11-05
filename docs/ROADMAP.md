@@ -60,6 +60,13 @@
 
 These milestones do not mean the game can start or that arbitrary ARM64 can run.
 
+The [CountMembers milestone](COUNT_MEMBERS.md) now adds the original acyclic
+integer leaf at `[0x5d16dc,0x5d1850)`: LDRSH/LDURSH, TBNZ, CMP/CINC with explicit
+NZCV and MOV bitmask-immediate aliases. Fresh native AOT agrees with original
+ARM64 and independent results over 2,816 cases, covering all 23 RET exits and
+both outcomes of 22 TBNZ instructions. Synthetic semantic and rejection tests
+cover the added forms. This does not implement calls or expand the loader.
+
 ## Next: general instruction and control-flow backend
 
 The [direct-call AOT feasibility audit](DIRECT_CALL_FEASIBILITY.md) examined all
@@ -68,10 +75,13 @@ closure fits a small BL/stack extension, even when memory forms are optimistical
 forgiven for discovery. Small concrete candidates hit PLT, recursion/loops or
 jump tables and flags. The non-leaf milestone remains incomplete; no call backend
 or semantic evidence was added. Loader/relocation development stays frozen for
-this AOT stage. A bounded next candidate is the acyclic integer leaf
-`CLoadedCarGroup::CountMembers` at `[0x5d16dc,0x5d1850)`, requiring LDRSH, TBNZ
-and explicitly represented/tested CMP/NZCV/CINC semantics. Its non-leaf callers
-still require additional instruction and loop support.
+this AOT stage. The proposed `CLoadedCarGroup::CountMembers` leaf is now verified
+as described above. Its non-leaf callers still require additional instruction
+and loop support. A next bounded AOT step is CMP-driven B.cond for acyclic
+integer functions, using the represented NZCV state and retaining cycle/call
+rejection. For example, the original `PickLeastUsedModel` caller contains CMP
+and B.lt/B.le/B.ne as well as a loop, signed-byte loads and other blockers;
+flag branches alone would not make that caller or a non-leaf closure supported.
 
 - Support cyclic CFGs (loops: while, for, do-while) and loop termination analysis.
 - Support indirect branches, switch tables, jump tables, and tail calls.

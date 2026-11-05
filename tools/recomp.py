@@ -18,7 +18,7 @@ from elftools.elf.relocation import RelocationSection
 from elftools.common.exceptions import ELFError
 
 ROOT = Path(__file__).resolve().parents[1]
-BACKEND = 'control-flow-v1'
+BACKEND = 'integer-flags-v1'
 
 
 class RecompError(ValueError):
@@ -169,8 +169,9 @@ def integer_memory_statement(insn):
 def integer_statement(insn):
     """Validate encoding classes, so register 31 means SP or ZR unambiguously.
 
-    No flag-setting forms: State has no NZCV. MOV aliases are accepted only
-    for ORR (unshifted register), ADD (SP copy), and MOVZ/MOVN encodings.
+    Flag-setting CMP is validated separately. MOV aliases are accepted only
+    for ORR (unshifted register or bitmask immediate), ADD (SP copy), and
+    MOVZ/MOVN encodings.
     """
     word = int.from_bytes(insn.bytes, 'little')
     width = 64 if word >> 31 else 32
@@ -183,6 +184,24 @@ def integer_statement(insn):
 
     if insn.mnemonic == 'mov' and word & 0x7FE0FFE0 == 0x2A0003E0:
         expression = read(rm)
+    elif insn.mnemonic == 'mov' and word & 0x7F8003E0 == 0x320003E0:
+        # ORR-immediate MOV alias: DecodeBitMasks at generation time only.
+        # Unlike ORR shifted register, logical immediate Rd=31 denotes SP/WSP.
+        sp = True
+        n, imms, immr = (word >> 22) & 1, (word >> 10) & 63, (word >> 16) & 63
+        length = ((n << 6) | (~imms & 63)).bit_length() - 1
+        if (width == 32 and n) or length < 1:
+            raise InstructionError('operand_form', 'reserved MOV logical immediate')
+        levels = (1 << length) - 1
+        s, r = imms & levels, immr & levels
+        if s == levels:
+            raise InstructionError('operand_form', 'reserved all-ones MOV logical immediate')
+        element_size = 1 << length
+        element_mask = (1 << element_size) - 1
+        ones = (1 << (s + 1)) - 1
+        element = ((ones >> r) | (ones << (element_size - r))) & element_mask
+        value = sum(element << offset for offset in range(0, width, element_size))
+        expression = f'UINT64_C({value})'
     elif insn.mnemonic in ('mov', 'movz', 'movn') and word & 0x7F800000 in (0x52800000, 0x12800000):
         shift = ((word >> 21) & 3) * 16
         if shift >= width:
@@ -219,6 +238,59 @@ def integer_statement(insn):
     return [f'{destination} = {expression};']
 
 
+def signed_halfword_statement(insn):
+    """LDRSH unsigned scaled imm12 or LDURSH signed imm9, no writeback."""
+    word = int.from_bytes(insn.bytes, 'little')
+    if (word >> 30) != 1 or word & (1 << 26) or ((word >> 22) & 3) not in (2, 3):
+        raise InstructionError('operand_form', 'expected signed integer halfword load')
+    if insn.mnemonic == 'ldrsh' and word & 0x3F000000 == 0x39000000:
+        displacement = ((word >> 10) & 0xFFF) * 2
+    elif insn.mnemonic == 'ldursh' and word & 0x3F200C00 == 0x38000000:
+        immediate = (word >> 12) & 0x1FF
+        displacement = immediate - 512 if immediate & 256 else immediate
+    else:
+        raise InstructionError('addressing_mode', 'signed halfword loads require unsigned scaled or signed unscaled immediate without writeback')
+    rn, rt = (word >> 5) & 31, word & 31
+    base = 'state.sp' if rn == 31 else f'state.x[{rn}]'
+    address = f'({base} + UINT64_C({displacement % (1 << 64)}))'
+    to_x = ((word >> 22) & 3) == 2
+    value = f'sign_extend_halfword(memory.load16({address}), {"true" if to_x else "false"})'
+    return [f'(void){value};' if rt == 31 else f'state.x[{rt}] = {value};']
+
+
+def flags_statement(insn):
+    """CMP immediate/LSL register; CINC alias only, not general SUBS/CSINC."""
+    word = int.from_bytes(insn.bytes, 'little')
+    width = 64 if word >> 31 else 32
+    rn, rm = (word >> 5) & 31, (word >> 16) & 31
+
+    def read(reg, sp=False):
+        value = ('state.sp' if sp else 'UINT64_C(0)') if reg == 31 else f'state.x[{reg}]'
+        return value if width == 64 else f'static_cast<uint32_t>({value})'
+
+    if insn.mnemonic == 'cmp':
+        if word & 0x7F80001F == 0x7100001F:
+            a = read(rn, True)
+            immediate = ((word >> 10) & 0xFFF) << (12 if word & (1 << 22) else 0)
+            b = f'UINT{width}_C({immediate})'
+        elif word & 0x7F20001F == 0x6B00001F:
+            shift, amount = (word >> 22) & 3, (word >> 10) & 63
+            if shift != 0 or amount >= width:
+                raise InstructionError('operand_form', 'CMP register supports only LSL below register width')
+            a, b = read(rn), f'static_cast<uint{width}_t>({read(rm)} << {amount})'
+        else:
+            raise InstructionError('operand_form', 'CMP requires immediate or LSL shifted register encoding')
+        return [f'state.nzcv = cmp_flags{width}({a}, {b});']
+    condition = ((word >> 12) & 15) ^ 1
+    if (word & 0x7FE00C00 != 0x1A800400 or rn != rm or rn == 31 or condition >= 14):
+        raise InstructionError('operand_form', 'CINC requires CSINC alias with equal non-ZR sources and EQ..LE condition')
+    rd = word & 31
+    if rd == 31:
+        return []
+    return [f'state.x[{rd}] = static_cast<uint{width}_t>(uint64_t({read(rn)}) + '
+            f'(condition_holds(state.nzcv, {condition}) ? UINT64_C(1) : UINT64_C(0)));']
+
+
 def get_branch_target(insn):
     word = int.from_bytes(insn.bytes, 'little')
     if insn.mnemonic == 'b':
@@ -233,6 +305,12 @@ def get_branch_target(insn):
         imm19 = (word >> 5) & 0x7FFFF
         offset = ((imm19 - (1 << 19)) << 2) if (imm19 & (1 << 18)) else (imm19 << 2)
         return (insn.address + offset) & 0xFFFFFFFFFFFFFFFF
+    elif insn.mnemonic == 'tbnz':
+        if word & 0x7F000000 != 0x37000000:
+            raise InstructionError('operand_form', 'unsupported test-bit branch encoding', insn)
+        immediate = (word >> 5) & 0x3FFF
+        offset = (immediate - (1 << 14) if immediate & (1 << 13) else immediate) * 4
+        return (insn.address + offset) & 0xFFFFFFFFFFFFFFFF
     raise InstructionError('control_flow', f'{insn.mnemonic} is not a supported branch', insn)
 
 
@@ -241,6 +319,11 @@ def branch_statement(insn):
     target = get_branch_target(insn)
     if insn.mnemonic == 'b':
         return [f'goto loc_{target:#x};']
+    if insn.mnemonic == 'tbnz':
+        rt = word & 31
+        bit = ((word >> 31) << 5) | ((word >> 19) & 31)
+        value = 'UINT64_C(0)' if rt == 31 else f'state.x[{rt}]'
+        return [f'if (({value} & UINT64_C({1 << bit})) != 0) goto loc_{target:#x};']
     sf = (word >> 31) & 1
     rt = word & 31
     if rt == 31:
@@ -259,7 +342,7 @@ def analyze_cfg(instructions, address, size):
 
     branch_targets = set()
     for insn in instructions:
-        if insn.mnemonic in ('b', 'cbz', 'cbnz'):
+        if insn.mnemonic in ('b', 'cbz', 'cbnz', 'tbnz'):
             target = get_branch_target(insn)
             if target < fn_start or target >= fn_end:
                 raise InstructionError('control_flow', f'branch target {target:#x} is outside function range [{fn_start:#x}, {fn_end:#x})', insn)
@@ -269,7 +352,7 @@ def analyze_cfg(instructions, address, size):
 
     leaders = {fn_start}
     for insn in instructions:
-        if insn.mnemonic in ('b', 'cbz', 'cbnz'):
+        if insn.mnemonic in ('b', 'cbz', 'cbnz', 'tbnz'):
             leaders.add(get_branch_target(insn))
             if insn.address + 4 < fn_end:
                 leaders.add(insn.address + 4)
@@ -291,7 +374,7 @@ def analyze_cfg(instructions, address, size):
             succs[l_start] = []
         elif last.mnemonic == 'b':
             succs[l_start] = [get_branch_target(last)]
-        elif last.mnemonic in ('cbz', 'cbnz'):
+        elif last.mnemonic in ('cbz', 'cbnz', 'tbnz'):
             fallthrough = last.address + 4
             if fallthrough >= fn_end:
                 raise InstructionError('control_flow', f'block at {l_start:#x} falls through outside function', last)
@@ -336,20 +419,24 @@ def translate_instruction(insn, index=None, count=None):
         emitted = ['return;']
     elif mnemonic == 'nop':
         emitted = []
-    elif mnemonic in ('b', 'cbz', 'cbnz'):
+    elif mnemonic in ('b', 'cbz', 'cbnz', 'tbnz'):
         emitted = branch_statement(insn)
     elif mnemonic.startswith('b.'):
-        raise InstructionError('control_flow', f'conditional branch {mnemonic} requires NZCV flags which are not modeled', insn)
+        raise InstructionError('control_flow', f'conditional branch {mnemonic} requires NZCV branch support which is not implemented', insn)
     elif mnemonic in ('bl', 'blr'):
         raise InstructionError('control_flow', f'subroutine call {mnemonic} is not supported in leaf functions', insn)
     elif mnemonic == 'br':
         raise InstructionError('control_flow', 'indirect branch BR is not supported', insn)
-    elif mnemonic in ('tbz', 'tbnz'):
+    elif mnemonic == 'tbz':
         raise InstructionError('control_flow', f'test and branch {mnemonic} is not supported', insn)
     elif mnemonic == 'ldp' or (mnemonic == 'ldr' and int.from_bytes(insn.bytes, 'little') & (1 << 26)):
         emitted = load_statement(insn)
     elif mnemonic in ('ldr', 'str', 'ldrb', 'strb', 'ldrh', 'strh'):
         emitted = integer_memory_statement(insn)
+    elif mnemonic in ('ldrsh', 'ldursh'):
+        emitted = signed_halfword_statement(insn)
+    elif mnemonic in ('cmp', 'cinc'):
+        emitted = flags_statement(insn)
     elif mnemonic in ('mov', 'movz', 'movn', 'add', 'sub', 'neg'):
         emitted = integer_statement(insn)
     elif mnemonic in ('fmul', 'fmadd', 'fnmsub'):

@@ -8,16 +8,18 @@
 namespace recomp {
 
 // Scalar leaf subset only: s[] contains the low 32 bits of each FP register.
-// Full SIMD lanes, FPCR/FPSR, flags and control flow require an extended backend.
+// Full SIMD lanes and FPCR/FPSR require an extended backend. NZCV uses bits 31:28.
 struct State {
     uint64_t x[31];
     uint64_t sp;
     uint32_t s[32];
+    uint32_t nzcv;
 };
-static_assert(sizeof(State) == 0x180, "Invalid State size");
+static_assert(sizeof(State) == 0x188, "Invalid State size");
 static_assert(offsetof(State, x) == 0, "Invalid State::x offset");
 static_assert(offsetof(State, sp) == 0xF8, "Invalid State::sp offset");
 static_assert(offsetof(State, s) == 0x100, "Invalid State::s offset");
+static_assert(offsetof(State, nzcv) == 0x180, "Invalid State::nzcv offset");
 static_assert(sizeof(float) == 4 && std::numeric_limits<float>::is_iec559,
               "The scalar runtime requires IEEE-754 binary32");
 
@@ -65,5 +67,11 @@ float bits_float(uint32_t value);
 uint32_t fp_mul(uint32_t a, uint32_t b);
 uint32_t fp_madd(uint32_t a, uint32_t b, uint32_t c);
 uint32_t fp_nmsub(uint32_t a, uint32_t b, uint32_t c);
+
+// Width-specific subtraction flags, without a register result or signed overflow.
+uint32_t cmp_flags32(uint32_t a, uint32_t b);
+uint32_t cmp_flags64(uint64_t a, uint64_t b);
+bool condition_holds(uint32_t nzcv, uint32_t condition);
+uint64_t sign_extend_halfword(uint16_t value, bool to_x);
 
 } // namespace recomp

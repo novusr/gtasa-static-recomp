@@ -17,13 +17,15 @@ identifiers, not host addresses or permission to dereference a host pointer.
 
 ## Current supported subset
 
-The `control-flow-v1` backend accepts acyclic control-flow functions ending with
+The `integer-flags-v1` backend accepts acyclic control-flow functions ending with
 `ret` through x30 on all paths. It retains the v1 FP instructions (`nop`, scalar
 `ldr` and `ldp` into S registers using X-register base plus constant offset
 without writeback/indexing, `fmul`, `fmadd`, `fnmsub`) and v3 integer memory
 instructions (`ldr`, `str`, `ldrb`, `strb`, `ldrh`, `strh` unsigned scaled
 immediate). Every instruction must decode and pass validation. Unsupported
-instructions or malformed control flow fail the whole request.
+instructions or malformed control flow fail the whole request. The
+[CountMembers milestone](COUNT_MEMBERS.md) adds signed halfword loads, TBNZ,
+CMP/CINC and the MOV bitmask-immediate alias, with explicit guest NZCV.
 
 ### Control flow subset (Phase 1: Acyclic CFG)
 
@@ -35,6 +37,7 @@ emitting native C++:
 | Direct B (`b <target>`) | Unconditional intrafunction jump | None; signed imm26 (* 4) PC offset | Single target block |
 | CBZ (`cbz <Rt>, <target>`) | Jump if register is zero; W (32-bit) or X (64-bit) | Rt=31 denotes WZR/XZR (value 0, branch taken) | Fallthrough (PC+4), Target |
 | CBNZ (`cbnz <Rt>, <target>`) | Jump if register is nonzero; W (32-bit) or X (64-bit) | Rt=31 denotes WZR/XZR (value 0, branch not taken) | Fallthrough (PC+4), Target |
+| TBNZ (`tbnz <Rt>, #bit, <target>`) | Jump if bit 0..63 is set; signed imm14 (* 4) PC offset | Rt=31 is ZR; bit 0..31 uses W view, 32..63 uses X view; NZCV unchanged | Fallthrough (PC+4), Target |
 | RET (`ret [x30]`) | Subroutine return | Only x30 is supported (register 30) | Terminal (none) |
 
 Validation rules enforced equally by `scan` and `lift`:
@@ -47,9 +50,9 @@ Validation rules enforced equally by `scan` and `lift`:
 4. **No dead/unreachable code**: Every basic block in the function must be reachable
    from the entry point.
 5. **Rejected control flow**: Subroutine calls (`bl`, `blr`), indirect branches (`br`),
-   indirect returns (`ret xn` where `n != 30`), test-and-branch (`tbz`, `tbnz`), and
+   indirect returns (`ret xn` where `n != 30`), test-and-branch-zero (`tbz`), and
    conditional branches requiring condition flags (`b.cond`: `b.eq`, `b.ne`, etc.)
-   are rejected. State has no NZCV flags.
+   are rejected. NZCV is represented for CMP/CINC; B.cond remains unsupported.
 6. **Register width accuracy**: CBZ/CBNZ on W registers (`sf=0`) strictly evaluates
    bits 31:0 (`static_cast<uint32_t>(state.x[rt])`), correctly ignoring any dirty
    upper bits 63:32. X registers (`sf=1`) evaluate all 64 bits.
@@ -64,6 +67,7 @@ semantics from disassembler text. The supported forms are:
 | Form | Width and operands | Register 31 |
 | --- | --- | --- |
 | MOV register (ORR alias) | W/W or X/X, unshifted register copy | Source ZR; destination write discarded |
+| MOV bitmask immediate (ORR alias) | W/X, decoded replicated/rotated bitmask constant | Source must be ZR; destination 31 means WSP/SP |
 | MOV wide immediate / MOVZ / MOVN | 16-bit immediate, LSL 0/16 for W or 0/16/32/48 for X | Destination write discarded |
 | MOV to/from SP (ADD immediate zero alias) | W/WSP or X/SP | Source/destination SP |
 | ADD/SUB immediate, S=0 | W/WSP or X/SP, unsigned imm12, optional LSL 12 | Source/destination SP |
@@ -71,9 +75,11 @@ semantics from disassembler text. The supported forms are:
 
 Unsigned C++11 arithmetic and explicit narrowing implement modulo 2^32/2^64.
 Every W/WSP destination write clears bits 63:32; ZR writes leave SP and all
-stored registers untouched. No flags are written. ADDS/SUBS and their CMP/CMN
-aliases, extended-register operands, LSR/ASR/ROR, MOV bitmask-immediate (ORR
-alias), MOVK, vector MOV and invalid/reserved encodings are rejected. Integer
+stored registers untouched. These non-flag-setting operations preserve NZCV.
+CMP immediate and LSL shifted register forms update NZCV, and CINC consumes it;
+see the exact forms in [COUNT_MEMBERS.md](COUNT_MEMBERS.md).
+Other ADDS/SUBS forms, CMN, extended-register operands, LSR/ASR/ROR, general
+logical operations, MOVK, vector MOV and invalid/reserved encodings are rejected. Integer
 arithmetic does not access guest memory or establish a guest stack mapping.
 
 `scan` and `lift` call the same integer validator/emitter. Scan still marks every
@@ -97,8 +103,11 @@ Stores write only the low 8/16/32/64 source bits. A load to ZR discards the
 value but still performs the checked access. Non-writeback Rn/Rt aliases are
 valid: the address uses the old base before a load assigns its destination.
 
-Literal, register-offset, LDUR/STUR (including signed immediates), pre/post-index,
-sign-extending loads, integer pairs, exclusive/acquire/release and SIMD memory
+LDRSH additionally supports unsigned scaled imm12 and LDURSH supports signed
+unscaled imm9, both into W/X without writeback. Signed loads use checked load16
+and unsigned bit operations for sign extension; W destinations clear bits 63:32.
+Literal, register-offset, other LDUR/STUR forms, pre/post-index,
+other sign-extending loads, integer pairs, exclusive/acquire/release and SIMD memory
 forms remain unsupported. Existing scalar S-register FP LDR/LDP support remains
 unchanged. The instruction emitter used by both scan and lift enforces these
 boundaries before publishing translation output.
@@ -136,9 +145,11 @@ contraction and fast-math. The prototype assumes round-to-nearest and does not
 model FPCR, FPSR, NaN payload rules, traps or all signed-zero/denormal cases.
 The smoke test and ARM oracle cover finite integer-valued operands only.
 
-State has 31 general-purpose registers, SP, and the low 32 bits of 32 FP
-registers. Static assertions verify its layout. It deliberately cannot represent
-full SIMD lanes, condition flags, TLS, exclusive monitors or exceptions. There
+State has 31 general-purpose registers, SP, the low 32 bits of 32 FP
+registers, and uint32_t NZCV (architectural bits 31:28, other bits zero).
+Static assertions verify size 0x188 and offsets X=0, SP=0xF8, S=0x100,
+NZCV=0x180. Tail padding is not serialized or architectural state.
+It deliberately cannot represent full SIMD lanes, TLS, exclusive monitors or exceptions. There
 is no attempt to execute code requiring that state.
 
 The checked demo memory owns bytes in a guest address range. Access below the

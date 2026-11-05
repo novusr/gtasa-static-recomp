@@ -1,5 +1,10 @@
 # Direct-call AOT feasibility, 2026-11-06
 
+Follow-up: the proposed [CountMembers leaf milestone](COUNT_MEMBERS.md) is now
+implemented with a newer backend. This document preserves the historical
+`control-flow-v1` audit and its results; its original non-leaf objective remains
+incomplete, and it is not a current-backend coverage report.
+
 **The requested original non-leaf AOT milestone is blocked within the bounded
 extension investigated here. No new function was translated or differentially
 verified, and BL remains rejected.** The request explicitly permits reporting

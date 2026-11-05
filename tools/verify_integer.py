@@ -9,7 +9,7 @@ import random
 import subprocess
 import tempfile
 
-from unicorn import Uc, UC_ARCH_ARM64, UC_MODE_ARM
+from unicorn import Uc, UC_ARCH_ARM64, UC_MODE_ARM, UC_HOOK_CODE
 from unicorn import arm64_const as arm
 
 from recomp import BACKEND, Image, ROOT, lift, lift_body, write_lift
@@ -52,12 +52,15 @@ def compile_runner(cases, directory, source, input_digest):
     return executable
 
 
-def compare(cases, inputs, directory, input_digest='synthetic-test-input'):
-    """Compile once, then compare x[], SP, low S[], memory and unchanged NZCV.
+def compare(cases, inputs, directory, input_digest='synthetic-test-input', evidence=None):
+    """Compile once, then compare x[], SP, low S[], NZCV and memory.
 
     cases contain symbol/output/address/code. No host ABI or guest pointer cast
     is involved: the runner consumes explicit register values on stdin. Optional
     case['memory'](trial, registers) supplies (base, bytes, initial registers).
+    expected_flags(registers, memory, initial_nzcv) defaults to preservation.
+    Optional traces record oracle PCs; instruction count remains bounded by the
+    acyclic function size. The native executable consumes state/data only.
     """
     source = '''#include "lifted.h"
 #include <iostream>
@@ -69,7 +72,7 @@ int main() {
         if (index >= sizeof(functions) / sizeof(functions[0])) return 2;
         recomp::State state = {};
         for (unsigned i = 0; i < 31; ++i) if (!(std::cin >> state.x[i])) return 3;
-        if (!(std::cin >> state.sp)) return 3;
+        if (!(std::cin >> state.sp >> state.nzcv)) return 3;
         uint64_t base;
         std::size_t size;
         if (!(std::cin >> base >> size)) return 3;
@@ -84,6 +87,7 @@ int main() {
         for (unsigned i = 0; i < 31; ++i) std::cout << state.x[i] << ' ';
         std::cout << state.sp;
         for (unsigned i = 0; i < 32; ++i) std::cout << ' ' << state.s[i];
+        std::cout << ' ' << state.nzcv;
         for (std::size_t i = 0; i < size; ++i) std::cout << ' ' << unsigned(memory.load8(base + i));
         std::cout << '\\n';
     }
@@ -91,6 +95,10 @@ int main() {
 }
 '''
     executable = compile_runner(cases, directory, source, input_digest)
+    if evidence is not None:
+        evidence['native_executable_sha256'] = hashlib.sha256(executable.read_bytes()).hexdigest()
+        evidence['compiler_flags'] = ['-std=c++11', '-O2', '-Wall', '-Wextra', '-Werror',
+                                      '-pedantic', '-ffp-contract=off', '-fno-fast-math']
     requests, expected = [], []
     for index, case in enumerate(cases):
         cpu = Uc(UC_ARCH_ARM64, UC_MODE_ARM)
@@ -100,7 +108,14 @@ int main() {
         cpu.mem_map(start, ((end + 4095) & ~4095) - start)
         cpu.mem_write(address, code)
         mapped = set(range(start, (end + 4095) & ~4095, 4096))
+        trace = []
+        if 'traces' in case:
+            def observe(cpu, pc, size, data):
+                del cpu, size, data
+                trace.append(pc)
+            cpu.hook_add(UC_HOOK_CODE, observe)
         for trial, values in enumerate(inputs):
+            trace.clear()
             values = list(values)
             base, memory = 0, b''
             if 'memory' in case:
@@ -113,19 +128,24 @@ int main() {
                         cpu.mem_map(page, 4096)
                         mapped.add(page)
                 cpu.mem_write(base, bytes(memory))
-            values[30] = end
-            requests.append(' '.join(map(str, [index] + values + [base, len(memory)] + list(memory))))
+            sentinel = case.get('return_sentinel', end)
+            values[30] = sentinel
+            flags = (trial % 16) << 28
+            requests.append(' '.join(map(str, [index] + values + [flags, base, len(memory)] + list(memory))))
             for reg, value in zip(XREGS + [arm.UC_ARM64_REG_SP], values):
                 cpu.reg_write(reg, value)
             for i, reg in enumerate(SREGS):
                 cpu.reg_write(reg, 0xA5A50000 + i)
-            flags = (trial % 16) << 28
             cpu.reg_write(arm.UC_ARM64_REG_NZCV, flags)
-            cpu.emu_start(address, end, count=len(code) // 4)
-            if cpu.reg_read(arm.UC_ARM64_REG_PC) != end:
+            cpu.emu_start(address, sentinel, count=len(code) // 4)
+            if cpu.reg_read(arm.UC_ARM64_REG_PC) != sentinel:
                 raise AssertionError(f'{case["symbol"]}: oracle failed to return')
-            if cpu.reg_read(arm.UC_ARM64_REG_NZCV) != flags:
-                raise AssertionError(f'{case["symbol"]}: unexpected NZCV change')
+            wanted_flags = case.get('expected_flags', lambda s, m, f: f)(values, bytes(memory), flags)
+            actual_flags = cpu.reg_read(arm.UC_ARM64_REG_NZCV)
+            if actual_flags != wanted_flags:
+                raise AssertionError(f'{case["symbol"]}, trial {trial}: NZCV {actual_flags:#x} != explicit expected {wanted_flags:#x}')
+            if 'traces' in case:
+                case['traces'].append(list(trace))
             state = [cpu.reg_read(reg) for reg in XREGS + [arm.UC_ARM64_REG_SP] + SREGS]
             result_memory = bytes(cpu.mem_read(base, len(memory))) if memory else b''
             if 'expected' in case:
@@ -137,7 +157,7 @@ int main() {
                 wanted = wanted_regs + [0xA5A50000 + i for i in range(32)]
                 if state != wanted or result_memory != bytes(wanted_memory):
                     raise AssertionError(f'{case["symbol"]}, trial {trial}: oracle differs from explicit memory/state expectation')
-            expected.append(state + list(result_memory))
+            expected.append(state + [actual_flags] + list(result_memory))
     native = subprocess.run([str(executable)], input='\n'.join(requests) + '\n',
                             capture_output=True, text=True, check=True).stdout.splitlines()
     if len(native) != len(expected):
@@ -164,7 +184,7 @@ def verify(config_path, output):
     image = Image(data)
     # Keep the two existing FP oracle functions in their original test harness.
     selections = [s for s in config['functions'] if s['output'] not in ('cross_product', 'multiply3x3')
-                  and s.get('verification') not in ('memory', 'control_flow')]
+                  and s.get('verification') not in ('memory', 'control_flow', 'count_members')]
     functions = lift(image, selections)
     for fn in functions:
         if not set(fn['opcodes']) <= {'mov', 'movz', 'movn', 'add', 'sub', 'neg', 'nop', 'ret'}:
