@@ -176,6 +176,14 @@ guest FP states. See README for the command, aggregation rules and scan scope.
 
 ## What a full runtime needs
 
+The [2026-11-06 direct-call audit](DIRECT_CALL_FEASIBILITY.md) found no eligible
+original non-leaf closure within an existing-instructions plus BL/stack budget.
+Even a deliberately optimistic memory-form screen leaves every candidate blocked
+by body/CFG requirements or PLT. This is discovery evidence, not new backend
+support: BL and the existing CFG rejection gates remain unchanged. Guest LR,
+checked stack saves/restores and validated returns still require an explicit
+contract before direct native C++ calls can represent guest calls.
+
 A full backend must recover basic blocks, direct/indirect branches, jump tables,
 PLT calls and function pointers, including code absent from symbol tables.
 Import calls must marshal the guest AAPCS64 ABI to the host ABI: pointers,

@@ -62,6 +62,17 @@ These milestones do not mean the game can start or that arbitrary ARM64 can run.
 
 ## Next: general instruction and control-flow backend
 
+The [direct-call AOT feasibility audit](DIRECT_CALL_FEASIBILITY.md) examined all
+17,152 original symbol ranges, including 10,219 with direct BL. No complete
+closure fits a small BL/stack extension, even when memory forms are optimistically
+forgiven for discovery. Small concrete candidates hit PLT, recursion/loops or
+jump tables and flags. The non-leaf milestone remains incomplete; no call backend
+or semantic evidence was added. Loader/relocation development stays frozen for
+this AOT stage. A bounded next candidate is the acyclic integer leaf
+`CLoadedCarGroup::CountMembers` at `[0x5d16dc,0x5d1850)`, requiring LDRSH, TBNZ
+and explicitly represented/tested CMP/NZCV/CINC semantics. Its non-leaf callers
+still require additional instruction and loop support.
+
 - Support cyclic CFGs (loops: while, for, do-while) and loop termination analysis.
 - Support indirect branches, switch tables, jump tables, and tail calls.
 - Broaden the tested integer subset; implement/validate flags, NEON, full FP

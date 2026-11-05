@@ -6,6 +6,11 @@ It replaces the byte-matching workflow on `main`; it does not require manually
 reconstructing every function before executing translated code.
 
 **Current state: a tested leaf-function and intrafunction control-flow prototype, not a playable GTA executable.**
+The [direct-call feasibility audit](docs/DIRECT_CALL_FEASIBILITY.md) found no
+eligible original non-leaf closure within a bounded BL/stack extension, even
+under an optimistic memory-form screen. BL remains rejected; no new call
+semantic verification is claimed. The audit records exact candidate ranges and
+the recursion, PLT and broader-backend obstructions without changing the loader.
 The supported subset recompiles the original `CrossProduct`, `Multiply3x3`,
 five register-only integer leaves, eight integer-memory leaves, and five
 control-flow functions with branches/multiple RETs selected in the configuration.
