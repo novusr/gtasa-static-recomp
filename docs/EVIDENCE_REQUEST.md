@@ -199,3 +199,15 @@ retain null absent paths/hashes/biases and all seven unknown envelopes. No sourc
 code changed; separate original-instruction differential commands were not
 rerun and their prior results remain historical. Full Python regression results
 are recorded with the milestone in [DEPENDENCY_EVIDENCE.md](DEPENDENCY_EVIDENCE.md).
+
+## Subsequent connected-device evidence
+
+After this request package was committed, the user authorized broader access
+and connected an ADB device. The [device acquisition record](DEPENDENCY_EVIDENCE.md#connected-device-acquisition-and-validation-2026-11-06)
+documents all 11 files obtained without root from an SM-A155F reporting API 36.
+One libc file passed unchanged audit validators; ten files were rejected for
+unsupported packed relocation sections. Thus these names now have acquired
+device candidates, while original dependency associations remain unknown.
+The earlier matrix and empty worksheet remain the historical request baseline;
+the separate ignored device ledger records the new acquisition and validation
+status. No old pin or unknown game-process fact was overwritten.

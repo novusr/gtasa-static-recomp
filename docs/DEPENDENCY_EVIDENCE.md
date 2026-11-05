@@ -408,3 +408,79 @@ changed; separate original-instruction differential commands were not rerun.
 The audit executed no guest code or resolver. Worksheet consistency, ignored
 artifact coverage and `git diff --check` were also checked. No commit or push
 was made.
+
+## Connected-device acquisition and validation, 2026-11-06
+
+Following the user's broader access authorization and explicit notification that
+ADB was connected, read-only acquisition was extended to the connected device.
+This supersedes the earlier directory-only acquisition boundary for this new
+capture, not the historical audits or their pins. Worktree writes remain local
+to `static-recomp`; the original worktree and agents were not changed.
+
+One authorized ADB device reported model SM-A155F, Android 16, API 36 and
+`arm64-v8a` support. Its reported build identity is retained locally, not
+independently authenticated. All 11 names in [EVIDENCE_REQUEST.md](EVIDENCE_REQUEST.md)
+were readable without root at `/system/lib64/`. Readlink resolved libc/libm/libdl
+to `/apex/com.android.runtime/lib64/bionic/`; the other eight paths resolved to
+themselves. Only these explicitly enumerated paths and device build properties
+were queried. No game process or unrelated application data was inspected.
+
+The files were copied into ignored `inputs/device-sm-a155f-api36/lib/arm64-v8a/`.
+Each local SHA-256 matched device-side sha256sum before and after adb pull.
+All headers identify little-endian ELF64 AArch64. The ignored acquisition record
+`generated/device-sm-a155f-api36/acquisition.json` retains remote/resolved/local
+paths, byte counts, pins, reported build properties, capture time and limits.
+This establishes acquisition consistency, not independent authenticity or
+association with the APK. No trusted external reference hash was supplied.
+
+Each existing captured file received a separate ignored one-object manifest and
+an attempt through `tools/audit_dependencies.py` with unchanged validators.
+Bias `0x100000000` and page size `0x1000` were explicit isolated analysis
+parameters, not observed process geometry. Each manifest has no attributed
+edges and keeps all platform envelopes unknown for the game context. Device API
+and build are known only as observations about this acquisition; the original
+APK/process environment remains unestablished.
+
+| Captured file(s) | Validation result |
+| --- | --- |
+| libc.so | Accepted by native and metadata validators; RELRO sealed, readiness false |
+| libandroid.so, libm.so, liblog.so, libEGL.so, libGLESv2.so, libOpenSLES.so, libstdc++.so, libdl.so, libz.so, libGLESv1_CM.so | Rejected: `unsupported packed ELF relocation section`; no successful audit report published |
+
+Native rejection diagnostics were retained separately because the existing CLI
+surfaces a subprocess failure without displaying the captured native stderr.
+No acceptance gate, parser, format support or fixup policy was changed. Rejected
+files remain acquired but unsupported, not missing or successfully audited.
+The local validation ledger is
+`generated/device-sm-a155f-api36/validation-results.json`; individual manifests,
+logs and the accepted libc report reside beside it, all ignored.
+
+The isolated libc audit applies 1,662 existing RELATIVE fixups and leaves 548
+relocations unresolved: 519 preemptible, 14 undefined, 12 IFUNC and three
+unsupported relocation types. All 12 imports remain unresolved. It inventories
+30 IFUNC symbols, six TLS symbols, one TLS segment, two TLS sections and nine
+extra-attribute symbol entries without executing a resolver. Its two ordered
+NEEDED entries are section 22 indices 0/1: `ld-android.so`, `libdl.so`, both
+unassociated. The supplied libdl file's rejection does not create an edge or a
+provider; no further transitive file acquisition was performed.
+
+The original manifest was preserved byte-for-byte and all three original files
+were rehashed against its unchanged expected pins. Historical GTASA report
+assertions still match 5,252 RELATIVE applied, 21,458 unresolved (21,072
+preemptible / 386 undefined), 274 unresolved imports, sealed RELRO and readiness
+false. This device capture does not resolve any original dependency, attribute
+SCAnd/OpenAL, identify target SDK, or establish process namespace/main/preload/
+load order. It is not evidence that GTA runs on this device.
+
+Next reconcile user-supplied provenance or external process evidence if it
+becomes available. Ten acquired files require separately authorized future
+format-support work before successful audit; no such implementation is part of
+this capture. Dependency closure and original resolution remain unknown.
+
+Validation for this capture passed pinned dependency sync and all 11 dependency
+manifest regression tests. Acquisition assertions checked all remote/local
+hashes and ARM64 headers, original pins and manifest preservation; audit
+assertions checked rejection without publication and accepted libc's sealed,
+unresolved, non-executable state. Ignore coverage and `git diff --check` passed.
+No tracked source changed, so build/full CTest/Python and separate semantic
+commands were not rerun; their prior results remain historical. No commit or
+push was made for this capture.
