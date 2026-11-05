@@ -12,7 +12,8 @@ control-flow functions with branches/multiple RETs selected in the configuration
 The next stages are cyclic control-flow (loops), switch/jump tables, a broader
 instruction backend, further ELF relocation support, guest-to-host ABI bridges
 and platform services. PT_LOAD/BSS data loading, explicit RELA RELATIVE and bounded internal-symbol
-ABS64/GLOB_DAT/JUMP_SLOT fixups are now available; these do not authorize initialization or execution.
+ABS64/GLOB_DAT/JUMP_SLOT fixups and explicit transactional PT_GNU_RELRO write
+removal are now available; these do not authorize initialization or execution.
 
 ## What is here
 
@@ -23,8 +24,9 @@ ABS64/GLOB_DAT/JUMP_SLOT fixups are now available; these do not authorize initia
   checked little-endian guest memory and scalar FP operations.
 - `include/recomp/elf_image.h`, `src/elf_image.cpp`: hash-verified PT_LOAD/BSS
   loading with explicit bias, checked segment storage, transactional RELA RELATIVE
-  and internal-symbol fixups and separate applied/unresolved inventories.
-- `tools/load_image.py`: original-image data/relocation smoke test and applied/unresolved report.
+  and internal-symbol fixups, separate applied/unresolved inventories and explicit
+  guest-page RELRO sealing.
+- `tools/load_image.py`: original-image data/relocation/RELRO smoke test and applied/unresolved report.
 - `docs/ELF_LOADING.md`: loader contracts, verification and remaining linker work.
 - `CMakeLists.txt`: host C++11 build, independent of the Android NDK.
 - `tests/`: synthetic ELF/lifter checks, control-flow semantics and native smoke tests.
@@ -61,7 +63,7 @@ cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
 cmake --build build
 ctest --test-dir build --output-on-failure
 uv run python -m unittest discover -s tests -p 'test_*.py'
-python3 tools/load_image.py --load-bias 0x100000000 --output generated/image-load.json
+python3 tools/load_image.py --load-bias 0x100000000 --guest-page-size 0x1000 --output generated/image-load.json
 uv run python tools/verify_leaf.py
 uv run python tools/verify_integer.py
 uv run python tools/verify_memory.py

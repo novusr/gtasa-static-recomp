@@ -185,7 +185,7 @@ ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha
             r.range(offset, size);
             dynamic_ranges.push_back(std::make_pair(offset, size));
         }
-        if (kind != 1) continue;
+        if (kind != 1 && kind != 0x6474e552) continue;
         ImageSegment s;
         s.flags = static_cast<uint32_t>(r.word(p + 4, 4));
         s.file_offset = r.word(p + 8, 8);
@@ -204,6 +204,11 @@ ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha
         add(s.virtual_address, s.memory_size);
         s.address = add(s.virtual_address, load_bias);
         add(s.address, s.memory_size);
+        if (kind == 0x6474e552) {
+            require(s.memory_size != 0, "empty PT_GNU_RELRO unsupported");
+            image.relro_.push_back(s);
+            continue;
+        }
         allocated = add(allocated, s.memory_size);
         require(allocated <= memory_limit && s.memory_size <= std::numeric_limits<std::size_t>::max(),
                 "ELF guest allocation limit exceeded");
@@ -215,6 +220,29 @@ ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha
         image.segments_.push_back(s);
     }
     require(!image.segments_.empty() && allocated, "ELF has no nonempty PT_LOAD");
+
+    for (const ImageSegment& relro : image.relro_) {
+        bool found = false;
+        for (const ImageSegment& load : image.segments_) {
+            if (relro.address < load.address || relro.memory_size > load.memory_size ||
+                relro.address - load.address > load.memory_size - relro.memory_size) continue;
+            // File-backed RELRO must describe the same bytes as its owning load.
+            if (relro.file_size) {
+                const uint64_t offset = relro.address - load.address;
+                require(offset <= load.file_size && relro.file_size <= load.file_size - offset &&
+                        relro.file_offset == add(load.file_offset, offset),
+                        "PT_GNU_RELRO file range disagrees with PT_LOAD");
+            }
+            found = true;
+        }
+        require(found, "PT_GNU_RELRO must fit one PT_LOAD");
+        for (const ImageSegment& other : image.relro_) {
+            if (&other == &relro) break;
+            require(relro.address >= other.address + other.memory_size ||
+                    other.address >= relro.address + relro.memory_size,
+                    "overlapping PT_GNU_RELRO ranges unsupported");
+        }
+    }
 
     std::vector<Section> sections;
     for (uint64_t i = 0; i < shnum; ++i) {
@@ -334,6 +362,43 @@ ElfImage ElfImage::load(const std::string& path, const std::string& expected_sha
     return image;
 }
 
+void ElfImage::seal_relro(uint64_t guest_page_size) {
+    require(guest_page_size && !(guest_page_size & (guest_page_size - 1)),
+            "guest page size must be an explicit power of two");
+    if (relro_sealed_) {
+        require(guest_page_size == relro_page_size_, "RELRO already sealed with different page size");
+        return;
+    }
+    require(relro_.empty() || bias_ % guest_page_size == 0, "RELRO load bias must be guest-page aligned");
+    std::vector<GuestRange> plan;
+    for (const ImageSegment& relro : relro_) {
+        const uint64_t start = add(relro.virtual_address & ~(guest_page_size - 1), bias_);
+        const uint64_t end_va = add(relro.virtual_address, relro.memory_size);
+        const uint64_t padding = (guest_page_size - end_va % guest_page_size) % guest_page_size;
+        const uint64_t end = add(add(end_va, padding), bias_);
+        for (const ImageSegment& load : segments_) {
+            const uint64_t load_end = add(load.address, load.memory_size);
+            if (!load.memory_size || load.address >= end || load_end <= start) continue;
+            require(relro.address >= load.address &&
+                    relro.address + relro.memory_size <= load_end,
+                    "rounded RELRO touches another PT_LOAD (unsupported)");
+            GuestRange range = {std::max(start, load.address), 0};
+            range.size = std::min(end, load_end) - range.address;
+            // Overlapping page envelopes are deliberately rejected, not merged.
+            for (const GuestRange& old : plan)
+                require(range.address >= old.address + old.size ||
+                        old.address >= range.address + range.size,
+                        "overlapping rounded RELRO ranges unsupported");
+            memory_.region(range.address, static_cast<std::size_t>(range.size), 0);
+            plan.push_back(range);
+        }
+    }
+    // All validation and allocation finished. No bytes change; swap cannot throw.
+    memory_.read_only_.swap(plan);
+    relro_page_size_ = guest_page_size;
+    relro_sealed_ = true;
+}
+
 void ElfImage::apply_relative_relocations() { apply_relocation_batch(true, false); }
 void ElfImage::apply_symbol_relocations() { apply_relocation_batch(false, true); }
 void ElfImage::apply_relocations() { apply_relocation_batch(true, true); }
@@ -369,7 +434,7 @@ void ElfImage::apply_relocation_batch(bool relative, bool symbols) {
             require(it->first == r.address && it->second == 1,
                     "duplicate/overlapping RELA target (composition unsupported)");
         }
-        memory_.region(r.address, 8, true); // checked complete range and PF_W
+        memory_.region(r.address, 8, 2); // checked complete range and PF_W
         uint64_t base = bias_;
         if (is_symbol) {
             // SHN_ABS is invariant under relocation. Ordinary ET_DYN values

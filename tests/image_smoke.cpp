@@ -132,11 +132,54 @@ void relocate(recomp::ElfImage& image, const std::string& mode) {
     check(!image.ready_to_execute(), "relocated image reported executable readiness");
 }
 
+void seal_checked(recomp::ElfImage& image, uint64_t page_size) {
+    const std::size_t applied = image.applied_relocations().size();
+    const std::size_t pending = image.unresolved_relocations().size();
+    const std::size_t imports = image.unresolved_imports().size();
+    std::vector<std::vector<uint8_t> > snapshots;
+    for (const recomp::ImageSegment& s : image.segments()) {
+        std::vector<uint8_t> bytes;
+        for (uint64_t i = 0; i < s.memory_size; ++i) {
+            check(image.memory().permissions(s.address + i) == s.flags, "premature RELRO sealing");
+            if (s.flags & 4) bytes.push_back(image.memory().load8(s.address + i));
+        }
+        snapshots.push_back(bytes);
+    }
+    image.seal_relro(page_size);
+    image.seal_relro(page_size);
+    image.apply_relocations(); // both successful phases remain no-ops after sealing
+    check(image.relro_sealed() && image.applied_relocations().size() == applied &&
+          image.unresolved_relocations().size() == pending &&
+          image.unresolved_imports().size() == imports, "sealing changed linker inventories");
+    for (std::size_t n = 0; n < image.segments().size(); ++n) {
+        const recomp::ImageSegment& s = image.segments()[n];
+        for (uint64_t i = 0; i < s.memory_size; ++i) {
+            const uint64_t address = s.address + i;
+            uint32_t flags = s.flags;
+            for (const recomp::GuestRange& range : image.sealed_relro_ranges())
+                if (address >= range.address && address - range.address < range.size) flags &= ~2U;
+            check(image.memory().permissions(address) == flags, "RELRO permissions mismatch");
+            if (s.flags & 4)
+                check(image.memory().load8(address) == snapshots[n][static_cast<std::size_t>(i)],
+                      "sealing changed bytes");
+        }
+    }
+    for (const recomp::GuestRange& range : image.sealed_relro_ranges()) {
+        const uint64_t probes[] = {range.address, range.address + range.size - 1};
+        for (uint64_t address : probes) {
+            bool denied = false;
+            try { image.memory().store8(address, 0); }
+            catch (const std::out_of_range&) { denied = true; }
+            check(denied, "RELRO store succeeded");
+        }
+    }
+}
+
 }
 
 int main(int argc, char** argv) {
     try {
-        check(argc == 4 || argc == 5 || argc == 6, "usage: recomp_image_smoke INPUT SHA256 LOAD_BIAS [MEMORY_LIMIT [--relocate|--symbols|--all]]");
+        check(argc == 4 || argc == 5 || argc == 6 || argc == 7, "usage: recomp_image_smoke INPUT SHA256 LOAD_BIAS [MEMORY_LIMIT [--relocate|--symbols|--all [GUEST_PAGE_SIZE]]]");
         std::size_t used = 0;
         const std::string bias_text = argv[3];
         const uint64_t bias = std::stoull(bias_text, &used, 0);
@@ -191,12 +234,13 @@ int main(int argc, char** argv) {
                 if (!mapped) fault(image.memory(), address);
             }
         }
-        if (argc == 6) {
+        if (argc >= 6) {
             const std::string mode = argv[5];
             check(mode == "--relocate" || mode == "--symbols" || mode == "--all" ||
                   mode == "--relative-symbols" || mode == "--symbols-relative", "unknown image operation");
             relocate(image, mode);
         }
+        if (argc == 7) seal_checked(image, std::stoull(argv[6], NULL, 0));
         std::cout << "{\"sha256\":" << quote(image.sha256()) << ",\"load_bias\":" << bias
                   << ",\"ready_to_execute\":false,\"file_bytes_checked\":" << copied
                   << ",\"bss_bytes_checked\":" << bss << ",\"segments\":" << image.segments().size()
@@ -206,6 +250,29 @@ int main(int argc, char** argv) {
             if (!first) std::cout << ',';
             first = false;
             std::cout << quote(name);
+        }
+        uint64_t permission_bytes = 0;
+        if (image.relro_sealed())
+            for (const recomp::ImageSegment& segment : image.segments()) permission_bytes += segment.memory_size;
+        std::cout << "],\"relro_permission_bytes_checked\":" << permission_bytes
+                  << ",\"relro_store_rejections\":" << image.sealed_relro_ranges().size() * 2
+                  << ",\"relro_sealed\":" << (image.relro_sealed() ? "true" : "false")
+                  << ",\"guest_page_size\":" << image.relro_page_size() << ",\"relro\":[";
+        first = true;
+        for (const recomp::ImageSegment& r : image.relro_segments()) {
+            if (!first) std::cout << ',';
+            first = false;
+            std::cout << "{\"virtual_address\":" << r.virtual_address << ",\"address\":" << r.address
+                      << ",\"file_offset\":" << r.file_offset << ",\"file_size\":" << r.file_size
+                      << ",\"memory_size\":" << r.memory_size << ",\"alignment\":" << r.alignment
+                      << ",\"flags\":" << r.flags << '}';
+        }
+        std::cout << "],\"sealed_relro_ranges\":[";
+        first = true;
+        for (const recomp::GuestRange& r : image.sealed_relro_ranges()) {
+            if (!first) std::cout << ',';
+            first = false;
+            std::cout << "{\"address\":" << r.address << ",\"size\":" << r.size << '}';
         }
         std::cout << "],\"imports\":[";
         first = true;

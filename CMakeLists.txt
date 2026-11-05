@@ -45,7 +45,7 @@ if(BUILD_TESTING)
     find_package(Python3 REQUIRED COMPONENTS Interpreter)
     add_test(NAME original_image_load COMMAND "${Python3_EXECUTABLE}"
         "${CMAKE_SOURCE_DIR}/tools/load_image.py"
-        --runner "$<TARGET_FILE:recomp_image_smoke>" --load-bias 0x100000000
+        --runner "$<TARGET_FILE:recomp_image_smoke>" --load-bias 0x100000000 --guest-page-size 0x1000
         --output "${CMAKE_BINARY_DIR}/image-load.json")
     add_test(NAME lifted_leaf_semantics COMMAND recomp_leaf_smoke)
     add_test(NAME guest_memory_accesses COMMAND recomp_memory_smoke)

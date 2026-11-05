@@ -30,7 +30,7 @@ program and section header numbering. For every PT_LOAD:
 - Allocation is per segment. Gaps consume no backing storage and remain unmapped;
   page rounding does not make gaps accessible. Empty segments map no bytes.
 - PF_R/PF_W control runtime data accesses. PF_X is metadata, never host execution
-  permission. This does not yet implement RELRO transitions or guest exceptions.
+  permission. Explicit RELRO sealing can remove PF_W; guest exceptions are not implemented.
 
 The default total guest allocation limit is 512 MiB and can be lowered or raised
 explicitly. File ingestion has a separate fixed 512 MiB limit. Segment exclusive
@@ -76,9 +76,9 @@ one existing mapping. Every full 8-byte write is validated through checked
 PT_LOAD PF_W bit.** Read permission is not required; write-only mappings stay
 write-only. Read-only and executable/read-only mappings are rejected; no global
 write window, permission override, host mapping or guest-pointer cast is used.
-PF_X remains metadata. PT_GNU_RELRO sealing is still unimplemented: data in a
-PF_W load segment is writable during and after this phase; this change does not
-claim final linker permissions or execution readiness. Supporting a read-only
+PF_X remains metadata. A PF_W target is writable until an explicit RELRO seal
+removes its write permission. Neither loading nor relocation application seals
+the image or establishes execution readiness. Supporting a read-only
 relocation target later requires an explicit bounded policy, not an automatic
 permission bypass.
 
@@ -188,6 +188,96 @@ inferred and they do not gain permission to write. No relocation composition is 
 commit uses checked little-endian stores, then swaps prepared inventories and
 marks only the requested phases complete. Exclusive image access is required.
 
+## Explicit PT_GNU_RELRO sealing
+
+Sources checked on 2026-11-06:
+
+- The generic ABI [Program Header](https://gabi.xinuos.com/elf/07-pheader.html),
+  especially the definitions of p_vaddr, p_memsz, p_offset and p_align. Alignment
+  0/1 means no alignment requirement; larger p_align values are powers of two
+  with congruent virtual/file offsets. p_align is not a declaration of page size.
+- Android's official [Bionic linker_phdr.cpp](https://android.googlesource.com/platform/bionic/+/master/linker/linker_phdr.cpp),
+  `_phdr_table_set_gnu_relro_prot` and `phdr_table_protect_gnu_relro` (inspected
+  blob `5967e2d48a29cbbaca8f87a2be42361ab43decd5`). The ordinary Android path
+  protects all pages touched by p_vaddr through p_vaddr+p_memsz, rounding the
+  start down and the exclusive end up, with load bias added. Protection is a
+  separate step after relocation. Current Bionic also has segment padding and
+  16 KiB compatibility paths; this loader does not implement those paths.
+- Official Android [page-size guidance](https://developer.android.com/guide/practices/page-sizes),
+  including its RELRO alignment discussion. Android supports differing page
+  sizes; an unaligned RELRO end can protect subsequent writable data on the
+  same page. Neither host page size nor ELF p_align identifies a guest profile.
+
+`image.relro_segments()` retains every original RELRO header's virtual address,
+file offset/size, memory size, flags and alignment, together with checked biased
+`address`. Loading validates these before publishing mappings. The bounded input
+policy requires nonempty raw intervals `[bias+p_vaddr, bias+p_vaddr+p_memsz)`
+inside one original PT_LOAD, no raw overlap, filesz <= memsz, valid file bounds,
+known flag bits, checked exclusive ends and bias addition, and the same alignment
+checks as PT_LOAD. File-backed RELRO must describe the owning load's exact file
+bytes; BSS-only RELRO is allowed. Empty headers, straddling/gapped raw intervals,
+overlapping headers and inconsistent file provenance are explicitly unsupported.
+These are conservative loader restrictions, not a claim that all other layouts
+are forbidden by ELF.
+
+Call `image.seal_relro(guest_page_size)` explicitly. The argument must be a nonzero
+uint64 power of two, and a nonempty RELRO inventory requires a page-aligned bias.
+There is no default page size and no host-page query. The native/Python smoke
+passes `--guest-page-size 0x1000` as an explicit 4 KiB test profile, not an inferred
+property of the input or a claim about every Android device. Small powers of two
+in synthetic tests exercise arithmetic; accepting a geometry does not validate a
+complete Android platform configuration.
+
+For each header, calculate `lo=floor(p_vaddr/P)*P+bias` and
+`hi=ceil((p_vaddr+p_memsz)/P)*P+bias` with checked rounding and additions.
+The effective protected interval is the intersection of `[lo,hi)` with its
+owning PT_LOAD. This retains the existing exact-byte mapping contract: unmapped
+prefix/suffix page padding acquires neither storage nor access permissions.
+If the rounded envelope touches another nonempty PT_LOAD, sealing rejects it;
+shared-page segment permission merging is outside this loader. Multiple disjoint
+headers are supported, but intersecting rounded protection intervals are rejected
+rather than silently merged. `sealed_relro_ranges()` reports the effective biased
+intervals; the original unrounded inventory remains available separately.
+The rounding can remove write permission from mapped bytes outside the raw
+RELRO interval on its boundary pages, as the Android page rule requires.
+
+Sealing removes PF_W only (`old_flags & ~PF_W`). PF_R and PF_X are preserved,
+never added: a sealed write-only range becomes inaccessible, while neighboring
+write-only storage remains write-only. This permission attenuation is deliberately
+more restrictive than assigning Bionic's PROT_READ to a range lacking original
+read permission. No host mprotect, dynamic loading, symbol lookup, host executable
+mapping or guest-pointer cast is involved.
+
+Memory retains each original storage region and installs a separate immutable
+permission overlay instead of splitting byte vectors. `Memory::permissions(a,n)`
+requires the **whole** nonempty range to fit one original mapping and returns the
+permissions valid for the entire access. Reads crossing an overlay edge remain
+valid if the original mapping permits reading. A store touching any protected
+byte rejects before writing any byte. Accesses across adjacent original mappings
+still reject, even with identical flags; sealing does not weaken full-range
+validation. The standalone sandbox, including UINT64_MAX boundary checks, retains
+its prior behavior.
+
+The complete overlay is validated and allocated in a temporary vector before
+commit. Commit swaps it into Memory, records page size, then marks
+`relro_sealed()=true`; no byte changes or allocations occur during commit.
+Validation/allocation failure preserves all bytes, permissions, inventories,
+page-size and sealing status. Exclusive image access is required throughout,
+as for relocation batches. Repeating sealing with the same geometry is a no-op;
+a different geometry rejects without changing the committed seal. With no RELRO,
+a successful call records an empty completed seal and changes no permissions.
+
+Sealing has its own state, independent of both relocation completion guards and
+applied/unresolved inventories. Normal order is load, apply supported relocations,
+then seal. Sealing before relocation is allowed for inspection/testing, but any
+new supported fixup touching sealed storage rejects through the same full-range
+write check. A combined relocation batch with even one such target fails without
+partial writes or status changes. Relocations outside protected storage remain
+eligible. A previously successful relocation phase still returns as a no-op
+after sealing. Unresolved imports, unsupported/preemptible relocations, and
+initializer requirements remain unresolved; sealing is not startup authorization.
+`ready_to_execute()` remains false, even with an empty unresolved inventory.
+
 ## Unresolved work inventory
 
 `unresolved_imports()` records every named undefined SHT_DYNSYM symbol, including
@@ -224,7 +314,7 @@ cmake -S . -B build -G Ninja
 cmake --build build
 ctest --test-dir build --output-on-failure
 uv run python -m unittest discover -s tests -p 'test_*.py'
-python3 tools/load_image.py --load-bias 0x100000000 --output generated/image-load.json
+python3 tools/load_image.py --load-bias 0x100000000 --guest-page-size 0x1000 --output generated/image-load.json
 ```
 
 The synthetic tests compile a fresh native C++11 loader and test nonidentity
@@ -287,8 +377,50 @@ is part of the image smoke test. The semantic commands run only the existing
 bounded test leaves in synthetic harnesses, never guest initialization.
 
 Next implement dependency/preemptible resolution and symbol versioning, verify
-platform-specific JUMP_SLOT addend policy, add RELRO sealing and further format
+platform-specific JUMP_SLOT addend policy, extend RELRO/platform format
 support as required, then explicit guest/host ABI bridges and compiled-address
 dispatch. TLS, stack/thread state and platform services must precede controlled
 initializer execution. Unsupported requirements must reject startup; no
 interpreter, JIT, or success-stub fallback is implied.
+
+The RELRO regression suite adds raw/biased inventories, absent/single/multiple
+ranges, unaligned starts/ends, mapping clipping, original and rounded overlap,
+file provenance, malformed sizes/flags/alignment, raw/bias/rounded-end overflow,
+page geometry, before/after relocation order, internal-symbol rejection,
+completed-phase no-ops, every access width/offset across permission edges,
+neighbor permissions including all eight PF combinations, write-only fixups,
+and failure/retry state checks. A test-only allocator fails each allocation in
+sealing to verify that no earlier range acquires partial protection.
+
+The original-image smoke now also independently decodes PT_GNU_RELRO program
+headers with Python struct, computes rounded intersections using the explicit
+guest geometry, and compares native raw/effective reports. The native probe
+checks every mapped byte's permissions before/after sealing, preserves readable
+bytes, rejects stores at both ends of protected ranges, and repeats sealing and
+completed relocation application. The prior file/BSS, hole, relocation-value,
+byte, definition and import checks remain in place. No guest code is called.
+
+RELRO verification on 2026-11-06 passed the C++11 build, all four CTest tests,
+all 73 Python tests (including ten RELRO test methods with multiple synthetic
+cases), and the existing four differential commands: leaf (2,048 calls / 6,144
+result words), integer (760 calls), memory (1,216 calls) and control flow (760
+calls). Input inspection and lifting also passed with the configured hash.
+Both explicit 4 KiB and 16 KiB smoke profiles passed at bias `0x100000000`:
+
+| Guest page size | Raw biased RELRO interval | Effective protected interval | Bytes protected |
+| --- | --- | --- | --- |
+| 0x1000 | [0x100821958, 0x100852000) | [0x100821958, 0x100852000) | 198,312 |
+| 0x4000 | [0x100821958, 0x100852000) | [0x100821958, 0x100854000) | 206,504 |
+
+Each profile checked all 13,816,784 mapped bytes' permissions before/after
+sealing and rejected both endpoint stores. The initial rounded prefix remains
+unmapped; the 16 KiB profile additionally protects 8,192 mapped trailing bytes,
+as required by its page geometry. This is permission-policy evidence, not proof
+that the original game supports that device profile. Hash, file/BSS counts,
+5,252 applied RELATIVE entries, zero eligible internal-symbol entries, 21,458
+unresolved relocations and all 274 unresolved imports are unchanged. Reports
+are ignored `generated/image-load.json`, `generated/image-load-16k.json`, and
+CTest's `build/image-load.json`. No game, constructor, JNI_OnLoad, initializer
+or IFUNC resolver was invoked. Shared-page load layouts, Android padding/compat
+modes, dependency/version/preemption resolution, remaining relocation forms and
+platform startup remain future work; readiness remains false.

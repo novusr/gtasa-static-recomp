@@ -32,14 +32,30 @@ void Memory::map(uint64_t base, std::size_t size, uint32_t flags,
     regions_.push_back(std::move(r));
 }
 
-const Memory::Region& Memory::region(uint64_t address, std::size_t size, bool write) const {
+uint32_t Memory::permissions(uint64_t address, std::size_t size) const {
+    if (size && size - 1 <= UINT64_MAX - address) {
+        for (const Region& r : regions_) {
+            if (address < r.base || size > r.bytes.size() ||
+                address - r.base > r.bytes.size() - size) continue;
+            uint32_t flags = r.flags;
+            for (const GuestRange& range : read_only_) {
+                if (address <= range.address ? range.address - address < size :
+                    address - range.address < range.size) flags &= ~2U;
+            }
+            return flags;
+        }
+    }
+    throw std::out_of_range("unmapped guest memory access");
+}
+
+const Memory::Region& Memory::region(uint64_t address, std::size_t size, uint32_t required) const {
     // Validate the entire access before touching any byte. Subtractions avoid
     // overflowing either the guest address or the host size calculation.
     if (size != 0 && size - 1 <= std::numeric_limits<uint64_t>::max() - address) {
         for (const Region& r : regions_) {
             if (address >= r.base && r.bytes.size() >= size &&
                 address - r.base <= r.bytes.size() - size) {
-                if (!(r.flags & (write ? 2U : 4U))) {
+                if ((permissions(address, size) & required) != required) {
                     throw std::out_of_range("guest mapping permission denied");
                 }
                 return r;
@@ -50,7 +66,7 @@ const Memory::Region& Memory::region(uint64_t address, std::size_t size, bool wr
 }
 
 uint64_t Memory::load(uint64_t address, std::size_t size) const {
-    const Region& r = region(address, size, false);
+    const Region& r = region(address, size, 4);
     const std::size_t at = static_cast<std::size_t>(address - r.base);
     uint64_t value = 0;
     for (std::size_t i = 0; i < size; ++i) {
@@ -60,7 +76,7 @@ uint64_t Memory::load(uint64_t address, std::size_t size) const {
 }
 
 void Memory::store(uint64_t address, uint64_t value, std::size_t size) {
-    const Region& checked = region(address, size, true);
+    const Region& checked = region(address, size, 2);
     const std::size_t at = static_cast<std::size_t>(address - checked.base);
     // region() completed bounds and permission validation before any mutation.
     Region& r = regions_[static_cast<std::size_t>(&checked - regions_.data())];

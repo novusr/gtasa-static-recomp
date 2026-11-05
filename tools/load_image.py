@@ -16,10 +16,13 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--runner', type=Path, default=ROOT / 'build/recomp_image_smoke')
     parser.add_argument('--load-bias', required=True, type=lambda s: int(s, 0))
+    parser.add_argument('--guest-page-size', required=True, type=lambda s: int(s, 0))
     parser.add_argument('--output', type=Path, default=ROOT / 'generated/image-load.json')
     args = parser.parse_args()
     if not 0 <= args.load_bias < 1 << 64:
         parser.error('load bias must be an unsigned 64-bit guest address')
+    if not 0 < args.guest_page_size < 1 << 64 or args.guest_page_size & (args.guest_page_size - 1):
+        parser.error('guest page size must be an explicit unsigned power of two')
     config = json.loads((ROOT / 'config/recomp.json').read_text())
     # Native loader verifies this exact file buffer before parsing or mapping.
     source = (ROOT / config['input']).read_bytes()
@@ -27,6 +30,26 @@ def main():
         raise RuntimeError('independent smoke input SHA-256 mismatch')
     # Decode sections and symbols directly with struct, independently of the
     # native inventory. Python signed arbitrary-precision sums are reduced last.
+    phoff = struct.unpack_from('<Q', source, 32)[0]
+    phnum = struct.unpack_from('<H', source, 56)[0]
+    headers = [struct.unpack_from('<IIQQQQQQ', source, phoff + i * 56)
+               for i in range(phnum)]
+    relro, sealed_ranges = [], []
+    for kind, flags, offset, va, _, filesz, memsz, align in headers:
+        if kind != 0x6474e552:
+            continue
+        relro.append(dict(virtual_address=va, address=va + args.load_bias,
+                          file_offset=offset, file_size=filesz, memory_size=memsz,
+                          alignment=align, flags=flags))
+        start = va // args.guest_page_size * args.guest_page_size + args.load_bias
+        end = ((va + memsz + args.guest_page_size - 1) // args.guest_page_size *
+               args.guest_page_size + args.load_bias)
+        for load in headers:
+            if load[0] != 1 or not load[6]:
+                continue
+            lo, hi = max(start, load[3] + args.load_bias), min(end, load[3] + args.load_bias + load[6])
+            if lo < hi:
+                sealed_ranges.append(dict(address=lo, size=hi - lo))
     expected = []
     pending = []
     shoff = struct.unpack_from('<Q', source, 40)[0]
@@ -107,9 +130,13 @@ def main():
                                  bytes=list(value.to_bytes(8, 'little')), status='applied',
                                  definition=definition))
     result = subprocess.run([str(args.runner.resolve()), str(ROOT / config['input']),
-                             config['sha256'], str(args.load_bias), '536870912', '--all'],
+                             config['sha256'], str(args.load_bias), '536870912', '--all', str(args.guest_page_size)],
                             check=True, capture_output=True, text=True)
     report = json.loads(result.stdout)
+    if (report['relro'] != relro or report['sealed_relro_ranges'] != sealed_ranges or
+            not report['relro_sealed'] or report['guest_page_size'] != args.guest_page_size):
+        raise RuntimeError('RELRO inventory/sealing differs from independent program-header decode')
+    report['relro_oracle'] = 'independent ELF program-header decode and explicit guest-page rounding'
     if report['ready_to_execute']:
         raise RuntimeError('data loader incorrectly reported execution readiness')
     if report['applied_relocations'] != expected:

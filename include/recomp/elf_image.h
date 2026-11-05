@@ -62,6 +62,13 @@ public:
     void apply_symbol_relocations();
     // One transaction for both phases, including validation/allocation.
     void apply_relocations();
+    // Explicit guest page geometry, never inferred from p_align or host pages.
+    // Atomic permission-only transaction; no relocation/import completion implied.
+    void seal_relro(uint64_t guest_page_size);
+    bool relro_sealed() const { return relro_sealed_; }
+    uint64_t relro_page_size() const { return relro_page_size_; }
+    const std::vector<ImageSegment>& relro_segments() const { return relro_; }
+    const std::vector<GuestRange>& sealed_relro_ranges() const { return memory_.read_only_; }
     const std::vector<ImageSymbol>& symbols() const { return symbols_; }
     const std::vector<ImageRelocation>& applied_relocations() const { return applied_; }
     Memory& memory() { return memory_; }
@@ -75,12 +82,16 @@ public:
     // Even an image with empty inventories has no runtime startup support yet.
     bool ready_to_execute() const { return false; }
 private:
-    ElfImage() : memory_(0, 0), bias_(0), relative_applied_(false), symbols_applied_(false) {}
+    ElfImage() : memory_(0, 0), bias_(0), relative_applied_(false), symbols_applied_(false),
+                 relro_sealed_(false), relro_page_size_(0) {}
     void apply_relocation_batch(bool relative, bool symbols);
     Memory memory_;
     uint64_t bias_;
     bool relative_applied_;
     bool symbols_applied_;
+    bool relro_sealed_;
+    uint64_t relro_page_size_;
+    std::vector<ImageSegment> relro_;
     std::vector<ImageSymbol> symbols_;
     std::string sha256_;
     std::vector<ImageSegment> segments_;

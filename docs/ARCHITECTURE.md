@@ -115,9 +115,11 @@ Effective addresses wrap modulo 2^64 during unsigned base-plus-offset arithmetic
 The subsequent access may not cross UINT64_MAX or a sandbox boundary. Range
 checks use subtraction, so even an 8-byte access ending at UINT64_MAX can be
 represented without overflowing an exclusive-end calculation. Unaligned normal
-memory is supported, assuming alignment/SP-alignment checking disabled; memory
-permissions, devices, tags, guest data aborts and exception delivery are not
-modeled. A host bounds exception is a runtime rejection, not an emulated abort.
+memory is supported, assuming alignment/SP-alignment checking disabled; MMU
+translation, devices, tags, guest data aborts and exception delivery are not
+modeled. ELF images additionally enforce PT_LOAD permissions and explicit RELRO
+write removal through the same checked accesses. A host bounds exception is a
+runtime rejection, not an emulated abort.
 
 The native memory smoke test covers all widths, small/empty buffers, every
 alignment, high addresses, unchanged bytes after failed stores and bytewise
@@ -213,3 +215,19 @@ References:
 - Arm A64 LDR immediate addressing and scaling: https://support.arm.com/documentation/100069/0608/A64-Data-Transfer-Instructions/LDR--immediate-
 - Remill: https://github.com/lifting-bits/remill
 - Unicorn test oracle: https://www.unicorn-engine.org/
+
+## Guest ELF RELRO phase
+
+The loader inventories raw PT_GNU_RELRO headers and checked biased guest ranges.
+`seal_relro(guest_page_size)` is a separate, transactional, idempotent permission
+operation after supported relocation application. Its page geometry is explicit,
+never inferred from host pages or p_align. Android's ordinary round-down/round-up
+policy is applied only to already mapped bytes; unsupported overlaps/shared-page
+layouts reject. All allocation/validation precedes a permission-overlay swap;
+no bytes change. Read and execute permissions are never added, including on
+write-only mappings. Full accesses must still fit one original storage mapping;
+any store touching a protected byte fails before mutation. Completed relocation
+phases remain no-ops, and new writes require current PF_W permissions. Sealing
+has separate state and leaves imports/unresolved relocations and execution
+readiness unchanged. See [ELF loading](ELF_LOADING.md#explicit-pt_gnu_relro-sealing)
+for official sources, alignment, rounding, bounded input policy and verification.

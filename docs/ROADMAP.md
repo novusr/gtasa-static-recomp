@@ -42,6 +42,15 @@
   no eligible internal symbols: 5,252 RELATIVE applied, 21,072 preemptible and
   386 undefined relocations unresolved, with all 274 imports unresolved.
 
+- Explicit transactional PT_GNU_RELRO sealing with caller-supplied guest page
+  size, raw/biased and effective inventories, Android page rounding over exact
+  guest mappings, checked write removal without adding read/execute permissions,
+  and independent sealing state. Synthetic tests cover malformed ranges,
+  permission boundaries, relocation order and allocation-failure atomicity;
+  original-image smoke independently checks RELRO and retained relocation/import
+  results. Shared-page PT_LOAD layouts and Android padding/compatibility modes
+  remain unsupported; readiness stays false.
+
 These milestones do not mean the game can start or that arbitrary ARM64 can run.
 
 ## Next: general instruction and control-flow backend
@@ -58,7 +67,8 @@ These milestones do not mean the game can start or that arbitrary ARM64 can run.
 ## Next: ELF image and ABI runtime
 
 - Extend the bounded PT_LOAD/BSS loader with Android linker requirements,
-  relocation target validation, RELRO policy and any required packed-table support.
+  relocation target validation, further RELRO/platform layouts and any required
+  packed-table support.
 - Extend bounded internal-symbol relocation support with dependency/preemptible
   resolution, symbol versions and verified platform JUMP_SLOT addend policy;
   implement TLS and other required relocation forms. Unrecognized requirements
