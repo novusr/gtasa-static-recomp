@@ -1,0 +1,64 @@
+name: Remill LLVM21 isolated toolchain
+on:
+  push:
+    branches: [ci/remill-llvm21-toolchain]
+permissions:
+  contents: read
+concurrency:
+  group: remill-toolchain-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  toolchain:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    env:
+      CI_WORK_ROOT: ${{ runner.temp }}/remill-proof
+      CI_PREFIX: /home/novusr/Documents/gtasa-static-recomp/generated/backend-proof/prefix-ci
+    steps:
+      - name: Checkout toolchain scripts only
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Acquire signed system toolchain packages
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$CI_WORK_ROOT/logs" "$CI_WORK_ROOT/artifacts"
+          curl --fail --location --retry 2 https://apt.llvm.org/llvm-snapshot.gpg.key -o "$RUNNER_TEMP/llvm-key.asc"
+          printf '%s  %s\n' 8b2a587ffd672c4687e7581dad4b2f6c1bb2ad6b480cd9771ba2ff48e0b8c75d "$RUNNER_TEMP/llvm-key.asc" | sha256sum --check
+          gpg --dearmor < "$RUNNER_TEMP/llvm-key.asc" > "$RUNNER_TEMP/llvm-key.gpg"
+          sudo install -m 0644 "$RUNNER_TEMP/llvm-key.gpg" /usr/share/keyrings/remill-proof-llvm.gpg
+          printf '%s\n' 'deb [signed-by=/usr/share/keyrings/remill-proof-llvm.gpg] https://apt.llvm.org/noble/ llvm-toolchain-noble-21 main' | sudo tee /etc/apt/sources.list.d/remill-proof-llvm.list > /dev/null
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends clang-21 llvm-21-dev llvm-21-tools cmake ninja-build git python3 libz-dev libzstd-dev libffi-dev libxml2-dev libedit-dev pkg-config
+          dpkg-query -W > "$CI_WORK_ROOT/logs/system-packages.txt"
+          /usr/lib/llvm-21/bin/llvm-config --version | tee "$CI_WORK_ROOT/logs/llvm-version.txt"
+          sudo mkdir -p "$CI_PREFIX"
+          sudo chown "$(id -u):$(id -g)" "$CI_PREFIX"
+      - name: Acquire pinned public source explicitly
+        shell: bash
+        run: bash ci/acquire.sh 2>&1 | tee "$CI_WORK_ROOT/logs/acquisition.log"
+      - name: Build with network disabled
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo unshare --net -- sudo -u "$(id -un)" env \
+            CI_WORK_ROOT="$CI_WORK_ROOT" CI_PREFIX="$CI_PREFIX" CI_SCRIPTS="$GITHUB_WORKSPACE/ci" \
+            PATH=/usr/lib/llvm-21/bin:/usr/bin:/bin \
+            bash "$GITHUB_WORKSPACE/ci/build-offline.sh" 2>&1 | tee "$CI_WORK_ROOT/logs/build.log"
+      - name: Upload toolchain artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: remill-llvm21-toolchain
+          path: ${{ runner.temp }}/remill-proof/artifacts/
+          if-no-files-found: error
+          retention-days: 1
+          compression-level: 0
+      - name: Upload diagnostic logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: remill-llvm21-build-logs
+          path: ${{ runner.temp }}/remill-proof/logs/
+          if-no-files-found: warn
+          retention-days: 1
